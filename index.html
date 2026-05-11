@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEO Audit | How visible is your brand in AI search?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7612fa"/>
+      <stop offset="50%" stop-color="#c109af"/>
+      <stop offset="100%" stop-color="#ff6221"/>
+    </linearGradient>
+  </defs>
+</svg>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-logo">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24"/></svg>
+    </div>
+    <span class="nav-logo-text">AEO <span class="gradient-text">Audit</span></span>
+  </div>
+  <span class="nav-right">by <span class="gradient-text">Lean Labs</span></span>
+</div>
+
+<div class="page-container">
+
+  <!-- SCREEN 1: INPUT -->
+  <div id="screen-input" class="screen active">
+    <section class="screen-input-section">
+      <div class="input-glow-bg"></div>
+      <div class="centered">
+        <h2 class="hero-headline">How visible is your brand in <span class="gradient-text">AI search</span>?</h2>
+        <p class="hero-sub">We score your site across 9 AEO pillars, test live citations in ChatGPT, Claude, Perplexity, and Gemini, and ship the top 10 fixes. Free. About 90 seconds.</p>
+      </div>
+
+      <div class="url-input-group">
+        <div class="url-input-wrapper">
+          <input type="url" id="urlField" class="url-input" placeholder="https://yourwebsite.com" value="https://www.lean-labs.com">
+        </div>
+        <button id="scoreBtn" class="btn-primary">Run AEO Audit &rarr;</button>
+      </div>
+
+      <div style="text-align: center; margin-top: var(--space-sm);">
+        <p class="input-footnote">Free. No signup required. 9-pillar scorecard + live AI citation test.</p>
+      </div>
+
+      <div class="trust-row">
+        <div class="trust-item"><span class="trust-num">9</span><span class="trust-label">AEO pillars</span></div>
+        <div class="trust-divider"></div>
+        <div class="trust-item"><span class="trust-num">4</span><span class="trust-label">AI engines</span></div>
+        <div class="trust-divider"></div>
+        <div class="trust-item"><span class="trust-num">N=3</span><span class="trust-label">runs per prompt</span></div>
+        <div class="trust-divider"></div>
+        <div class="trust-item"><span class="trust-num">10</span><span class="trust-label">prioritized fixes</span></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- SCREEN 2: SCANNING -->
+  <div id="screen-scanning" class="screen">
+    <section class="screen-scanning-section">
+      <div class="centered" style="margin-bottom: var(--space-md);">
+        <h3>Auditing your AI search readiness</h3>
+      </div>
+
+      <div class="scan-container">
+        <div class="scan-url">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          <span id="scanUrlText"></span>
+        </div>
+
+        <div class="scan-progress-bar">
+          <div class="scan-progress-fill"></div>
+        </div>
+
+        <div id="scanSteps" class="scan-steps">
+          <div class="scan-step"><div class="scan-check"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/></svg></div>Discovering site structure and top pages</div>
+          <div class="scan-step"><div class="scan-check"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/></svg></div>Probing AI crawler access (GPTBot, ClaudeBot, PerplexityBot, Google-Extended)</div>
+          <div class="scan-step"><div class="scan-check"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/></svg></div>Scoring schema, extractability, and entity signals</div>
+          <div class="scan-step"><div class="scan-check"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/></svg></div>Running live citation test across 4 AI engines (N=3 each)</div>
+          <div class="scan-step"><div class="scan-check"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/></svg></div>Benchmarking against 3 competitors and ranking fixes</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- SCREEN 3: RESULTS -->
+  <div id="screen-results" class="screen">
+
+    <!-- HERO GRADE -->
+    <section class="results-grade-section section-white">
+      <div class="grade-container">
+        <div class="grade-circle" id="gradeCircle">
+          <span id="gradeLetterEl" class="grade-letter">D</span>
+          <span id="gradeScoreEl" class="grade-score">38/100</span>
+        </div>
+        <span class="grade-label">Your AEO Score</span>
+        <span id="gradeUrlEl" class="grade-url">www.lean-labs.com</span>
+      </div>
+
+      <div class="centered" style="margin-bottom: var(--space-md);">
+        <p id="verdictEl" class="verdict-text">AI engines barely see Lean Labs. Competitors average 65/100. The gap is fixable: 3 high-impact pillars account for 70% of the score deficit.</p>
+        <p class="subtext">Here's exactly where you fall short and what to ship first.</p>
+      </div>
+
+      <!-- BENCHMARK STRIP -->
+      <div class="benchmark-strip">
+        <div class="bm-item">
+          <span class="bm-label">You</span>
+          <span class="bm-score bm-you">38</span>
+        </div>
+        <div class="bm-arrow">vs</div>
+        <div class="bm-item">
+          <span class="bm-label">Competitor avg</span>
+          <span class="bm-score bm-comp">65</span>
+        </div>
+        <div class="bm-arrow">vs</div>
+        <div class="bm-item">
+          <span class="bm-label">Category leader</span>
+          <span class="bm-score bm-leader">81</span>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- CITATION SNAPSHOT -->
+    <section class="results-citation-section section-white">
+      <div class="centered" style="margin-bottom: var(--space-sm);">
+        <h3>How AI engines <span class="gradient-text">cite you</span> right now</h3>
+        <p>10 BOFU buyer prompts, 4 engines, 3 runs each. 120 data points.</p>
+      </div>
+
+      <div class="engine-grid">
+        <div class="engine-card">
+          <div class="engine-head"><div class="engine-logo">G</div><span>ChatGPT</span></div>
+          <div class="engine-score grade-F">12<span>/100</span></div>
+          <div class="engine-rate">Mention rate: <strong>10%</strong></div>
+          <div class="engine-quote">"For HubSpot website work, top agencies include SmartBug Media, IMPACT..."</div>
+        </div>
+        <div class="engine-card">
+          <div class="engine-head"><div class="engine-logo">C</div><span>Claude</span></div>
+          <div class="engine-score grade-F">22<span>/100</span></div>
+          <div class="engine-rate">Mention rate: <strong>20%</strong></div>
+          <div class="engine-quote">"Consider Kiwi Creative, New Breed Marketing, or Blend Marketing..."</div>
+        </div>
+        <div class="engine-card highlight-card">
+          <div class="engine-head"><div class="engine-logo">P</div><span>Perplexity</span></div>
+          <div class="engine-score grade-D">35<span>/100</span></div>
+          <div class="engine-rate">Mention rate: <strong>30%</strong></div>
+          <div class="engine-quote">"Lean Labs is mentioned alongside SmartBug Media for growth-driven design..."</div>
+          <div class="engine-badge">Best performer</div>
+        </div>
+        <div class="engine-card">
+          <div class="engine-head"><div class="engine-logo">M</div><span>Gemini</span></div>
+          <div class="engine-score grade-F">28<span>/100</span></div>
+          <div class="engine-rate">Mention rate: <strong>10%</strong></div>
+          <div class="engine-quote">"Top HubSpot certified agencies include SmartBug Media (recommended)..."</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- 9-PILLAR SCORECARD -->
+    <section class="results-gaps-section section-off-white">
+      <div class="centered" style="margin-bottom: var(--space-sm);">
+        <h3>The <span class="gradient-text">9-pillar</span> scorecard</h3>
+        <p>Where the score breaks down. Weights reflect real-world AI ranking signals.</p>
+      </div>
+
+      <div class="dimensions-card">
+        <div id="pillarsContainer" class="dimensions">
+          <!-- Pillars rendered by JS -->
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- TOP FINDINGS -->
+    <section class="results-gaps-section section-off-white">
+      <div class="centered" style="margin-bottom: 0;">
+        <h3>Top fixes, <span class="gradient-text">prioritized</span></h3>
+        <p>Sorted by severity then expected score lift. The first 4 are visible. The remaining 6 ship with your fix plan.</p>
+      </div>
+
+      <div id="findingsContainer" class="gap-grid"></div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- GATED FIX PLAN -->
+    <section class="results-fixplan-section section-off-white">
+      <div class="gated-container">
+        <div class="gated-content">
+          <div class="fix-teaser-extras">
+            <div class="fix-item">
+              <div class="fix-number">5</div>
+              <div>
+                <h4>Add Organization JSON-LD with sameAs links</h4>
+                <p>Entity disambiguation lift +12 points. Connects Lean Labs to LinkedIn, Crunchbase, G2, and any future Wikidata entry.</p>
+              </div>
+            </div>
+            <div class="fix-item">
+              <div class="fix-number">6</div>
+              <div>
+                <h4>File Wikidata entry for Lean Labs</h4>
+                <p>No Q-ID currently exists. AI engines fall back to fuzzy matching, which costs you on every branded query.</p>
+              </div>
+            </div>
+            <div class="fix-item">
+              <div class="fix-number">7</div>
+              <div>
+                <h4>Generate llms.txt navigation index</h4>
+                <p>Low-signal but easy win. Ships with factor8's llms-txt-creator agent in one click.</p>
+              </div>
+            </div>
+            <div class="fix-item">
+              <div class="fix-number">8</div>
+              <div>
+                <h4>Rewrite Services page first 500 tokens as direct answers</h4>
+                <p>Current opening is brand narrative. AI engines extract the first paragraph as the canonical answer. Replace with definitive "Lean Labs is..." statements.</p>
+              </div>
+            </div>
+            <div class="fix-item">
+              <div class="fix-number">9</div>
+              <div>
+                <h4>Add author bio + LinkedIn URL to every blog post</h4>
+                <p>E-E-A-T signals. AI engines weight named experts with credentialed profiles. Currently 70% of posts are anonymous.</p>
+              </div>
+            </div>
+            <div class="fix-item">
+              <div class="fix-number">10</div>
+              <div>
+                <h4>Build vs-competitor pages for top 3 search rivals</h4>
+                <p>Comparison content is heavily extracted by Perplexity and ChatGPT. Currently no comparison pages exist on the site.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="gated-overlay">
+          <div class="gated-overlay-inner">
+            <div class="gated-lock-icon">
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </div>
+            <h3>Your full 10-fix plan is ready</h3>
+            <p>Each fix includes one-click drafts from factor8 agents (schema JSON-LD, llms.txt, FAQ pages, answer rewrites). Plus a projected score after implementation.</p>
+            <button class="btn-primary btn-unlock" data-cta="book">Unlock Full Fix Plan &rarr;</button>
+            <span class="gated-footnote">Free 20-minute walkthrough. No commitment.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- FINAL CTA -->
+    <section class="results-cta-section">
+      <div class="cta-box">
+        <h3>Ready to close the AI search gap?</h3>
+        <p>Our team uses factor8 to ship every fix above in days, not months. Then we monitor your score monthly.</p>
+        <button class="btn-cta-primary" data-cta="book">Book a Free AEO Review</button>
+        <span class="btn-cta-secondary" data-cta="aeo">Or explore our AEO Accelerator program &rarr;</span>
+      </div>
+    </section>
+
+  </div><!-- /screen-results -->
+
+</div><!-- /page-container -->
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -35,18 +35,10 @@
 
   <!-- Report meta strip -->
   <section class="report-meta-strip">
-    <div class="report-meta-row">
-      <span class="report-meta-label">Audited:</span>
-      <a href="https://www.lean-labs.com" target="_blank" class="report-meta-url">lean-labs.com</a>
-    </div>
-    <div class="report-meta-row">
-      <span class="report-meta-label">Generated:</span>
-      <span>May 11, 2026</span>
-    </div>
-    <div class="report-meta-row">
-      <span class="report-meta-label">Pillars:</span>
-      <span>9</span>
-    </div>
+    <div class="report-meta-row"><span class="report-meta-label">Audited:</span> <a href="https://www.lean-labs.com" target="_blank" class="report-meta-url">lean-labs.com</a></div>
+    <div class="report-meta-row"><span class="report-meta-label">Generated:</span> <span>May 11, 2026</span></div>
+    <div class="report-meta-row"><span class="report-meta-label">Pillars:</span> <span>9</span></div>
+    <div class="report-meta-row"><span class="report-meta-label">Pages audited:</span> <span>10</span></div>
   </section>
 
   <!-- HERO GRADE -->
@@ -60,27 +52,81 @@
       <span class="grade-url">www.lean-labs.com</span>
     </div>
 
-    <div class="centered" style="margin-bottom: var(--space-md);">
-      <p class="verdict-text">Lean Labs scored 58/100. Weakest: Freshness Signals (10). Strongest: AI Crawler Access (100). 10 prioritized fixes below.</p>
-      <p class="subtext">Here's exactly where you fall short and what to ship first.</p>
+    <div class="benchmark-strip" style="margin-top: var(--space-md);">
+      <div class="bm-item"><span class="bm-label">You</span><span class="bm-score bm-you">58</span></div>
+      <div class="bm-arrow">vs</div>
+      <div class="bm-item"><span class="bm-label">Competitor avg*</span><span class="bm-score bm-comp">65</span></div>
+      <div class="bm-arrow">vs</div>
+      <div class="bm-item"><span class="bm-label">Category leader*</span><span class="bm-score bm-leader">81</span></div>
+    </div>
+    <p class="benchmark-disclaimer">*Competitor benchmarks are estimated. Live competitor scan ships next iteration.</p>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- EXECUTIVE SUMMARY -->
+  <section class="section-white" style="padding: var(--space-xl) var(--space-lg);">
+    <div class="centered" style="max-width: 720px;">
+      <h3>Executive <span class="gradient-text">summary</span></h3>
+    </div>
+    <div class="exec-summary">
+      <p><strong>The headline.</strong> Lean Labs scored <strong>58/100 (Grade C+)</strong>. That's a working foundation, not a finished AEO posture. Two pillars are already strong: schema markup is well above baseline (92/100) and AI crawlers can reach every audited page without blocks or challenges. Three pillars are dragging the composite hard: freshness signals (10/100), content extractability (34/100), and entity authority (34/100). The gap between you and category leaders sits at <strong>23 points</strong>, and three concrete fixes account for most of it.</p>
+
+      <p><strong>What's behind the score.</strong> Across 10 audited pages, only one carries any sameAs links and zero carry FAQPage schema. Average paragraph length on the audited set is 1.3-1.7 sentences — too thin for AI engines to extract a definitive answer from the first 500 tokens. Average page age, where datable, is over <strong>3.7 years</strong>; most pages have no machine-readable freshness signal at all. Lean Labs has no Wikidata entry, so brand mentions in AI responses depend on fuzzy matching across multiple entities sharing the name.</p>
+
+      <p><strong>The three priorities.</strong> File a Wikidata entry (+50 entity pillar lift, ~6 composite points). Add FAQPage schema to the top content surfaces (+30 FAQ lift, ~2.4 composite points). Rewrite the first 500 tokens of /pricing and /solutions/* as definitive Q&A openings (+15 extractability lift per page, ~3 composite points each). Combined, these three lift the composite by <strong>~12-15 points</strong>, taking the grade from C+ into B/B+ territory.</p>
+
+      <p><strong>What we did NOT find broken.</strong> AI bot access is clean — GPTBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended, CCBot, and anthropic-ai all returned 200 with no Cloudflare challenge. Schema coverage at 80% is above most B2B agencies. llms.txt is present and rich (58 links, 31KB). 7 of 10 pages carry named-author bylines with LinkedIn URLs. Don't spend cycles re-checking what's already working.</p>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- COMPOSITE BREAKDOWN -->
+  <section class="section-off-white" style="padding: var(--space-xl) var(--space-lg);">
+    <div class="centered" style="max-width: 720px;">
+      <h3>How the <span class="gradient-text">58</span> breaks down</h3>
+      <p>Each pillar contributes its score × weight to the composite. Bigger contributions = bigger levers.</p>
     </div>
 
-    <div class="benchmark-strip">
-      <div class="bm-item">
-        <span class="bm-label">You</span>
-        <span class="bm-score bm-you">58</span>
+    <div class="composite-bar-card">
+      <div class="composite-bar">
+        <div class="composite-seg" style="flex: 6.8; background: var(--grade-orange);" title="Extractability: 6.8 / 20">6.8</div>
+        <div class="composite-seg" style="flex: 13.8; background: var(--grade-green);" title="Schema: 13.8 / 15">13.8</div>
+        <div class="composite-seg" style="flex: 12.0; background: var(--grade-green);" title="Crawler Access: 12.0 / 12">12.0</div>
+        <div class="composite-seg" style="flex: 4.1; background: var(--grade-orange);" title="Entity: 4.1 / 12">4.1</div>
+        <div class="composite-seg" style="flex: 7.0; background: var(--grade-purple);" title="E-E-A-T: 7.0 / 10">7.0</div>
+        <div class="composite-seg" style="flex: 6.0; background: var(--grade-amber);" title="Citation: 6.0 / 12 (estimated)">6.0</div>
+        <div class="composite-seg" style="flex: 0.6; background: var(--grade-red);" title="Freshness: 0.6 / 6">0.6</div>
+        <div class="composite-seg" style="flex: 3.6; background: var(--grade-amber);" title="FAQ: 3.6 / 8">3.6</div>
+        <div class="composite-seg" style="flex: 4.0; background: var(--grade-green);" title="llms.txt: 4.0 / 5">4.0</div>
+        <div class="composite-seg composite-gap" style="flex: 42; background: var(--ll-border-light);" title="Gap to 100: 42">42 to go</div>
       </div>
-      <div class="bm-arrow">vs</div>
-      <div class="bm-item">
-        <span class="bm-label">Competitor avg</span>
-        <span class="bm-score bm-comp">65</span>
-      </div>
-      <div class="bm-arrow">vs</div>
-      <div class="bm-item">
-        <span class="bm-label">Category leader</span>
-        <span class="bm-score bm-leader">81</span>
+      <div class="composite-legend">
+        <span><span class="legend-dot dot-green"></span> Strong (≥70)</span>
+        <span><span class="legend-dot dot-purple"></span> Solid (60–69)</span>
+        <span><span class="legend-dot dot-amber"></span> Moderate (40–59)</span>
+        <span><span class="legend-dot dot-orange"></span> Weak (30–39)</span>
+        <span><span class="legend-dot dot-red"></span> Critical (<30)</span>
       </div>
     </div>
+
+    <table class="composite-table">
+      <thead><tr><th>Pillar</th><th>Score</th><th>Weight</th><th>Contribution</th></tr></thead>
+      <tbody>
+        <tr><td>Content Extractability</td><td>34</td><td>20%</td><td>6.8</td></tr>
+        <tr><td>Schema Coverage</td><td>92</td><td>15%</td><td>13.8</td></tr>
+        <tr><td>AI Crawler Access</td><td>100</td><td>12%</td><td>12.0</td></tr>
+        <tr><td>Entity &amp; Brand Authority</td><td>34</td><td>12%</td><td>4.1</td></tr>
+        <tr><td>E-E-A-T Signals</td><td>70</td><td>10%</td><td>7.0</td></tr>
+        <tr><td>Live Citation Test*</td><td>50</td><td>12%</td><td>6.0</td></tr>
+        <tr><td>Freshness Signals</td><td>10</td><td>6%</td><td>0.6</td></tr>
+        <tr><td>FAQ Coverage</td><td>45</td><td>8%</td><td>3.6</td></tr>
+        <tr><td>llms.txt Presence</td><td>80</td><td>5%</td><td>4.0</td></tr>
+        <tr class="composite-total"><td>Composite</td><td colspan="2"></td><td><strong>58</strong></td></tr>
+      </tbody>
+    </table>
+    <p class="composite-footnote">*Citation pillar is currently estimated. Live multi-engine scoring ships next iteration.</p>
   </section>
 
   <hr class="section-divider">
@@ -89,227 +135,481 @@
   <section class="results-citation-section section-white">
     <div class="centered" style="margin-bottom: var(--space-sm);">
       <h3>How AI engines <span class="gradient-text">cite you</span> right now</h3>
-      <p>10 BOFU buyer prompts, 4 engines, 3 runs each. 120 data points.</p>
+      <p>Sampling buyer-intent prompts across 4 AI engines.</p>
+      <div class="estimated-banner">Estimated. Live multi-engine citation testing (10 BOFU prompts × N=3 runs) ships next iteration.</div>
     </div>
 
     <div class="engine-grid">
       <div class="engine-card">
         <div class="engine-head"><div class="engine-logo">G</div><span>ChatGPT</span></div>
         <div class="engine-score grade-C">50<span>/100</span></div>
-        <div class="engine-rate">Mention rate: <strong>0%</strong></div>
-        <div class="engine-quote">"For HubSpot website work, top agencies include SmartBug Media, IMPACT..."</div>
+        <div class="engine-rate">Mention rate: <strong>—</strong></div>
+        <div class="engine-quote">Pending live query loop.</div>
       </div>
       <div class="engine-card">
         <div class="engine-head"><div class="engine-logo">C</div><span>Claude</span></div>
         <div class="engine-score grade-C">50<span>/100</span></div>
-        <div class="engine-rate">Mention rate: <strong>0%</strong></div>
-        <div class="engine-quote">"Consider Kiwi Creative, New Breed Marketing, or Blend Marketing..."</div>
+        <div class="engine-rate">Mention rate: <strong>—</strong></div>
+        <div class="engine-quote">Pending live query loop.</div>
       </div>
-      <div class="engine-card highlight-card">
+      <div class="engine-card">
         <div class="engine-head"><div class="engine-logo">P</div><span>Perplexity</span></div>
         <div class="engine-score grade-C">50<span>/100</span></div>
-        <div class="engine-rate">Mention rate: <strong>0%</strong></div>
-        <div class="engine-quote">"Lean Labs is mentioned alongside SmartBug Media for growth-driven design..."</div>
-        <div class="engine-badge">Estimated</div>
+        <div class="engine-rate">Mention rate: <strong>—</strong></div>
+        <div class="engine-quote">Pending live query loop.</div>
       </div>
       <div class="engine-card">
         <div class="engine-head"><div class="engine-logo">M</div><span>Gemini</span></div>
         <div class="engine-score grade-C">50<span>/100</span></div>
-        <div class="engine-rate">Mention rate: <strong>0%</strong></div>
-        <div class="engine-quote">"Top HubSpot certified agencies include SmartBug Media (recommended)..."</div>
+        <div class="engine-rate">Mention rate: <strong>—</strong></div>
+        <div class="engine-quote">Pending live query loop.</div>
       </div>
     </div>
   </section>
 
   <hr class="section-divider">
 
-  <!-- 9-PILLAR SCORECARD -->
-  <section class="results-gaps-section section-off-white">
-    <div class="centered" style="margin-bottom: var(--space-sm);">
-      <h3>The <span class="gradient-text">9-pillar</span> scorecard</h3>
-      <p>Where the score breaks down. Weights reflect real-world AI ranking signals.</p>
+  <!-- ============================================================ -->
+  <!-- PER-PILLAR DEEP DIVES                                        -->
+  <!-- ============================================================ -->
+  <section class="section-off-white" style="padding: var(--space-xl) var(--space-lg) var(--space-lg);">
+    <div class="centered" style="max-width: 720px;">
+      <h3>Pillar <span class="gradient-text">deep-dives</span></h3>
+      <p>The raw signals behind each pillar score. No black boxes.</p>
     </div>
+  </section>
 
-    <div class="dimensions-card">
-      <div class="dimensions">
-
-        <div class="pillar-row">
-          <div class="pillar-info">
-            <div class="pillar-name-row"><span class="pillar-name">Content Extractability</span><span class="pillar-weight">20% weight</span></div>
-            <div class="pillar-bar"><div class="pillar-fill fill-D" style="width: 34%"></div></div>
-          </div>
-          <div class="pillar-score-cell">34<span class="pillar-grade g-D">D</span></div>
-        </div>
-
-        <div class="pillar-row">
-          <div class="pillar-info">
-            <div class="pillar-name-row"><span class="pillar-name">Schema Coverage</span><span class="pillar-weight">15% weight</span></div>
-            <div class="pillar-bar"><div class="pillar-fill fill-A" style="width: 92%"></div></div>
-          </div>
-          <div class="pillar-score-cell">92<span class="pillar-grade g-A">A+</span></div>
-        </div>
-
-        <div class="pillar-row">
-          <div class="pillar-info">
-            <div class="pillar-name-row"><span class="pillar-name">AI Crawler Access</span><span class="pillar-weight">12% weight</span></div>
-            <div class="pillar-bar"><div class="pillar-fill fill-A" style="width: 100%"></div></div>
-          </div>
-          <div class="pillar-score-cell">100<span class="pillar-grade g-A">A+</span></div>
-        </div>
-
-        <div class="pillar-row">
-          <div class="pillar-info">
-            <div class="pillar-name-row"><span class="pillar-name">Entity &amp; Brand Authority</span><span class="pillar-weight">12% weight</span></div>
-            <div class="pillar-bar"><div class="pillar-fill fill-D" style="width: 34%"></div></div>
-          </div>
-          <div class="pillar-score-cell">34<span class="pillar-grade g-D">D</span></div>
-        </div>
-
-        <div class="pillar-row">
-          <div class="pillar-info">
-            <div class="pillar-name-row"><span class="pillar-name">E-E-A-T Signals</span><span class="pillar-weight">10% weight</span></div>
-            <div class="pillar-bar"><div class="pillar-fill fill-B" style="width: 70%"></div></div>
-          </div>
-          <div class="pillar-score-cell">70<span class="pillar-grade g-B">B+</span></div>
-        </div>
-
-        <div class="pillar-row">
-          <div class="pillar-info">
-            <div class="pillar-name-row"><span class="pillar-name">Live Citation Test</span><span class="pillar-weight">12% weight</span></div>
-            <div class="pillar-bar"><div class="pillar-fill fill-C" style="width: 50%"></div></div>
-          </div>
-          <div class="pillar-score-cell">50<span class="pillar-grade g-C">C+</span></div>
-        </div>
-
-        <div class="pillar-row">
-          <div class="pillar-info">
-            <div class="pillar-name-row"><span class="pillar-name">Freshness Signals</span><span class="pillar-weight">6% weight</span></div>
-            <div class="pillar-bar"><div class="pillar-fill fill-F" style="width: 10%"></div></div>
-          </div>
-          <div class="pillar-score-cell">10<span class="pillar-grade g-F">F</span></div>
-        </div>
-
-        <div class="pillar-row">
-          <div class="pillar-info">
-            <div class="pillar-name-row"><span class="pillar-name">FAQ Coverage</span><span class="pillar-weight">8% weight</span></div>
-            <div class="pillar-bar"><div class="pillar-fill fill-C" style="width: 45%"></div></div>
-          </div>
-          <div class="pillar-score-cell">45<span class="pillar-grade g-C">C</span></div>
-        </div>
-
-        <div class="pillar-row">
-          <div class="pillar-info">
-            <div class="pillar-name-row"><span class="pillar-name">llms.txt Presence</span><span class="pillar-weight">5% weight</span></div>
-            <div class="pillar-bar"><div class="pillar-fill fill-A" style="width: 80%"></div></div>
-          </div>
-          <div class="pillar-score-cell">80<span class="pillar-grade g-A">A</span></div>
-        </div>
-
+  <!-- 1. Extractability -->
+  <section class="pillar-deepdive section-white">
+    <div class="pillar-deepdive-head">
+      <div>
+        <span class="pillar-deepdive-eyebrow">Pillar 1 of 9</span>
+        <h3>Content Extractability</h3>
+      </div>
+      <div class="pillar-deepdive-meta">
+        <span class="score-badge sb-D">34/100 · D</span>
+        <span class="weight-badge">20% weight</span>
       </div>
     </div>
+
+    <div class="pillar-deepdive-grid">
+      <div>
+        <h4 class="pillar-section-h">What we checked</h4>
+        <p>For each audited page, we measure three things AI engines rely on to extract an answer: (1) the ratio of headings shaped as questions (What/How/Why...), (2) average paragraph length in sentences (2–4 sentences is the sweet spot), and (3) "answer density" in the first 500 tokens — sentences opening with a definitive predicate (is/are/means).</p>
+      </div>
+      <div>
+        <h4 class="pillar-section-h">What we found</h4>
+        <ul class="evidence-list">
+          <li><strong>Average page score:</strong> 31.5/100 across 10 pages</li>
+          <li><strong>Avg paragraph length:</strong> 1.45 sentences (below the 2–4 sweet spot — too thin)</li>
+          <li><strong>Avg Q&amp;A heading ratio:</strong> 8.5% (target: 30%+)</li>
+          <li><strong>Avg answer density:</strong> 11.7% of first-500-token sentences carry a definitive predicate (target: 30%+)</li>
+          <li><strong>Best page:</strong> /blog/b2b-buyers-journey (52/100)</li>
+          <li><strong>Worst pages:</strong> /solutions/growthrocket/examples/services/ and /blog/the-keys-to-creating-cost-effective-long-form-content (both 26/100)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 class="pillar-section-h">Per-page extractability</h4>
+    <div class="page-table-wrap">
+      <table class="page-table">
+        <thead><tr><th>Page</th><th>Score</th><th>Q&amp;A heads</th><th>Avg para</th><th>Answer density</th></tr></thead>
+        <tbody>
+          <tr><td>/pricing</td><td>33</td><td>9%</td><td>1.3</td><td>12%</td></tr>
+          <tr><td>/solutions/growthrocket/examples/services/</td><td>26</td><td>0%</td><td>1.1</td><td>11%</td></tr>
+          <tr><td>/blog</td><td>42</td><td>23%</td><td>1.2</td><td>11%</td></tr>
+          <tr><td>/blog/the-keys-to-creating-cost-effective-long-form-content</td><td>26</td><td>0%</td><td>1.8</td><td>11%</td></tr>
+          <tr><td>/blog/how-long-take-get-results-inbound-marketing-success-metrics</td><td>34</td><td>12%</td><td>1.6</td><td>10%</td></tr>
+          <tr><td>/blog/how-long-take-design-build-great-website</td><td>36</td><td>13%</td><td>1.7</td><td>12%</td></tr>
+          <tr><td>/blog/keyword-usage-mistakes-you-may-be-making</td><td>30</td><td>5%</td><td>1.5</td><td>11%</td></tr>
+          <tr><td>/blog/hubspot-marketing-hub-onboarding-startups</td><td>26</td><td>0%</td><td>1.4</td><td>12%</td></tr>
+          <tr><td>/blog/what-tech-saas-growth-team-does</td><td>30</td><td>6%</td><td>1.7</td><td>12%</td></tr>
+          <tr><td>/blog/b2b-buyers-journey</td><td>52</td><td>14%</td><td>2.2</td><td>17%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 class="pillar-section-h">Fixes (5)</h4>
+    <ul class="finding-list">
+      <li class="finding-li gap-medium"><strong>MEDIUM · +15:</strong> Rewrite the first paragraph on /pricing as a definitive answer. Split long paragraphs. <span class="agent-tag">→ knowledge-hub-writer</span></li>
+      <li class="finding-li gap-medium"><strong>MEDIUM · +15:</strong> Same on /solutions/growthrocket/examples/services/. <span class="agent-tag">→ knowledge-hub-writer</span></li>
+      <li class="finding-li gap-medium"><strong>MEDIUM · +15:</strong> Same on /blog/the-keys-to-creating-cost-effective-long-form-content. <span class="agent-tag">→ knowledge-hub-writer</span></li>
+      <li class="finding-li gap-medium"><strong>MEDIUM · +15:</strong> Same on /blog/how-long-take-get-results-inbound-marketing-success-metrics. <span class="agent-tag">→ knowledge-hub-writer</span></li>
+      <li class="finding-li gap-medium"><strong>MEDIUM · +15:</strong> Same on /blog/how-long-take-design-build-great-website. <span class="agent-tag">→ knowledge-hub-writer</span></li>
+    </ul>
+  </section>
+
+  <!-- 2. Schema -->
+  <section class="pillar-deepdive section-off-white">
+    <div class="pillar-deepdive-head">
+      <div>
+        <span class="pillar-deepdive-eyebrow">Pillar 2 of 9</span>
+        <h3>Schema Coverage</h3>
+      </div>
+      <div class="pillar-deepdive-meta">
+        <span class="score-badge sb-A">92/100 · A+</span>
+        <span class="weight-badge">15% weight</span>
+      </div>
+    </div>
+
+    <div class="pillar-deepdive-grid">
+      <div>
+        <h4 class="pillar-section-h">What we checked</h4>
+        <p>Parsed every audited page for JSON-LD structured data. Checked presence of base types (Organization, WebSite, WebPage), broader type coverage, and whether <code>sameAs</code> links are present to bind the brand to canonical profiles.</p>
+      </div>
+      <div>
+        <h4 class="pillar-section-h">What we found</h4>
+        <ul class="evidence-list">
+          <li><strong>Pages with JSON-LD:</strong> 8 of 10 (80% page coverage)</li>
+          <li><strong>Pages with sameAs:</strong> 1 of 10</li>
+          <li><strong>Types detected:</strong> Organization, WebSite, WebPage, BlogPosting, BreadcrumbList, Service</li>
+          <li><strong>Base types present:</strong> All three (Organization, WebSite, WebPage)</li>
+          <li><strong>Gap:</strong> Sparse sameAs network — present on only one page, anchoring is weak</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 class="pillar-section-h">Fixes (0 critical) </h4>
+    <p class="pillar-no-finding">No high-severity findings. Schema is the strongest pillar; small sameAs cleanup recommended (see Entity pillar).</p>
+  </section>
+
+  <!-- 3. Crawler Access -->
+  <section class="pillar-deepdive section-white">
+    <div class="pillar-deepdive-head">
+      <div>
+        <span class="pillar-deepdive-eyebrow">Pillar 3 of 9</span>
+        <h3>AI Crawler Access</h3>
+      </div>
+      <div class="pillar-deepdive-meta">
+        <span class="score-badge sb-A">100/100 · A+</span>
+        <span class="weight-badge">12% weight</span>
+      </div>
+    </div>
+
+    <div class="pillar-deepdive-grid">
+      <div>
+        <h4 class="pillar-section-h">What we checked</h4>
+        <p>Probed the homepage with each major AI crawler's User-Agent. Verified <code>robots.txt</code> allows them. Detected challenge pages (Cloudflare interstitials) that would block bots silently. Checked for server-side rendering — GPTBot does not execute JavaScript.</p>
+      </div>
+      <div>
+        <h4 class="pillar-section-h">What we found</h4>
+        <ul class="evidence-list">
+          <li><strong>robots.txt:</strong> Allows all 7 audited AI bots</li>
+          <li><strong>Server-side rendering:</strong> Detected — HTML body has meaningful content without JS execution</li>
+          <li><strong>Challenge pages:</strong> None</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 class="pillar-section-h">Bot-by-bot status</h4>
+    <div class="page-table-wrap">
+      <table class="page-table">
+        <thead><tr><th>Bot</th><th>HTTP status</th><th>Reachable</th><th>Challenge page</th></tr></thead>
+        <tbody>
+          <tr><td>GPTBot</td><td>200</td><td><span class="pill-ok">yes</span></td><td>no</td></tr>
+          <tr><td>ClaudeBot</td><td>200</td><td><span class="pill-ok">yes</span></td><td>no</td></tr>
+          <tr><td>PerplexityBot</td><td>200</td><td><span class="pill-ok">yes</span></td><td>no</td></tr>
+          <tr><td>Google-Extended</td><td>200</td><td><span class="pill-ok">yes</span></td><td>no</td></tr>
+          <tr><td>Applebot-Extended</td><td>200</td><td><span class="pill-ok">yes</span></td><td>no</td></tr>
+          <tr><td>CCBot</td><td>200</td><td><span class="pill-ok">yes</span></td><td>no</td></tr>
+          <tr><td>anthropic-ai</td><td>200</td><td><span class="pill-ok">yes</span></td><td>no</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="pillar-no-finding" style="margin-top: var(--space-sm);">No findings. Strongest pillar alongside Schema — protect this status, don't let new WAF rules accidentally block AI bots.</p>
+  </section>
+
+  <!-- 4. Entity -->
+  <section class="pillar-deepdive section-off-white">
+    <div class="pillar-deepdive-head">
+      <div>
+        <span class="pillar-deepdive-eyebrow">Pillar 4 of 9</span>
+        <h3>Entity &amp; Brand Authority</h3>
+      </div>
+      <div class="pillar-deepdive-meta">
+        <span class="score-badge sb-D">34/100 · D</span>
+        <span class="weight-badge">12% weight</span>
+      </div>
+    </div>
+
+    <div class="pillar-deepdive-grid">
+      <div>
+        <h4 class="pillar-section-h">What we checked</h4>
+        <p>Queried Wikidata for the company name to find a canonical Q-ID (the anchor AI engines use to disambiguate brand mentions). Counted <code>sameAs</code> links pointing to canonical profile networks (LinkedIn, Crunchbase, G2) inside the Organization schema.</p>
+      </div>
+      <div>
+        <h4 class="pillar-section-h">What we found</h4>
+        <ul class="evidence-list">
+          <li><strong>Wikidata Q-ID:</strong> Not found (API returned no match for "Lean Labs")</li>
+          <li><strong>sameAs links present:</strong> 2 total</li>
+          <li><strong>Canonical profiles matched:</strong> 2 of 3 (LinkedIn, Crunchbase, G2)</li>
+          <li><strong>Implication:</strong> When ChatGPT or Perplexity sees "Lean Labs" in a query, they fall back to fuzzy matching across the multiple entities sharing that name</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 class="pillar-section-h">Fixes (2)</h4>
+    <ul class="finding-list">
+      <li class="finding-li gap-high"><strong>HIGH · +50:</strong> File a Wikidata entry for Lean Labs. <span class="agent-tag">→ entity-builder</span></li>
+      <li class="finding-li gap-medium"><strong>MEDIUM · +15:</strong> Add the third canonical sameAs link to Organization schema. <span class="agent-tag">→ schema-bible</span></li>
+    </ul>
+  </section>
+
+  <!-- 5. E-E-A-T -->
+  <section class="pillar-deepdive section-white">
+    <div class="pillar-deepdive-head">
+      <div>
+        <span class="pillar-deepdive-eyebrow">Pillar 5 of 9</span>
+        <h3>E-E-A-T Signals</h3>
+      </div>
+      <div class="pillar-deepdive-meta">
+        <span class="score-badge sb-B">70/100 · B+</span>
+        <span class="weight-badge">10% weight</span>
+      </div>
+    </div>
+
+    <div class="pillar-deepdive-grid">
+      <div>
+        <h4 class="pillar-section-h">What we checked</h4>
+        <p>Looked for named authors on every audited page (JSON-LD <code>author</code> blocks plus byline-class elements). Verified author URLs point to verifiable profiles like LinkedIn — AI engines weight authority signals from credentialed humans.</p>
+      </div>
+      <div>
+        <h4 class="pillar-section-h">What we found</h4>
+        <ul class="evidence-list">
+          <li><strong>Pages with named author:</strong> 7 of 10</li>
+          <li><strong>Authors with a profile URL:</strong> 7 of 7 (100% of named authors are linked)</li>
+          <li><strong>Anonymous pages:</strong> /pricing, /solutions/growthrocket/examples/services/, /blog (index)</li>
+          <li><strong>Implication:</strong> Blog posts are credentialed well; product/service surfaces aren't</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 class="pillar-section-h">Fixes (3)</h4>
+    <ul class="finding-list">
+      <li class="finding-li gap-medium"><strong>MEDIUM · +10:</strong> Add author byline + JSON-LD author with LinkedIn URL on /pricing. <span class="agent-tag">→ schema-bible</span></li>
+      <li class="finding-li gap-medium"><strong>MEDIUM · +10:</strong> Same on /solutions/growthrocket/examples/services/. <span class="agent-tag">→ schema-bible</span></li>
+      <li class="finding-li gap-medium"><strong>MEDIUM · +10:</strong> Same on /blog (index page). <span class="agent-tag">→ schema-bible</span></li>
+    </ul>
+  </section>
+
+  <!-- 6. Citation -->
+  <section class="pillar-deepdive section-off-white">
+    <div class="pillar-deepdive-head">
+      <div>
+        <span class="pillar-deepdive-eyebrow">Pillar 6 of 9</span>
+        <h3>Live Citation Test</h3>
+      </div>
+      <div class="pillar-deepdive-meta">
+        <span class="score-badge sb-C">50/100 · C+ (estimated)</span>
+        <span class="weight-badge">12% weight</span>
+      </div>
+    </div>
+
+    <div class="pillar-deepdive-grid">
+      <div>
+        <h4 class="pillar-section-h">What we'll check (next iteration)</h4>
+        <p>Fire 10 BOFU-stage buyer prompts against ChatGPT, Claude, Perplexity, and Gemini. Repeat each prompt N=3 times per engine (120 total queries). Measure: how often Lean Labs is named, where in the answer, with what sentiment, and which competitors are cited instead.</p>
+      </div>
+      <div>
+        <h4 class="pillar-section-h">Current status</h4>
+        <ul class="evidence-list">
+          <li><strong>Live query loop:</strong> Not yet wired</li>
+          <li><strong>Placeholder score:</strong> 50/100 flat across all 4 engines</li>
+          <li><strong>Ships next:</strong> Multi-engine + N=3 run loop with parsed mention extraction</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="pillar-no-finding">No findings yet. Real citation gaps surface once live engines are wired.</p>
+  </section>
+
+  <!-- 7. Freshness -->
+  <section class="pillar-deepdive section-white">
+    <div class="pillar-deepdive-head">
+      <div>
+        <span class="pillar-deepdive-eyebrow">Pillar 7 of 9</span>
+        <h3>Freshness Signals</h3>
+      </div>
+      <div class="pillar-deepdive-meta">
+        <span class="score-badge sb-F">10/100 · F</span>
+        <span class="weight-badge">6% weight</span>
+      </div>
+    </div>
+
+    <div class="pillar-deepdive-grid">
+      <div>
+        <h4 class="pillar-section-h">What we checked</h4>
+        <p>Looked for machine-readable freshness signals on every page: JSON-LD <code>dateModified</code> / <code>datePublished</code>, Open Graph <code>article:modified_time</code>, and visible publish/update markers. Computed average age of audited content. AI engines down-rank stale content.</p>
+      </div>
+      <div>
+        <h4 class="pillar-section-h">What we found</h4>
+        <ul class="evidence-list">
+          <li><strong>Average page age:</strong> 1,377 days (~3.8 years)</li>
+          <li><strong>Pages with no date signal:</strong> /pricing, /solutions/growthrocket/examples/services/, /blog (index)</li>
+          <li><strong>Pages with date signal:</strong> 7 of 10 (mostly blog posts, but old)</li>
+          <li><strong>Implication:</strong> Even where dates exist, content reads as stale to AI engines</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 class="pillar-section-h">Fixes (3)</h4>
+    <ul class="finding-list">
+      <li class="finding-li gap-medium"><strong>MEDIUM · +8:</strong> Add publish + modified date schema to /pricing.</li>
+      <li class="finding-li gap-medium"><strong>MEDIUM · +8:</strong> Same on /solutions/growthrocket/examples/services/.</li>
+      <li class="finding-li gap-medium"><strong>MEDIUM · +8:</strong> Same on /blog (index page).</li>
+    </ul>
+    <p class="pillar-no-finding" style="margin-top: var(--space-sm);">Bigger win: refresh + republish the top 5 evergreen blog posts to push avg age below 365 days. That alone takes this pillar from 10 → 70.</p>
+  </section>
+
+  <!-- 8. FAQ Coverage -->
+  <section class="pillar-deepdive section-off-white">
+    <div class="pillar-deepdive-head">
+      <div>
+        <span class="pillar-deepdive-eyebrow">Pillar 8 of 9</span>
+        <h3>FAQ Coverage</h3>
+      </div>
+      <div class="pillar-deepdive-meta">
+        <span class="score-badge sb-C">45/100 · C</span>
+        <span class="weight-badge">8% weight</span>
+      </div>
+    </div>
+
+    <div class="pillar-deepdive-grid">
+      <div>
+        <h4 class="pillar-section-h">What we checked</h4>
+        <p>Counted FAQPage JSON-LD blocks across all audited pages and tallied question-shaped headings (H2/H3 starting with What/How/Why/etc.). Question-shaped headings tell AI engines "this section contains an answer to this question."</p>
+      </div>
+      <div>
+        <h4 class="pillar-section-h">What we found</h4>
+        <ul class="evidence-list">
+          <li><strong>FAQPage JSON-LD blocks:</strong> 0 (anywhere on site)</li>
+          <li><strong>Question-shaped headings:</strong> 155 total across audited pages</li>
+          <li><strong>Page coverage:</strong> 5 of 10 pages have question-shaped headings (50%)</li>
+          <li><strong>Implication:</strong> You're already writing in question format on half the pages — wrapping the existing content in FAQPage schema is a near-free win</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 class="pillar-section-h">Fixes (1)</h4>
+    <ul class="finding-list">
+      <li class="finding-li gap-high"><strong>HIGH · +30:</strong> Generate FAQPage JSON-LD on the pages with existing question-headings. <span class="agent-tag">→ knowledge-hub-writer</span></li>
+    </ul>
+  </section>
+
+  <!-- 9. llms.txt -->
+  <section class="pillar-deepdive section-white">
+    <div class="pillar-deepdive-head">
+      <div>
+        <span class="pillar-deepdive-eyebrow">Pillar 9 of 9</span>
+        <h3>llms.txt Presence</h3>
+      </div>
+      <div class="pillar-deepdive-meta">
+        <span class="score-badge sb-A">80/100 · A</span>
+        <span class="weight-badge">5% weight</span>
+      </div>
+    </div>
+
+    <div class="pillar-deepdive-grid">
+      <div>
+        <h4 class="pillar-section-h">What we checked</h4>
+        <p>Fetched <code>/llms.txt</code> from the origin. Checked it's present, has an H1, carries enough links to be useful as a navigation index, and is substantial in size. Low-signal pillar (some AI tooling reads it, Google doesn't) but easy bonus.</p>
+      </div>
+      <div>
+        <h4 class="pillar-section-h">What we found</h4>
+        <ul class="evidence-list">
+          <li><strong>Present at /llms.txt:</strong> Yes</li>
+          <li><strong>Starts with H1:</strong> No</li>
+          <li><strong>Link count:</strong> 58</li>
+          <li><strong>Byte size:</strong> 31,542 bytes (~31KB)</li>
+          <li><strong>Implication:</strong> Substantial llms.txt — just missing the H1 marker that some parsers expect</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="pillar-no-finding">Add a leading <code># Lean Labs</code> H1 to the existing /llms.txt to capture the remaining 20 points. Smallest fix, smallest lift.</p>
   </section>
 
   <hr class="section-divider">
 
-  <!-- ALL 10 FINDINGS -->
-  <section class="results-gaps-section section-off-white">
-    <div class="centered" style="margin-bottom: 0;">
-      <h3>All <span class="gradient-text">10 fixes</span>, prioritized</h3>
-      <p>Sorted by severity then expected score lift. Ship in order for fastest visibility gain.</p>
+  <!-- PAGE-BY-PAGE AUDIT TABLE -->
+  <section class="section-off-white" style="padding: var(--space-xl) var(--space-lg);">
+    <div class="centered" style="max-width: 720px;">
+      <h3>Page-by-page <span class="gradient-text">audit coverage</span></h3>
+      <p>Every URL we crawled. What we measured. Where the gaps are.</p>
     </div>
 
-    <div class="gap-grid" style="grid-template-columns: 1fr; max-width: 720px; margin: var(--space-md) auto 0;">
+    <div class="page-table-wrap">
+      <table class="page-table page-table-full">
+        <thead>
+          <tr>
+            <th>URL</th>
+            <th>Extract.</th>
+            <th>JSON-LD</th>
+            <th>Author</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>/</td><td class="td-mid">—</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td></tr>
+          <tr><td>/pricing</td><td class="td-bad">33</td><td class="pill-warn">partial</td><td class="td-bad">missing</td><td class="td-bad">missing</td></tr>
+          <tr><td>/solutions/growthrocket/examples/services/</td><td class="td-bad">26</td><td class="pill-warn">partial</td><td class="td-bad">missing</td><td class="td-bad">missing</td></tr>
+          <tr><td>/blog</td><td class="td-mid">42</td><td class="pill-ok">yes</td><td class="td-bad">missing</td><td class="td-bad">missing</td></tr>
+          <tr><td>/blog/the-keys-to-creating-cost-effective-long-form-content</td><td class="td-bad">26</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td></tr>
+          <tr><td>/blog/how-long-take-get-results-inbound-marketing-success-metrics</td><td class="td-mid">34</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td></tr>
+          <tr><td>/blog/how-long-take-design-build-great-website</td><td class="td-mid">36</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td></tr>
+          <tr><td>/blog/keyword-usage-mistakes-you-may-be-making</td><td class="td-bad">30</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td></tr>
+          <tr><td>/blog/hubspot-marketing-hub-onboarding-startups</td><td class="td-bad">26</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td></tr>
+          <tr><td>/blog/what-tech-saas-growth-team-does</td><td class="td-bad">30</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td></tr>
+          <tr><td>/blog/b2b-buyers-journey</td><td class="td-mid">52</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td><td class="pill-ok">yes</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="composite-footnote" style="text-align: center;">Pages discovered via sitemap.xml. Top-N prioritized by URL pattern (homepage, pricing, services, then blog by recency).</p>
+  </section>
 
-      <div class="gap-card gap-high">
-        <div class="gap-priority">1. HIGH · +50 pillar points</div>
-        <h4 class="gap-title">No Wikidata Q-ID found for company name</h4>
-        <p class="gap-pillar"><strong>Pillar:</strong> Entity &amp; Brand Authority</p>
-        <p class="gap-desc"><strong>Why it matters:</strong> AI engines fall back to fuzzy matching without a canonical entity ID. Lean Labs gets confused with other entities sharing the name.</p>
-        <p class="gap-desc"><strong>Fix:</strong> File a Wikidata entry. factor8 entity-builder agent drafts it.</p>
-        <span class="gap-agent-chip">One-click fix: <strong>entity-builder</strong></span>
+  <hr class="section-divider">
+
+  <!-- METHODOLOGY -->
+  <section class="section-white" style="padding: var(--space-xl) var(--space-lg);">
+    <div class="centered" style="max-width: 720px;">
+      <h3>How we <span class="gradient-text">score</span></h3>
+      <p>Plain English. No black boxes.</p>
+    </div>
+
+    <div class="methodology-grid">
+      <div>
+        <h4 class="pillar-section-h">The composite score</h4>
+        <p>Every pillar produces a 0-100 score. The composite is a weighted sum: each pillar's score × its weight. Weights add up to 1.0. The result is rounded and mapped to a letter grade: <strong>90+ A+</strong>, <strong>80-89 A</strong>, <strong>70-79 B+</strong>, <strong>60-69 B</strong>, <strong>50-59 C+</strong>, <strong>40-49 C</strong>, <strong>30-39 D</strong>, <strong>under 30 F</strong>.</p>
+
+        <h4 class="pillar-section-h">Pillar weights</h4>
+        <ul class="evidence-list">
+          <li>Content Extractability — <strong>20%</strong></li>
+          <li>Schema Coverage — <strong>15%</strong></li>
+          <li>AI Crawler Access — <strong>12%</strong></li>
+          <li>Entity &amp; Brand Authority — <strong>12%</strong></li>
+          <li>Live Citation Test — <strong>12%</strong></li>
+          <li>E-E-A-T Signals — <strong>10%</strong></li>
+          <li>FAQ Coverage — <strong>8%</strong></li>
+          <li>Freshness — <strong>6%</strong></li>
+          <li>llms.txt Presence — <strong>5%</strong></li>
+        </ul>
       </div>
 
-      <div class="gap-card gap-high">
-        <div class="gap-priority">2. HIGH · +30 pillar points</div>
-        <h4 class="gap-title">No FAQPage schema found anywhere on site</h4>
-        <p class="gap-pillar"><strong>Pillar:</strong> FAQ Coverage</p>
-        <p class="gap-desc"><strong>Why it matters:</strong> FAQ schema is a primary AEO surface — engines extract Q&amp;A blocks directly.</p>
-        <p class="gap-desc"><strong>Fix:</strong> Generate FAQ JSON-LD plus Q&amp;A page sections.</p>
-        <span class="gap-agent-chip">One-click fix: <strong>knowledge-hub-writer</strong></span>
-      </div>
+      <div>
+        <h4 class="pillar-section-h">Severity levels</h4>
+        <ul class="evidence-list">
+          <li><strong>CRITICAL:</strong> Blocking — AI engines can't see you at all (robots.txt block, no JSON-LD anywhere, total citation absence)</li>
+          <li><strong>HIGH:</strong> Major pillar lift available, single fix unlocks 30+ pillar points</li>
+          <li><strong>MEDIUM:</strong> Real issue, 10-20 pillar point lift, usually a per-page fix</li>
+          <li><strong>LOW:</strong> Polish — cosmetic or bonus signal</li>
+        </ul>
 
-      <div class="gap-card gap-medium">
-        <div class="gap-priority">3. MEDIUM · +15 pillar points</div>
-        <h4 class="gap-title">Low extractability on /pricing</h4>
-        <p class="gap-pillar"><strong>Pillar:</strong> Content Extractability</p>
-        <p class="gap-desc"><strong>Why it matters:</strong> AI engines cannot extract a clean answer from this page in their token budget.</p>
-        <p class="gap-desc"><strong>Fix:</strong> Rewrite the first paragraph as a definitive answer. Split long paragraphs.</p>
-        <span class="gap-agent-chip">One-click fix: <strong>knowledge-hub-writer</strong></span>
-      </div>
+        <h4 class="pillar-section-h">Score lift caveat</h4>
+        <p>The "+N" on each finding is the lift to its <strong>pillar score</strong>, not to the composite. To estimate composite impact, multiply by the pillar weight. Example: a HIGH finding worth +50 to a 12% pillar = ~6 composite points.</p>
 
-      <div class="gap-card gap-medium">
-        <div class="gap-priority">4. MEDIUM · +15 pillar points</div>
-        <h4 class="gap-title">Low extractability on /solutions/growthrocket/examples/services/</h4>
-        <p class="gap-pillar"><strong>Pillar:</strong> Content Extractability</p>
-        <p class="gap-desc"><strong>Why it matters:</strong> AI engines cannot extract a clean answer from this page in their token budget.</p>
-        <p class="gap-desc"><strong>Fix:</strong> Rewrite the first paragraph as a definitive answer. Split long paragraphs.</p>
-        <span class="gap-agent-chip">One-click fix: <strong>knowledge-hub-writer</strong></span>
+        <h4 class="pillar-section-h">What we don't do</h4>
+        <p>We don't fabricate industry benchmarks. We don't model ROI. We don't claim "30% more leads in 90 days." We measure what we can measure, show the math, and let you decide what to fix.</p>
       </div>
-
-      <div class="gap-card gap-medium">
-        <div class="gap-priority">5. MEDIUM · +15 pillar points</div>
-        <h4 class="gap-title">Low extractability on /blog/the-keys-to-creating-cost-effective-long-form-content</h4>
-        <p class="gap-pillar"><strong>Pillar:</strong> Content Extractability</p>
-        <p class="gap-desc"><strong>Why it matters:</strong> Same pattern — long brand narrative before a definitive answer.</p>
-        <p class="gap-desc"><strong>Fix:</strong> Rewrite the first 500 tokens as direct Q&amp;A. Move the brand story below the fold.</p>
-        <span class="gap-agent-chip">One-click fix: <strong>knowledge-hub-writer</strong></span>
-      </div>
-
-      <div class="gap-card gap-medium">
-        <div class="gap-priority">6. MEDIUM · +15 pillar points</div>
-        <h4 class="gap-title">Low extractability on /blog/how-long-take-get-results-inbound-marketing-success-metrics</h4>
-        <p class="gap-pillar"><strong>Pillar:</strong> Content Extractability</p>
-        <p class="gap-desc"><strong>Why it matters:</strong> The title is a question, the body should open with a direct answer. It doesn't.</p>
-        <p class="gap-desc"><strong>Fix:</strong> Open with a one-sentence answer to "how long," then expand.</p>
-        <span class="gap-agent-chip">One-click fix: <strong>knowledge-hub-writer</strong></span>
-      </div>
-
-      <div class="gap-card gap-medium">
-        <div class="gap-priority">7. MEDIUM · +15 pillar points</div>
-        <h4 class="gap-title">Low extractability on /blog/how-long-take-design-build-great-website</h4>
-        <p class="gap-pillar"><strong>Pillar:</strong> Content Extractability</p>
-        <p class="gap-desc"><strong>Why it matters:</strong> Same pattern — question-title, narrative-body.</p>
-        <p class="gap-desc"><strong>Fix:</strong> Lead with the answer. Use H2 sub-questions for the rest.</p>
-        <span class="gap-agent-chip">One-click fix: <strong>knowledge-hub-writer</strong></span>
-      </div>
-
-      <div class="gap-card gap-medium">
-        <div class="gap-priority">8. MEDIUM · +15 pillar points</div>
-        <h4 class="gap-title">Only 2/3 key sameAs links present (LinkedIn, Crunchbase, G2)</h4>
-        <p class="gap-pillar"><strong>Pillar:</strong> Entity &amp; Brand Authority</p>
-        <p class="gap-desc"><strong>Why it matters:</strong> sameAs links bind your brand to canonical profiles across the web. Missing one weakens entity disambiguation.</p>
-        <p class="gap-desc"><strong>Fix:</strong> Add the missing profile URL to Organization sameAs array.</p>
-        <span class="gap-agent-chip">One-click fix: <strong>schema-bible</strong></span>
-      </div>
-
-      <div class="gap-card gap-medium">
-        <div class="gap-priority">9. MEDIUM · +10 pillar points</div>
-        <h4 class="gap-title">No named author on /pricing</h4>
-        <p class="gap-pillar"><strong>Pillar:</strong> E-E-A-T Signals</p>
-        <p class="gap-desc"><strong>Why it matters:</strong> AI engines weight named experts with credentialed profiles for trust ranking.</p>
-        <p class="gap-desc"><strong>Fix:</strong> Add author byline plus JSON-LD author with LinkedIn URL.</p>
-        <span class="gap-agent-chip">One-click fix: <strong>schema-bible</strong></span>
-      </div>
-
-      <div class="gap-card gap-medium">
-        <div class="gap-priority">10. MEDIUM · +10 pillar points</div>
-        <h4 class="gap-title">No named author on /solutions/growthrocket/examples/services/</h4>
-        <p class="gap-pillar"><strong>Pillar:</strong> E-E-A-T Signals</p>
-        <p class="gap-desc"><strong>Why it matters:</strong> Same pattern — anonymous page.</p>
-        <p class="gap-desc"><strong>Fix:</strong> Add author byline plus JSON-LD author with LinkedIn URL.</p>
-        <span class="gap-agent-chip">One-click fix: <strong>schema-bible</strong></span>
-      </div>
-
     </div>
   </section>
 

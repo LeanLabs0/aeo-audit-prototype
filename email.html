@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your AEO Audit is ready — Lean Labs</title>
+<style>
+  /* Email-safe inline styles. Most inboxes strip <link> + <style> partially,
+     so the real send will need inlining via Resend/Mailgun helpers.
+     This mockup is rendered in browser for preview only. */
+  body {
+    margin: 0;
+    padding: 0;
+    background: #f4f4f7;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+    color: #232031;
+    -webkit-font-smoothing: antialiased;
+  }
+  .email-wrapper {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+  .email-header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #7612fa, #c109af, #ff6221);
+    display: inline-block;
+  }
+  .logo-text {
+    font-weight: 700;
+    font-size: 17px;
+    color: #1d1c22;
+    letter-spacing: -0.02em;
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #7612fa, #c109af, #ff6221);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .email-body {
+    padding: 32px;
+  }
+  .email-body h1 {
+    font-size: 24px;
+    line-height: 1.25;
+    margin: 0 0 12px;
+    color: #1d1c22;
+    letter-spacing: -0.01em;
+  }
+  .email-body p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #323139;
+    margin: 0 0 16px;
+  }
+  .score-callout {
+    margin: 24px 0;
+    padding: 24px;
+    background: #f5f0ff;
+    border: 1px solid #e8e0f5;
+    border-radius: 14px;
+    text-align: center;
+  }
+  .score-number {
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 1;
+    color: #ff6221;
+    letter-spacing: -0.02em;
+  }
+  .score-grade {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 4px 12px;
+    background: #ff6221;
+    color: white;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    vertical-align: middle;
+  }
+  .score-label {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #8b8b8b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .fix-list {
+    margin: 24px 0;
+    padding: 0;
+    list-style: none;
+  }
+  .fix-list li {
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    background: #f8f8fa;
+    border-left: 3px solid #ef4444;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #323139;
+  }
+  .fix-list li.med {
+    border-left-color: #f59e0b;
+  }
+  .fix-list li strong {
+    color: #1d1c22;
+  }
+  .cta-button {
+    display: inline-block;
+    margin: 8px 0 4px;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #7612fa, #c109af, #ff6221);
+    color: white !important;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .cta-row {
+    text-align: center;
+    margin: 28px 0 16px;
+  }
+  .cta-foot {
+    font-size: 12px;
+    color: #8b8b8b;
+    text-align: center;
+  }
+  .divider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 24px 0;
+  }
+  .secondary-cta {
+    padding: 20px;
+    background: #f8f8fa;
+    border-radius: 10px;
+    text-align: center;
+  }
+  .secondary-cta h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    color: #1d1c22;
+  }
+  .secondary-cta p {
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: #8b8b8b;
+  }
+  .secondary-cta a {
+    color: #7612fa;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  .email-footer {
+    padding: 20px 32px 28px;
+    text-align: center;
+    border-top: 1px solid #f0f0f0;
+    font-size: 12px;
+    color: #8b8b8b;
+  }
+  .email-footer a {
+    color: #8b8b8b;
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<div class="email-wrapper">
+
+  <div class="email-header">
+    <span class="logo-icon"></span>
+    <span class="logo-text">AEO <span class="gradient-text">Audit</span> by Lean Labs</span>
+  </div>
+
+  <div class="email-body">
+
+    <h1>Your AEO Audit for <span class="gradient-text">lean-labs.com</span> is ready</h1>
+
+    <p>
+      Hi Ralph,
+    </p>
+    <p>
+      We just finished auditing how AI engines see your site. Here's the headline number, then the top fixes worth shipping first.
+    </p>
+
+    <div class="score-callout">
+      <div>
+        <span class="score-number">58</span><span class="score-grade">C+</span>
+      </div>
+      <div class="score-label">AEO Score · 100 max</div>
+    </div>
+
+    <p>
+      <strong>Where you stand:</strong> Strong technical foundation (schema coverage 92, crawler access 100), but content extractability and entity authority are dragging the score. AI engines can reach your pages but struggle to extract clean answers, and Lean Labs has no canonical entity record to anchor brand mentions.
+    </p>
+
+    <p style="margin-bottom: 8px;"><strong>Top 4 fixes (priority order):</strong></p>
+    <ul class="fix-list">
+      <li><strong>HIGH</strong> · File a Wikidata entry for Lean Labs. AI engines fall back to fuzzy matching without a canonical entity ID.</li>
+      <li><strong>HIGH</strong> · Add FAQPage schema to your top content. FAQ schema is a primary AEO surface engines extract directly.</li>
+      <li class="med"><strong>MEDIUM</strong> · Rewrite the first paragraph on /pricing as a definitive answer. Split long paragraphs.</li>
+      <li class="med"><strong>MEDIUM</strong> · Same fix needed on /solutions/growthrocket/examples/services/</li>
+    </ul>
+
+    <p>
+      Plus 6 more medium-priority fixes in the full report, including extractability rewrites for three blog posts, missing sameAs links to LinkedIn / Crunchbase / G2, and author bylines.
+    </p>
+
+    <div class="cta-row">
+      <a class="cta-button" href="report.html">View Full Report &rarr;</a>
+      <div class="cta-foot">All 10 fixes · Per-pillar scorecard · Citation snapshot</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="secondary-cta">
+      <h3>Want a 45-minute walkthrough?</h3>
+      <p>Kevin reads your audit live with you, picks the top 3 fixes worth shipping, hands you the drafts.</p>
+      <a href="https://calendly.com/leanlabs/momentum-multiplier">Grab 45 minutes with Kevin &rarr;</a>
+    </div>
+
+  </div>
+
+  <div class="email-footer">
+    Sent by Lean Labs · <a href="https://www.lean-labs.com">lean-labs.com</a><br>
+    You're getting this because you ran an AEO Audit. Don't want these? <a href="#">Unsubscribe</a>.
+  </div>
+
+</div>
+
+</body>
+</html>

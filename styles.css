@@ -1326,6 +1326,37 @@ section {
   margin: var(--space-md) auto 0;
 }
 
+/* ── Hosted report meta strip (top of report.html) ──── */
+.report-meta-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: 14px var(--space-md);
+  background: var(--ll-off-white);
+  border-bottom: 1px solid var(--ll-border-light);
+  font-size: var(--text-xs);
+  flex-wrap: wrap;
+}
+.report-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ll-body);
+}
+.report-meta-label {
+  color: var(--ll-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+.report-meta-url {
+  color: var(--ll-purple);
+  text-decoration: none;
+  font-weight: 600;
+}
+.report-meta-url:hover { text-decoration: underline; }
+
 /* ── Email capture form (gated overlay) ──────────────── */
 .email-form {
   display: flex;

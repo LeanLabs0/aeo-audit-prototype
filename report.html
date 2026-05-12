@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEO Audit Report — Lean Labs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7612fa"/>
+      <stop offset="50%" stop-color="#c109af"/>
+      <stop offset="100%" stop-color="#ff6221"/>
+    </linearGradient>
+  </defs>
+</svg>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-logo">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24"/></svg>
+    </div>
+    <span class="nav-logo-text">AEO <span class="gradient-text">Audit</span></span>
+  </div>
+  <span class="nav-right">by <span class="gradient-text">Lean Labs</span></span>
+</div>
+
+<div class="page-container">
+
+  <!-- Report meta strip -->
+  <section class="report-meta-strip">
+    <div class="report-meta-row">
+      <span class="report-meta-label">Audited:</span>
+      <a href="https://www.lean-labs.com" target="_blank" class="report-meta-url">lean-labs.com</a>
+    </div>
+    <div class="report-meta-row">
+      <span class="report-meta-label">Generated:</span>
+      <span>May 11, 2026</span>
+    </div>
+    <div class="report-meta-row">
+      <span class="report-meta-label">Pillars:</span>
+      <span>9</span>
+    </div>
+  </section>
+
+  <!-- HERO GRADE -->
+  <section class="results-grade-section section-white">
+    <div class="grade-container">
+      <div class="grade-circle" style="border-color: #ff6221; box-shadow: 0 0 40px #ff622133, 0 0 80px #ff622118;">
+        <span class="grade-letter">C+</span>
+        <span class="grade-score">58/100</span>
+      </div>
+      <span class="grade-label">Your AEO Score</span>
+      <span class="grade-url">www.lean-labs.com</span>
+    </div>
+
+    <div class="centered" style="margin-bottom: var(--space-md);">
+      <p class="verdict-text">Lean Labs scored 58/100. Weakest: Freshness Signals (10). Strongest: AI Crawler Access (100). 10 prioritized fixes below.</p>
+      <p class="subtext">Here's exactly where you fall short and what to ship first.</p>
+    </div>
+
+    <div class="benchmark-strip">
+      <div class="bm-item">
+        <span class="bm-label">You</span>
+        <span class="bm-score bm-you">58</span>
+      </div>
+      <div class="bm-arrow">vs</div>
+      <div class="bm-item">
+        <span class="bm-label">Competitor avg</span>
+        <span class="bm-score bm-comp">65</span>
+      </div>
+      <div class="bm-arrow">vs</div>
+      <div class="bm-item">
+        <span class="bm-label">Category leader</span>
+        <span class="bm-score bm-leader">81</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- CITATION SNAPSHOT -->
+  <section class="results-citation-section section-white">
+    <div class="centered" style="margin-bottom: var(--space-sm);">
+      <h3>How AI engines <span class="gradient-text">cite you</span> right now</h3>
+      <p>10 BOFU buyer prompts, 4 engines, 3 runs each. 120 data points.</p>
+    </div>
+
+    <div class="engine-grid">
+      <div class="engine-card">
+        <div class="engine-head"><div class="engine-logo">G</div><span>ChatGPT</span></div>
+        <div class="engine-score grade-C">50<span>/100</span></div>
+        <div class="engine-rate">Mention rate: <strong>0%</strong></div>
+        <div class="engine-quote">"For HubSpot website work, top agencies include SmartBug Media, IMPACT..."</div>
+      </div>
+      <div class="engine-card">
+        <div class="engine-head"><div class="engine-logo">C</div><span>Claude</span></div>
+        <div class="engine-score grade-C">50<span>/100</span></div>
+        <div class="engine-rate">Mention rate: <strong>0%</strong></div>
+        <div class="engine-quote">"Consider Kiwi Creative, New Breed Marketing, or Blend Marketing..."</div>
+      </div>
+      <div class="engine-card highlight-card">
+        <div class="engine-head"><div class="engine-logo">P</div><span>Perplexity</span></div>
+        <div class="engine-score grade-C">50<span>/100</span></div>
+        <div class="engine-rate">Mention rate: <strong>0%</strong></div>
+        <div class="engine-quote">"Lean Labs is mentioned alongside SmartBug Media for growth-driven design..."</div>
+        <div class="engine-badge">Estimated</div>
+      </div>
+      <div class="engine-card">
+        <div class="engine-head"><div class="engine-logo">M</div><span>Gemini</span></div>
+        <div class="engine-score grade-C">50<span>/100</span></div>
+        <div class="engine-rate">Mention rate: <strong>0%</strong></div>
+        <div class="engine-quote">"Top HubSpot certified agencies include SmartBug Media (recommended)..."</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- 9-PILLAR SCORECARD -->
+  <section class="results-gaps-section section-off-white">
+    <div class="centered" style="margin-bottom: var(--space-sm);">
+      <h3>The <span class="gradient-text">9-pillar</span> scorecard</h3>
+      <p>Where the score breaks down. Weights reflect real-world AI ranking signals.</p>
+    </div>
+
+    <div class="dimensions-card">
+      <div class="dimensions">
+
+        <div class="pillar-row">
+          <div class="pillar-info">
+            <div class="pillar-name-row"><span class="pillar-name">Content Extractability</span><span class="pillar-weight">20% weight</span></div>
+            <div class="pillar-bar"><div class="pillar-fill fill-D" style="width: 34%"></div></div>
+          </div>
+          <div class="pillar-score-cell">34<span class="pillar-grade g-D">D</span></div>
+        </div>
+
+        <div class="pillar-row">
+          <div class="pillar-info">
+            <div class="pillar-name-row"><span class="pillar-name">Schema Coverage</span><span class="pillar-weight">15% weight</span></div>
+            <div class="pillar-bar"><div class="pillar-fill fill-A" style="width: 92%"></div></div>
+          </div>
+          <div class="pillar-score-cell">92<span class="pillar-grade g-A">A+</span></div>
+        </div>
+
+        <div class="pillar-row">
+          <div class="pillar-info">
+            <div class="pillar-name-row"><span class="pillar-name">AI Crawler Access</span><span class="pillar-weight">12% weight</span></div>
+            <div class="pillar-bar"><div class="pillar-fill fill-A" style="width: 100%"></div></div>
+          </div>
+          <div class="pillar-score-cell">100<span class="pillar-grade g-A">A+</span></div>
+        </div>
+
+        <div class="pillar-row">
+          <div class="pillar-info">
+            <div class="pillar-name-row"><span class="pillar-name">Entity &amp; Brand Authority</span><span class="pillar-weight">12% weight</span></div>
+            <div class="pillar-bar"><div class="pillar-fill fill-D" style="width: 34%"></div></div>
+          </div>
+          <div class="pillar-score-cell">34<span class="pillar-grade g-D">D</span></div>
+        </div>
+
+        <div class="pillar-row">
+          <div class="pillar-info">
+            <div class="pillar-name-row"><span class="pillar-name">E-E-A-T Signals</span><span class="pillar-weight">10% weight</span></div>
+            <div class="pillar-bar"><div class="pillar-fill fill-B" style="width: 70%"></div></div>
+          </div>
+          <div class="pillar-score-cell">70<span class="pillar-grade g-B">B+</span></div>
+        </div>
+
+        <div class="pillar-row">
+          <div class="pillar-info">
+            <div class="pillar-name-row"><span class="pillar-name">Live Citation Test</span><span class="pillar-weight">12% weight</span></div>
+            <div class="pillar-bar"><div class="pillar-fill fill-C" style="width: 50%"></div></div>
+          </div>
+          <div class="pillar-score-cell">50<span class="pillar-grade g-C">C+</span></div>
+        </div>
+
+        <div class="pillar-row">
+          <div class="pillar-info">
+            <div class="pillar-name-row"><span class="pillar-name">Freshness Signals</span><span class="pillar-weight">6% weight</span></div>
+            <div class="pillar-bar"><div class="pillar-fill fill-F" style="width: 10%"></div></div>
+          </div>
+          <div class="pillar-score-cell">10<span class="pillar-grade g-F">F</span></div>
+        </div>
+
+        <div class="pillar-row">
+          <div class="pillar-info">
+            <div class="pillar-name-row"><span class="pillar-name">FAQ Coverage</span><span class="pillar-weight">8% weight</span></div>
+            <div class="pillar-bar"><div class="pillar-fill fill-C" style="width: 45%"></div></div>
+          </div>
+          <div class="pillar-score-cell">45<span class="pillar-grade g-C">C</span></div>
+        </div>
+
+        <div class="pillar-row">
+          <div class="pillar-info">
+            <div class="pillar-name-row"><span class="pillar-name">llms.txt Presence</span><span class="pillar-weight">5% weight</span></div>
+            <div class="pillar-bar"><div class="pillar-fill fill-A" style="width: 80%"></div></div>
+          </div>
+          <div class="pillar-score-cell">80<span class="pillar-grade g-A">A</span></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ALL 10 FINDINGS -->
+  <section class="results-gaps-section section-off-white">
+    <div class="centered" style="margin-bottom: 0;">
+      <h3>All <span class="gradient-text">10 fixes</span>, prioritized</h3>
+      <p>Sorted by severity then expected score lift. Ship in order for fastest visibility gain.</p>
+    </div>
+
+    <div class="gap-grid" style="grid-template-columns: 1fr; max-width: 720px; margin: var(--space-md) auto 0;">
+
+      <div class="gap-card gap-high">
+        <div class="gap-priority">1. HIGH · +50 pillar points</div>
+        <h4 class="gap-title">No Wikidata Q-ID found for company name</h4>
+        <p class="gap-pillar"><strong>Pillar:</strong> Entity &amp; Brand Authority</p>
+        <p class="gap-desc"><strong>Why it matters:</strong> AI engines fall back to fuzzy matching without a canonical entity ID. Lean Labs gets confused with other entities sharing the name.</p>
+        <p class="gap-desc"><strong>Fix:</strong> File a Wikidata entry. factor8 entity-builder agent drafts it.</p>
+        <span class="gap-agent-chip">One-click fix: <strong>entity-builder</strong></span>
+      </div>
+
+      <div class="gap-card gap-high">
+        <div class="gap-priority">2. HIGH · +30 pillar points</div>
+        <h4 class="gap-title">No FAQPage schema found anywhere on site</h4>
+        <p class="gap-pillar"><strong>Pillar:</strong> FAQ Coverage</p>
+        <p class="gap-desc"><strong>Why it matters:</strong> FAQ schema is a primary AEO surface — engines extract Q&amp;A blocks directly.</p>
+        <p class="gap-desc"><strong>Fix:</strong> Generate FAQ JSON-LD plus Q&amp;A page sections.</p>
+        <span class="gap-agent-chip">One-click fix: <strong>knowledge-hub-writer</strong></span>
+      </div>
+
+      <div class="gap-card gap-medium">
+        <div class="gap-priority">3. MEDIUM · +15 pillar points</div>
+        <h4 class="gap-title">Low extractability on /pricing</h4>
+        <p class="gap-pillar"><strong>Pillar:</strong> Content Extractability</p>
+        <p class="gap-desc"><strong>Why it matters:</strong> AI engines cannot extract a clean answer from this page in their token budget.</p>
+        <p class="gap-desc"><strong>Fix:</strong> Rewrite the first paragraph as a definitive answer. Split long paragraphs.</p>
+        <span class="gap-agent-chip">One-click fix: <strong>knowledge-hub-writer</strong></span>
+      </div>
+
+      <div class="gap-card gap-medium">
+        <div class="gap-priority">4. MEDIUM · +15 pillar points</div>
+        <h4 class="gap-title">Low extractability on /solutions/growthrocket/examples/services/</h4>
+        <p class="gap-pillar"><strong>Pillar:</strong> Content Extractability</p>
+        <p class="gap-desc"><strong>Why it matters:</strong> AI engines cannot extract a clean answer from this page in their token budget.</p>
+        <p class="gap-desc"><strong>Fix:</strong> Rewrite the first paragraph as a definitive answer. Split long paragraphs.</p>
+        <span class="gap-agent-chip">One-click fix: <strong>knowledge-hub-writer</strong></span>
+      </div>
+
+      <div class="gap-card gap-medium">
+        <div class="gap-priority">5. MEDIUM · +15 pillar points</div>
+        <h4 class="gap-title">Low extractability on /blog/the-keys-to-creating-cost-effective-long-form-content</h4>
+        <p class="gap-pillar"><strong>Pillar:</strong> Content Extractability</p>
+        <p class="gap-desc"><strong>Why it matters:</strong> Same pattern — long brand narrative before a definitive answer.</p>
+        <p class="gap-desc"><strong>Fix:</strong> Rewrite the first 500 tokens as direct Q&amp;A. Move the brand story below the fold.</p>
+        <span class="gap-agent-chip">One-click fix: <strong>knowledge-hub-writer</strong></span>
+      </div>
+
+      <div class="gap-card gap-medium">
+        <div class="gap-priority">6. MEDIUM · +15 pillar points</div>
+        <h4 class="gap-title">Low extractability on /blog/how-long-take-get-results-inbound-marketing-success-metrics</h4>
+        <p class="gap-pillar"><strong>Pillar:</strong> Content Extractability</p>
+        <p class="gap-desc"><strong>Why it matters:</strong> The title is a question, the body should open with a direct answer. It doesn't.</p>
+        <p class="gap-desc"><strong>Fix:</strong> Open with a one-sentence answer to "how long," then expand.</p>
+        <span class="gap-agent-chip">One-click fix: <strong>knowledge-hub-writer</strong></span>
+      </div>
+
+      <div class="gap-card gap-medium">
+        <div class="gap-priority">7. MEDIUM · +15 pillar points</div>
+        <h4 class="gap-title">Low extractability on /blog/how-long-take-design-build-great-website</h4>
+        <p class="gap-pillar"><strong>Pillar:</strong> Content Extractability</p>
+        <p class="gap-desc"><strong>Why it matters:</strong> Same pattern — question-title, narrative-body.</p>
+        <p class="gap-desc"><strong>Fix:</strong> Lead with the answer. Use H2 sub-questions for the rest.</p>
+        <span class="gap-agent-chip">One-click fix: <strong>knowledge-hub-writer</strong></span>
+      </div>
+
+      <div class="gap-card gap-medium">
+        <div class="gap-priority">8. MEDIUM · +15 pillar points</div>
+        <h4 class="gap-title">Only 2/3 key sameAs links present (LinkedIn, Crunchbase, G2)</h4>
+        <p class="gap-pillar"><strong>Pillar:</strong> Entity &amp; Brand Authority</p>
+        <p class="gap-desc"><strong>Why it matters:</strong> sameAs links bind your brand to canonical profiles across the web. Missing one weakens entity disambiguation.</p>
+        <p class="gap-desc"><strong>Fix:</strong> Add the missing profile URL to Organization sameAs array.</p>
+        <span class="gap-agent-chip">One-click fix: <strong>schema-bible</strong></span>
+      </div>
+
+      <div class="gap-card gap-medium">
+        <div class="gap-priority">9. MEDIUM · +10 pillar points</div>
+        <h4 class="gap-title">No named author on /pricing</h4>
+        <p class="gap-pillar"><strong>Pillar:</strong> E-E-A-T Signals</p>
+        <p class="gap-desc"><strong>Why it matters:</strong> AI engines weight named experts with credentialed profiles for trust ranking.</p>
+        <p class="gap-desc"><strong>Fix:</strong> Add author byline plus JSON-LD author with LinkedIn URL.</p>
+        <span class="gap-agent-chip">One-click fix: <strong>schema-bible</strong></span>
+      </div>
+
+      <div class="gap-card gap-medium">
+        <div class="gap-priority">10. MEDIUM · +10 pillar points</div>
+        <h4 class="gap-title">No named author on /solutions/growthrocket/examples/services/</h4>
+        <p class="gap-pillar"><strong>Pillar:</strong> E-E-A-T Signals</p>
+        <p class="gap-desc"><strong>Why it matters:</strong> Same pattern — anonymous page.</p>
+        <p class="gap-desc"><strong>Fix:</strong> Add author byline plus JSON-LD author with LinkedIn URL.</p>
+        <span class="gap-agent-chip">One-click fix: <strong>schema-bible</strong></span>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- KEVIN CTA -->
+  <section class="results-cta-section">
+    <div class="cta-box">
+      <span class="thankyou-card-eyebrow" style="color: white; opacity: 0.7;">Ready to ship?</span>
+      <h3>Want Kevin to walk you through it?</h3>
+      <p>45 minutes with Kevin. He reads the audit live with you, picks the top 3 fixes worth shipping first, hands you the drafts. No deck, no pitch.</p>
+      <a class="btn-cta-primary" href="https://calendly.com/leanlabs/momentum-multiplier">Grab 45 Minutes with Kevin &rarr;</a>
+      <span class="btn-cta-secondary">Free. Kevin only takes 4 calls per week.</span>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <div style="text-align: center; padding: 32px; color: #8b8b8b; font-size: 13px;">
+    Generated by <a href="https://www.lean-labs.com" style="color: #7612fa; text-decoration: none;">Lean Labs AEO Audit</a>
+  </div>
+
+</div>
+
+</body>
+</html>

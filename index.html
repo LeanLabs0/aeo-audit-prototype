@@ -254,28 +254,46 @@
             <div class="gated-lock-icon">
               <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
             </div>
-            <h3>Your full 10-fix plan is ready</h3>
-            <p>Each fix includes one-click drafts from factor8 agents (schema JSON-LD, llms.txt, FAQ pages, answer rewrites). Plus a projected score after implementation.</p>
-            <button class="btn-primary btn-unlock" data-cta="book">Unlock Full Fix Plan &rarr;</button>
-            <span class="gated-footnote">Free 20-minute walkthrough. No commitment.</span>
+            <h3>Get your full AEO Audit report</h3>
+            <p>10 prioritized fixes, schema JSON-LD drafts, projected score after implementation. Sent straight to your inbox.</p>
+            <form id="emailForm" class="email-form">
+              <input type="email" id="emailField" class="email-input" placeholder="you@company.com" required>
+              <button type="submit" class="btn-primary">Send Me The Report &rarr;</button>
+            </form>
+            <span class="gated-footnote">No spam. One email with your report.</span>
           </div>
         </div>
       </div>
     </section>
 
-    <hr class="section-divider">
+  </div><!-- /screen-results -->
 
-    <!-- FINAL CTA -->
-    <section class="results-cta-section">
-      <div class="cta-box">
-        <h3>Ready to close the AI search gap?</h3>
-        <p>Our team uses factor8 to ship every fix above in days, not months. Then we monitor your score monthly.</p>
-        <button class="btn-cta-primary" data-cta="book">Book a Free AEO Review</button>
-        <span class="btn-cta-secondary" data-cta="aeo">Or explore our AEO Accelerator program &rarr;</span>
+  <!-- ============================================ -->
+  <!-- SCREEN 4: THANK-YOU                          -->
+  <!-- ============================================ -->
+  <div id="screen-thankyou" class="screen">
+    <section class="screen-thankyou-section section-white">
+      <div class="thankyou-container">
+        <div class="thankyou-check">
+          <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2 class="hero-headline">Report on its way to <span id="thankyouEmail" class="gradient-text">your inbox</span></h2>
+        <p class="hero-sub">Your full AEO Audit, 10 prioritized fixes, and remediation drafts will land in the next 2 minutes.</p>
+
+        <div class="thankyou-card">
+          <span class="thankyou-card-eyebrow">Ready to ship the fixes?</span>
+          <h3>Book a Momentum Multiplier with Kevin</h3>
+          <p>A 45-minute working session where we map your top 3 findings to a 90-day execution plan. No deck, no pitch. You leave with a prioritized roadmap and the schema/content drafts to ship this week.</p>
+          <button class="btn-primary btn-cta-large" data-cta="momentum">Book Your Momentum Multiplier &rarr;</button>
+          <span class="thankyou-card-footnote">Free. 45 minutes. Kevin only takes 4 of these per week.</span>
+        </div>
+
+        <p class="thankyou-secondary">
+          <a href="#" id="thankyouAnotherUrl" class="link-muted">Score another URL &rarr;</a>
+        </p>
       </div>
     </section>
-
-  </div><!-- /screen-results -->
+  </div><!-- /screen-thankyou -->
 
 </div><!-- /page-container -->
 

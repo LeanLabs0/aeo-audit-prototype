@@ -7,8 +7,7 @@
 const CONFIG = {
   API_URL: 'https://factor8-agent-sdk.fly.dev/api/v1/brand-slug/lean-labs/aeo-audit',
   API_KEY: '594aa935e360c9bf28f97437c1dddea9',
-  CTA_URL: 'https://calendly.com/leanlabs',
-  AEO_URL: 'https://www.leanlabs.com/aeo-accelerator',
+  MOMENTUM_URL: 'https://calendly.com/leanlabs/momentum-multiplier',
   // Real endpoint takes ~15s. Scan screen runs until response arrives.
   SCAN_MIN_MS: 4000,
 };
@@ -45,19 +44,39 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#urlField').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') handleScore();
   });
-  $$('[data-cta="book"]').forEach((b) => b.addEventListener('click', () => window.open(CONFIG.CTA_URL, '_blank')));
-  $$('[data-cta="aeo"]').forEach((b) => b.addEventListener('click', () => window.open(CONFIG.AEO_URL, '_blank')));
+
+  $('#emailForm')?.addEventListener('submit', handleEmailSubmit);
+  $$('[data-cta="momentum"]').forEach((b) =>
+    b.addEventListener('click', () => window.open(CONFIG.MOMENTUM_URL, '_blank'))
+  );
+  $('#thankyouAnotherUrl')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    $('#urlField').value = '';
+    showScreen('INPUT');
+    $('#urlField').focus();
+  });
+
   showScreen('INPUT');
 });
 
 function showScreen(name) {
   $$('.screen').forEach((el) => el.classList.remove('active'));
   ({
-    INPUT: () => $('#screen-input'),
+    INPUT:    () => $('#screen-input'),
     SCANNING: () => $('#screen-scanning'),
-    RESULTS: () => $('#screen-results'),
+    RESULTS:  () => $('#screen-results'),
+    THANKYOU: () => $('#screen-thankyou'),
   })[name]().classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleEmailSubmit(e) {
+  e.preventDefault();
+  const email = $('#emailField').value.trim();
+  if (!email) return;
+  // Mockup: no backend yet. Just render the email + flip screens.
+  $('#thankyouEmail').textContent = email;
+  showScreen('THANKYOU');
 }
 
 // ── Score click → scan → live API call → reveal ──────────

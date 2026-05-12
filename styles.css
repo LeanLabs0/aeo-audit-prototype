@@ -1326,10 +1326,124 @@ section {
   margin: var(--space-md) auto 0;
 }
 
+/* ── Email capture form (gated overlay) ──────────────── */
+.email-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+  margin: var(--space-sm) auto 6px;
+}
+.email-input {
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--ll-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family);
+  font-size: var(--text-base);
+  color: var(--ll-heading);
+  background: var(--ll-white);
+  outline: none;
+  transition: all var(--transition);
+}
+.email-input:focus {
+  border-color: var(--ll-purple);
+  box-shadow: 0 0 0 3px rgba(118, 18, 250, 0.12);
+}
+.email-form .btn-primary {
+  width: 100%;
+  height: 44px;
+}
+
+/* ── Thank-you screen ─────────────────────────────────── */
+.screen-thankyou-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 57px);
+  padding-top: var(--space-xl);
+  padding-bottom: var(--space-2xl);
+  background: var(--ll-white);
+}
+.thankyou-container {
+  max-width: 620px;
+  margin: 0 auto;
+  text-align: center;
+}
+.thankyou-check {
+  width: 88px;
+  height: 88px;
+  margin: 0 auto var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ll-success-bg);
+  color: var(--ll-success);
+  border-radius: 50%;
+  animation: popIn 0.45s ease;
+}
+@keyframes popIn {
+  from { transform: scale(0.6); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+.thankyou-card {
+  margin-top: var(--space-lg);
+  padding: var(--space-lg);
+  background: var(--ll-purple-tint);
+  border: 1px solid var(--ll-purple-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  text-align: left;
+}
+.thankyou-card-eyebrow {
+  display: inline-block;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--ll-purple);
+  margin-bottom: 8px;
+}
+.thankyou-card h3 {
+  font-size: var(--text-xl);
+  margin-bottom: 10px;
+  color: var(--ll-heading);
+}
+.thankyou-card p {
+  font-size: var(--text-base);
+  color: var(--ll-body);
+  margin-bottom: var(--space-sm);
+}
+.btn-cta-large {
+  height: 52px;
+  padding: 0 32px;
+  font-size: var(--text-base);
+}
+.thankyou-card-footnote {
+  display: block;
+  margin-top: var(--space-xs);
+  font-size: var(--text-xs);
+  color: var(--ll-muted);
+}
+.thankyou-secondary {
+  margin-top: var(--space-lg);
+}
+.link-muted {
+  font-size: var(--text-sm);
+  color: var(--ll-muted);
+  text-decoration: none;
+}
+.link-muted:hover {
+  color: var(--ll-purple);
+}
+
 /* ── Mobile tweaks ──────────────────────────────────────── */
 @media (max-width: 640px) {
   .benchmark-strip { gap: var(--space-sm); padding: var(--space-sm); }
   .bm-arrow { display: none; }
   .trust-divider { display: none; }
   .engine-grid { grid-template-columns: 1fr; }
+  .thankyou-card { padding: var(--space-md); }
 }

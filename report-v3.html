@@ -39,10 +39,10 @@
 
 <!-- TALLY BAR (only on step 3) -->
 <div id="tallyBar" class="v3-tally" hidden>
-  <span class="v3-tally-label">Save the fixes you'd want shipped</span>
+  <span class="v3-tally-label">Tag the gaps you want addressed</span>
   <span class="v3-tally-count">
     <span class="v3-tally-pill"><span id="tallyN">0</span> of 5</span>
-    saved to your fix list
+    in your fix plan
   </span>
 </div>
 
@@ -75,28 +75,28 @@
 
       <div class="v3-score-grid">
         <div class="v3-score-card">
+          <div class="v3-donut" style="--score: 34; --color: #ff6221;">
+            <span class="v3-donut-num">34</span>
+            <span class="v3-donut-max">/100</span>
+          </div>
+          <div class="v3-score-name">Content Extractability</div>
+          <div class="v3-score-hint">Can AI pull clean answers from your content</div>
+        </div>
+        <div class="v3-score-card">
           <div class="v3-donut" style="--score: 22; --color: #ef4444;">
             <span class="v3-donut-num">22</span>
             <span class="v3-donut-max">/100</span>
           </div>
-          <div class="v3-score-name">AI Visibility</div>
-          <div class="v3-score-hint">How often AI engines recommend you</div>
+          <div class="v3-score-name">Citation Performance</div>
+          <div class="v3-score-hint">How often AI mentions you to buyers</div>
         </div>
         <div class="v3-score-card">
-          <div class="v3-donut" style="--score: 45; --color: #f59e0b;">
-            <span class="v3-donut-num">45</span>
+          <div class="v3-donut" style="--score: 58; --color: #f59e0b;">
+            <span class="v3-donut-num">58</span>
             <span class="v3-donut-max">/100</span>
           </div>
-          <div class="v3-score-name">Website Pipeline</div>
-          <div class="v3-score-hint">How well your site converts AI buyers</div>
-        </div>
-        <div class="v3-score-card">
-          <div class="v3-donut" style="--score: 45; --color: #f59e0b;">
-            <span class="v3-donut-num">45</span>
-            <span class="v3-donut-max">/100</span>
-          </div>
-          <div class="v3-score-name">Pipeline Health</div>
-          <div class="v3-score-hint">Source performance overall</div>
+          <div class="v3-score-name">Entity Authority</div>
+          <div class="v3-score-hint">Does AI trust + disambiguate your brand</div>
         </div>
       </div>
 
@@ -171,7 +171,7 @@
 
       <header class="v3-step-header">
         <h2 class="v3-step-title">What we found.</h2>
-        <p class="v3-step-sub">Five things driving your AI invisibility. Tag what matters to you — we'll build your fix list as you go.</p>
+        <p class="v3-step-sub">Five things driving your AI invisibility. Tag the ones that matter — we'll bundle them into your fix plan.</p>
       </header>
 
       <div class="v3-findings" id="findingsList">
@@ -184,8 +184,8 @@
           </div>
           <div class="v3-finding-actions">
             <button class="v3-finding-toggle" data-toggle="f1">
-              <span class="v3-toggle-default">+ Fix this</span>
-              <span class="v3-toggle-active">✓ Saved</span>
+              <span class="v3-toggle-default">+ Add to plan</span>
+              <span class="v3-toggle-active">✓ Added</span>
             </button>
             <button class="v3-finding-skip" data-skip="f1">Skip</button>
           </div>
@@ -199,8 +199,8 @@
           </div>
           <div class="v3-finding-actions">
             <button class="v3-finding-toggle" data-toggle="f2">
-              <span class="v3-toggle-default">+ Fix this</span>
-              <span class="v3-toggle-active">✓ Saved</span>
+              <span class="v3-toggle-default">+ Add to plan</span>
+              <span class="v3-toggle-active">✓ Added</span>
             </button>
             <button class="v3-finding-skip" data-skip="f2">Skip</button>
           </div>
@@ -214,8 +214,8 @@
           </div>
           <div class="v3-finding-actions">
             <button class="v3-finding-toggle" data-toggle="f3">
-              <span class="v3-toggle-default">+ Fix this</span>
-              <span class="v3-toggle-active">✓ Saved</span>
+              <span class="v3-toggle-default">+ Add to plan</span>
+              <span class="v3-toggle-active">✓ Added</span>
             </button>
             <button class="v3-finding-skip" data-skip="f3">Skip</button>
           </div>
@@ -229,8 +229,8 @@
           </div>
           <div class="v3-finding-actions">
             <button class="v3-finding-toggle" data-toggle="f4">
-              <span class="v3-toggle-default">+ Fix this</span>
-              <span class="v3-toggle-active">✓ Saved</span>
+              <span class="v3-toggle-default">+ Add to plan</span>
+              <span class="v3-toggle-active">✓ Added</span>
             </button>
             <button class="v3-finding-skip" data-skip="f4">Skip</button>
           </div>
@@ -244,8 +244,8 @@
           </div>
           <div class="v3-finding-actions">
             <button class="v3-finding-toggle" data-toggle="f5">
-              <span class="v3-toggle-default">+ Fix this</span>
-              <span class="v3-toggle-active">✓ Saved</span>
+              <span class="v3-toggle-default">+ Add to plan</span>
+              <span class="v3-toggle-active">✓ Added</span>
             </button>
             <button class="v3-finding-skip" data-skip="f5">Skip</button>
           </div>
@@ -254,95 +254,109 @@
       </div>
 
       <div class="v3-step-cta">
-        <button class="btn-primary v3-cta" data-go="4" id="step3Cta" disabled>See your options →</button>
-        <p class="v3-cta-hint" id="step3CtaHint">Save at least 1 fix to continue</p>
+        <button class="btn-primary v3-cta" data-go="4" id="step3Cta" disabled>Review my fix plan →</button>
+        <p class="v3-cta-hint" id="step3CtaHint">Add at least 1 gap to your plan to continue</p>
       </div>
 
     </div>
   </section>
 
   <!-- ============================================================ -->
-  <!-- STEP 4 · MATH & OPTIONS                                       -->
+  <!-- STEP 4 · YOUR FIX PLAN + EMAIL GATE                           -->
   <!-- ============================================================ -->
   <section class="v3-step" data-step="4">
     <div class="v3-step-inner">
 
       <header class="v3-step-header">
-        <h2 class="v3-step-title">The math and your options.</h2>
-        <p class="v3-step-sub">Based on your average deal value of <strong>$50,000</strong>. You saved <strong><span id="step4Tally">0</span> of 5</strong> fixes in the last step.</p>
+        <h2 class="v3-step-title">Your AEO Fix Plan</h2>
+        <p class="v3-step-sub">You tagged <strong><span id="step4Tally">0</span> of 5</strong> gaps. Here's what we'll send you.</p>
       </header>
 
-      <div class="v3-tier-grid">
-
-        <div class="v3-tier">
-          <span class="v3-tier-eyebrow">AEO Core</span>
-          <div class="v3-tier-price">$5k <span>one-time</span></div>
-          <p class="v3-tier-pitch">Ship the fixes you saved. Schema markup + FAQ pages. 2 weeks.</p>
-          <div class="v3-tier-rows">
-            <div class="v3-tier-row"><span>Investment</span><span>$5,000</span></div>
-            <div class="v3-tier-row"><span>2 customer revenue</span><span>$100,000</span></div>
-            <div class="v3-tier-row"><span>Timeline</span><span>2 weeks</span></div>
-          </div>
-          <div class="v3-tier-roi">
-            <div class="v3-tier-roi-num">1,900%</div>
-            <div class="v3-tier-roi-label">Return on investment</div>
-          </div>
-          <button class="btn-cta-secondary v3-tier-cta">Lock in the Core →</button>
-        </div>
-
-        <div class="v3-tier v3-tier-featured">
-          <span class="v3-tier-eyebrow">AEO Domination <span class="v3-tier-tag">Full Program</span></span>
-          <div class="v3-tier-price">$50k <span>total</span></div>
-          <p class="v3-tier-pitch">Ship all 5 fixes + ongoing monitoring + AI-buyer content engine. 90 days.</p>
-          <div class="v3-tier-rows">
-            <div class="v3-tier-row"><span>Investment</span><span>$50,000</span></div>
-            <div class="v3-tier-row"><span>2 customers/mo revenue</span><span>$100,000/mo</span></div>
-            <div class="v3-tier-row"><span>Timeline</span><span>90 days</span></div>
-          </div>
-          <div class="v3-tier-roi">
-            <div class="v3-tier-roi-num">2,300%</div>
-            <div class="v3-tier-roi-label">Annual ROI</div>
-          </div>
-          <a class="btn-cta-primary v3-tier-cta" href="https://calendly.com/leanlabs/momentum-multiplier" target="_blank">Book a Call →</a>
-        </div>
-
-      </div>
-
-      <div class="v3-conservative">
-        <span class="v3-conservative-eyebrow">What if this is all you got?</span>
-        <h3 class="v3-conservative-title">Even conservative scenarios make the math work.</h3>
-        <div class="v3-conservative-grid">
-          <div class="v3-cons-card">
-            <span class="v3-cons-tier">AEO Core</span>
-            <p class="v3-cons-q">What if you only got <strong>1 customer instead of 2?</strong></p>
-            <div class="v3-tier-row"><span>Investment</span><span>$5,000</span></div>
-            <div class="v3-tier-row"><span>1 customer revenue</span><span>$50,000</span></div>
-            <div class="v3-tier-row"><span>ROI</span><span>900%</span></div>
-          </div>
-          <div class="v3-cons-card">
-            <span class="v3-cons-tier">AEO Domination</span>
-            <p class="v3-cons-q">What if you only got <strong>1 customer per quarter?</strong></p>
-            <div class="v3-tier-row"><span>Investment</span><span>$50,000</span></div>
-            <div class="v3-tier-row"><span>4 customers revenue</span><span>$200,000</span></div>
-            <div class="v3-tier-row"><span>ROI</span><span>300%</span></div>
+      <!-- Plan summary card -->
+      <div class="v3-plan-card">
+        <div class="v3-plan-card-head">
+          <div>
+            <span class="v3-plan-eyebrow">Your personalized plan includes</span>
+            <h3 class="v3-plan-title">Full AEO Audit + Fix Plan for <span class="gradient-text">lean-labs.com</span></h3>
           </div>
         </div>
+
+        <ul class="v3-plan-list">
+          <li>
+            <span class="v3-plan-li-icon">●</span>
+            <div>
+              <strong>Your <span id="planTallyText">0 tagged priorities</span></strong> — explained in plain english with the exact steps to ship each one
+            </div>
+          </li>
+          <li>
+            <span class="v3-plan-li-icon">●</span>
+            <div>
+              <strong>The full 9-pillar audit</strong> — per-pillar breakdown, evidence from your pages, what's working and what's not
+            </div>
+          </li>
+          <li>
+            <span class="v3-plan-li-icon">●</span>
+            <div>
+              <strong>Page-by-page coverage table</strong> — every URL we audited with its specific gaps
+            </div>
+          </li>
+          <li>
+            <span class="v3-plan-li-icon">●</span>
+            <div>
+              <strong>Developer handoff section</strong> — copy-pasteable schema, before/after examples, ready to ship
+            </div>
+          </li>
+          <li>
+            <span class="v3-plan-li-icon">●</span>
+            <div>
+              <strong>Quarterly re-audit reminder</strong> — AI engines update fast; we'll ping you in 90 days
+            </div>
+          </li>
+        </ul>
       </div>
 
-      <div class="v3-final-close">
-        <h3>Want Kevin to walk you through it?</h3>
-        <p>45 minutes. He'll read your audit live with you, pick the top 3 fixes worth shipping first, and hand you the drafts. No deck, no pitch.</p>
-        <a class="btn-primary v3-cta" href="https://calendly.com/leanlabs/momentum-multiplier" target="_blank">Grab 45 Minutes with Kevin →</a>
-        <p class="v3-cta-hint">Free. Kevin only takes 4 calls per week.</p>
+      <!-- Email gate -->
+      <div class="v3-email-gate">
+        <h3 class="v3-email-gate-title">Get the full report in your inbox</h3>
+        <p class="v3-email-gate-sub">PDF + interactive hosted version. Takes 30 seconds.</p>
+
+        <form id="planEmailForm" class="v3-email-form">
+          <input type="email" id="planEmail" class="v3-email-input" placeholder="you@company.com" required>
+          <button type="submit" class="btn-primary v3-email-submit">Send my full report →</button>
+        </form>
+        <p class="v3-email-foot">No spam. One report email + an optional quarterly nudge. Unsubscribe anytime.</p>
       </div>
 
-      <div class="v3-footer-links">
-        <a href="report.html">See full technical detail →</a>
-        <span class="v3-footer-divider">·</span>
-        <a href="#" onclick="alert('Developer handoff page — deferred to v2'); return false;">Developer handoff</a>
-        <span class="v3-footer-divider">·</span>
-        <a href="#" onclick="alert('Methodology doc — deferred'); return false;">Methodology</a>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- STEP 5 · THANK YOU + KEVIN HANDOFF                            -->
+  <!-- ============================================================ -->
+  <section class="v3-step" data-step="5">
+    <div class="v3-step-inner">
+
+      <div class="v3-thanks-card">
+        <div class="v3-thanks-check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2 class="v3-thanks-title">Your full AEO report is on its way to <span id="thanksEmail" class="gradient-text">your inbox</span></h2>
+        <p class="v3-thanks-sub">Lands in the next 2 minutes. Check your inbox + your spam folder just in case.</p>
       </div>
+
+      <div class="v3-kevin-card">
+        <span class="v3-kevin-eyebrow">While you wait — there's one more thing worth your time</span>
+        <h3 class="v3-kevin-title">Get Kevin's read on your report, live</h3>
+        <p class="v3-kevin-body">
+          Kevin is Lean Labs' founder. He'll spend 45 minutes walking through your audit with you, pull out the 3 fixes worth shipping first based on YOUR business, and hand you the drafts to do it. No deck. No pitch. Just his honest take on what would move the needle for your site.
+        </p>
+        <a class="btn-primary v3-cta v3-kevin-cta" href="https://calendly.com/leanlabs/momentum-multiplier" target="_blank">Book a 45-min walkthrough with Kevin →</a>
+        <p class="v3-kevin-foot">Free. Kevin only takes 4 calls per week — most weeks fill up fast.</p>
+      </div>
+
+      <p class="v3-thanks-secondary">
+        <a href="#" id="scoreAnotherLink">Audit another URL →</a>
+      </p>
 
     </div>
   </section>

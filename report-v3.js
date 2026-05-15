@@ -6,7 +6,8 @@
    ============================================================ */
 
 (function () {
-  const TOTAL_STEPS = 4; // not counting the entry (step 0)
+  const TOTAL_STEPS = 4; // progress-counted steps (1-4). Step 5 = post-conversion.
+  const FINAL_STEP = 5;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
@@ -34,7 +35,7 @@
 
   // ── Step navigation ─────────────────────────────────────
   function goToStep(n, opts = {}) {
-    const target = Math.max(0, Math.min(TOTAL_STEPS, n));
+    const target = Math.max(0, Math.min(FINAL_STEP, n));
     state.step = target;
 
     $$('.v3-step').forEach((el) => el.classList.remove('active'));
@@ -62,9 +63,17 @@
     // Back button in nav visible after step 0
     $('#navBack').hidden = target === 0;
 
-    // Sync step 4 tally line
+    // Sync step 4 tally line + plan summary line
     if (target === 4) {
-      $('#step4Tally').textContent = String(state.savedFixes.size);
+      const n = state.savedFixes.size;
+      $('#step4Tally').textContent = String(n);
+      const tt = document.getElementById('planTallyText');
+      if (tt) tt.textContent = `${n} tagged priorit${n === 1 ? 'y' : 'ies'}`;
+    }
+
+    // Nav back button hidden on the post-conversion thank-you screen
+    if (target === FINAL_STEP) {
+      $('#navBack').hidden = true;
     }
 
     // URL hash sync
@@ -140,6 +149,33 @@
     $('#navBack').addEventListener('click', () => {
       goToStep(state.step - 1);
     });
+
+    // Email gate submit on step 4
+    const planForm = document.getElementById('planEmailForm');
+    if (planForm) {
+      planForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = (document.getElementById('planEmail').value || '').trim();
+        if (!email) return;
+        const target = document.getElementById('thanksEmail');
+        if (target) target.textContent = email;
+        goToStep(FINAL_STEP);
+      });
+    }
+
+    // "Audit another URL" link on thank-you screen
+    const restart = document.getElementById('scoreAnotherLink');
+    if (restart) {
+      restart.addEventListener('click', (e) => {
+        e.preventDefault();
+        state.savedFixes.clear();
+        saveState();
+        applySavedUI();
+        const fld = document.getElementById('planEmail');
+        if (fld) fld.value = '';
+        goToStep(0);
+      });
+    }
 
     // Finding toggles
     $$('[data-toggle]').forEach((btn) => {

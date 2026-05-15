@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEO Audit v3 Wireframes — Entry</title>
+<link rel="stylesheet" href="styles-wireframe.css">
+</head>
+<body>
+
+<div class="wireframe-page">
+
+  <div class="wireframe-header">
+    <strong>AEO Audit Report — v3 wireframes</strong>
+    <span>Entry · gray-scale · pre-design</span>
+  </div>
+
+  <!-- Fake browser chrome -->
+  <div class="fake-browser">
+    <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="url">factor8.leanlabs.com/report/abc123</div>
+  </div>
+
+  <!-- NAV -->
+  <section class="wf tight">
+    <span class="section-label">Nav</span>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top: var(--space-sm);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="width:24px; height:24px; background:var(--gray-200); border-radius:4px;"></div>
+        <strong style="color:var(--gray-800); font-size: var(--text-base);">LEAN LABS · AEO Audit</strong>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <span class="btn secondary small">Back to AI Mode</span>
+        <span class="btn small">Book a Call</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- HERO ENTRY -->
+  <section class="wf hero" style="text-align:center; background: var(--gray-50);">
+    <span class="section-label">Hero · Entry</span>
+
+    <div class="centered">
+      <span class="eyebrow">● Report Ready</span>
+      <h1 class="hero-heading">AI Growth Report</h1>
+      <p style="font-size: var(--text-xl); color: var(--gray-600); margin: 0 0 4px;">lean-labs.com</p>
+      <p style="font-size: var(--text-sm); color: var(--gray-400); margin-bottom: var(--space-md);">Generated May 13, 2026</p>
+
+      <div class="btn-row center">
+        <a class="btn" href="01-where-you-stand.html">Walk Through Your Report →</a>
+      </div>
+      <p style="font-size: var(--text-xs); color: var(--gray-400); margin-top: var(--space-md);">6 steps · 90 seconds</p>
+    </div>
+
+    <div class="annotation" style="max-width: 640px; margin: var(--space-lg) auto 0; text-align: left;">
+      <strong>Intent:</strong> single-action entry, mirrors Kevin's AI Growth Report cover. Sets pacing expectation: this is a guided walk, not a scroll. No data visible yet — anticipation, not overwhelm.
+      <br><br>
+      <strong>Interactions:</strong> primary CTA opens Step 1. "Back to AI Mode" returns to the URL-input screen (existing). "Book a Call" persistent in nav across all steps.
+    </div>
+  </section>
+
+  <!-- WIREFRAME FLOW LEGEND -->
+  <section class="wf alt">
+    <span class="section-label">Wireframe Flow</span>
+    <div class="centered wide">
+      <h2 class="section-heading">The 4 wireframes in this round</h2>
+      <p style="color: var(--gray-600);">Click through in order. Each is one concept. Skip the technical detail (deferred to v2).</p>
+    </div>
+
+    <div class="grid-2" style="max-width:760px; margin: var(--space-md) auto 0;">
+
+      <a class="card" href="01-where-you-stand.html" style="text-decoration:none; color: inherit;">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <h3 class="card-heading">Step 1 · Where You Stand</h3>
+        <p style="font-size: var(--text-sm); color: var(--gray-600); margin:0;">3 top-line scores. Bottom line. Growth opportunity.</p>
+      </a>
+
+      <a class="card" href="02-what-buyers-see.html" style="text-decoration:none; color: inherit;">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        </div>
+        <h3 class="card-heading">Step 2 · What Buyers See</h3>
+        <p style="font-size: var(--text-sm); color: var(--gray-600); margin:0;">Real AI response. Competitors named. You weren't.</p>
+      </a>
+
+      <a class="card" href="03-what-we-found.html" style="text-decoration:none; color: inherit;">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <h3 class="card-heading">Step 3 · What We Found</h3>
+        <p style="font-size: var(--text-sm); color: var(--gray-600); margin:0;">5 fixes. Tag what you'd fix. Tally builds.</p>
+      </a>
+
+      <a class="card" href="04-math-and-options.html" style="text-decoration:none; color: inherit;">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        </div>
+        <h3 class="card-heading">Step 4 · Math &amp; Options</h3>
+        <p style="font-size: var(--text-sm); color: var(--gray-600); margin:0;">Two packages. ROI math. Close.</p>
+      </a>
+
+    </div>
+
+    <div class="annotation" style="max-width: 760px; margin: var(--space-md) auto 0;">
+      <strong>For designer (Jonathan):</strong> this index is for review only. In production the user lands on Step 1 directly after clicking the email CTA. Steps deferred to v2: per-pillar deep dive, page-by-page audit table, developer handoff, methodology — all behind a single "See technical detail" footer link.
+    </div>
+  </section>
+
+  <div class="wireframe-footer">
+    <span>aeo-audit-prototype/wireframes/index.html</span>
+    <span>Desktop view · 1100px max</span>
+  </div>
+
+</div>
+
+</body>
+</html>

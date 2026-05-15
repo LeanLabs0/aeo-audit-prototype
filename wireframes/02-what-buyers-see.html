@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step 2 — What Buyers See · AEO Audit Wireframe</title>
+<link rel="stylesheet" href="styles-wireframe.css">
+</head>
+<body>
+
+<div class="wireframe-page">
+
+  <div class="wireframe-header">
+    <strong>Step 2 · What Buyers See</strong>
+    <span>Wireframe · gray-scale</span>
+  </div>
+
+  <div class="fake-browser">
+    <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="url">factor8.leanlabs.com/report/abc123/step-2</div>
+  </div>
+
+  <!-- NAV -->
+  <section class="wf tight">
+    <span class="section-label">Nav</span>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top: var(--space-sm);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="width:24px; height:24px; background:var(--gray-200); border-radius:4px;"></div>
+        <strong style="color:var(--gray-800); font-size: var(--text-base);">LEAN LABS · AEO Audit</strong>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <a class="btn secondary small" href="01-where-you-stand.html">Back</a>
+        <span class="btn small">Book a Call</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section class="wf tight" style="border-bottom: none;">
+    <div class="progress">
+      <span>Step 2 of 4</span>
+      <div class="progress-dots">
+        <span class="progress-dot done"></span>
+        <span class="progress-dot active"></span>
+        <span class="progress-dot"></span>
+        <span class="progress-dot"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- HERO HEADING -->
+  <section class="wf" style="text-align:center; padding-bottom: var(--space-md);">
+    <span class="section-label">Hero</span>
+    <div class="centered">
+      <h1 class="step-heading">This is what buyers see.</h1>
+      <p style="font-size: var(--text-base); color: var(--gray-600);">We asked AI models about solutions in your space.</p>
+    </div>
+  </section>
+
+  <!-- AI RESPONSE BOX -->
+  <section class="wf" style="padding-top: 0;">
+    <span class="section-label">AI Response · Sample</span>
+
+    <div class="ai-response" style="max-width: 760px; margin: 0 auto;">
+      <div class="ai-prompt">
+        <span class="ai-prompt-label">Prompt</span>
+        "What are the best growth marketing agencies for B2B SaaS companies $5M–$50M ARR on HubSpot?"
+      </div>
+      <div>
+        <span class="ai-answer-label">AI Response</span>
+      </div>
+      <p style="margin: 0 0 8px;">Based on my research, here are strong options:</p>
+      <ol>
+        <li><strong>SmartBug Media</strong> — Comprehensive HubSpot partner, strong market presence.</li>
+        <li><strong>IMPACT</strong> — Robust inbound expertise, good case studies.</li>
+        <li><strong>New Breed Marketing</strong> — HubSpot Elite, scalable approach.</li>
+      </ol>
+    </div>
+
+    <div class="not-mentioned" style="max-width: 760px; margin: var(--space-md) auto 0;">
+      <strong>lean-labs.com was not mentioned.</strong>
+      <span>Your competitors were. You weren't.</span>
+    </div>
+
+    <div class="annotation" style="max-width: 760px; margin: var(--space-md) auto 0;">
+      <strong>Intent:</strong> the visceral moment. Numbers on Step 1 didn't move the buyer. Seeing their competitors named in plain english while they're invisible WILL. Lifts directly from Kevin's "This is what buyers see" pattern in his AI Growth Report.
+      <br><br>
+      <strong>Data source:</strong> real AI response from the citation pillar (when live wire-up ships). For now mocked. The prompt rotates between the 10 BOFU buyer prompts the audit generated for this brand — pick the one where the gap is most stark.
+      <br><br>
+      <strong>Color note:</strong> the "not mentioned" callout uses a dashed box in gray-scale wireframe. In design it should hit hard — red border, bold typography, possibly a soft red glow. NOT a polite gray notice.
+    </div>
+  </section>
+
+  <!-- WHY (the bridge to Step 3) -->
+  <section class="wf alt">
+    <span class="section-label">Bridge</span>
+    <div class="centered wide">
+      <h2 class="section-heading">Why does this happen?</h2>
+      <p style="font-size: var(--text-base); color: var(--gray-600);">AI engines weight specific signals — structured data, citation authority, content extractability. We found 5 things driving your invisibility.</p>
+    </div>
+
+    <div class="annotation" style="max-width: 720px; margin: var(--space-md) auto 0;">
+      <strong>Bridge copy:</strong> single paragraph teasing Step 3. No data here, just the promise of the next reveal. Anti-overwhelm — Kevin's principle.
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="wf" style="text-align:center;">
+    <span class="section-label">Primary CTA</span>
+    <div class="centered">
+      <div class="btn-row center">
+        <a class="btn" href="03-what-we-found.html">See what we found →</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="wireframe-footer">
+    <span>aeo-audit-prototype/wireframes/02-what-buyers-see.html</span>
+    <span>Desktop view · 1100px max</span>
+  </div>
+
+</div>
+
+</body>
+</html>

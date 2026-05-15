@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step 3 — What We Found · AEO Audit Wireframe</title>
+<link rel="stylesheet" href="styles-wireframe.css">
+</head>
+<body>
+
+<div class="wireframe-page">
+
+  <div class="wireframe-header">
+    <strong>Step 3 · What We Found (micro-commitments)</strong>
+    <span>Wireframe · gray-scale</span>
+  </div>
+
+  <div class="fake-browser">
+    <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="url">factor8.leanlabs.com/report/abc123/step-3</div>
+  </div>
+
+  <!-- NAV -->
+  <section class="wf tight">
+    <span class="section-label">Nav</span>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top: var(--space-sm);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="width:24px; height:24px; background:var(--gray-200); border-radius:4px;"></div>
+        <strong style="color:var(--gray-800); font-size: var(--text-base);">LEAN LABS · AEO Audit</strong>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <a class="btn secondary small" href="02-what-buyers-see.html">Back</a>
+        <span class="btn small">Book a Call</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TALLY BAR (sticky) -->
+  <div class="tally-bar">
+    <span>Save the fixes you'd want shipped:</span>
+    <span class="tally-count">
+      <span class="tally-pill">2 of 5</span>
+      saved to your fix list
+    </span>
+  </div>
+
+  <!-- PROGRESS -->
+  <section class="wf tight" style="border-bottom: none;">
+    <div class="progress">
+      <span>Step 3 of 4</span>
+      <div class="progress-dots">
+        <span class="progress-dot done"></span>
+        <span class="progress-dot done"></span>
+        <span class="progress-dot active"></span>
+        <span class="progress-dot"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- HERO -->
+  <section class="wf" style="text-align:center; padding-bottom: var(--space-md);">
+    <span class="section-label">Hero</span>
+    <div class="centered">
+      <h1 class="step-heading">What we found.</h1>
+      <p style="font-size: var(--text-base); color: var(--gray-600);">Five things driving your AI invisibility. Tag what matters to you — we'll build your fix list as you go.</p>
+    </div>
+  </section>
+
+  <!-- FINDING CARDS -->
+  <section class="wf" style="padding-top: 0;">
+    <span class="section-label">Findings · 5 cards</span>
+
+    <div style="display: flex; flex-direction: column; gap: var(--space-sm); max-width: 800px; margin: 0 auto;">
+
+      <!-- 1 CRITICAL -->
+      <div class="finding committed">
+        <div class="finding-body">
+          <span class="badge critical">Critical</span>
+          <h3 class="finding-title">lean-labs.com is invisible to all major AI models</h3>
+          <p class="finding-why">Across 30 test prompts on ChatGPT, Claude, and Perplexity, you were not named once. SmartBug Media and IMPACT appeared in 70% of responses.</p>
+        </div>
+        <div class="finding-actions">
+          <span class="btn small">✓ Saved</span>
+          <span style="font-size: var(--text-xs); color: var(--gray-400);">Skip</span>
+        </div>
+      </div>
+
+      <!-- 2 WARNING -->
+      <div class="finding committed">
+        <div class="finding-body">
+          <span class="badge warning">Warning</span>
+          <h3 class="finding-title">Schema markup is missing or incomplete</h3>
+          <p class="finding-why">No FAQPage schema anywhere on the site. AI engines extract Q&amp;A blocks directly from this format. You're already writing Q&amp;A content — just not marking it up.</p>
+        </div>
+        <div class="finding-actions">
+          <span class="btn small">✓ Saved</span>
+          <span style="font-size: var(--text-xs); color: var(--gray-400);">Skip</span>
+        </div>
+      </div>
+
+      <!-- 3 WARNING (unsaved) -->
+      <div class="finding">
+        <div class="finding-body">
+          <span class="badge warning">Warning</span>
+          <h3 class="finding-title">MediaJunction.com has more AI-readable content than you</h3>
+          <p class="finding-why">Your top competitor has 3× the FAQ surface area and a documented author network. AI engines weight published expertise — they're being read, you're not.</p>
+        </div>
+        <div class="finding-actions">
+          <span class="btn secondary small">+ Fix this</span>
+          <span style="font-size: var(--text-xs); color: var(--gray-400);">Skip</span>
+        </div>
+      </div>
+
+      <!-- 4 OPPORTUNITY -->
+      <div class="finding">
+        <div class="finding-body">
+          <span class="badge opportunity">Opportunity</span>
+          <h3 class="finding-title">Your expertise exists, it just isn't published for AI</h3>
+          <p class="finding-why">7 of 10 audited pages already carry named-author bylines. Adding structured author metadata + 5 FAQ pages would push you into AI citation range fast.</p>
+        </div>
+        <div class="finding-actions">
+          <span class="btn secondary small">+ Fix this</span>
+          <span style="font-size: var(--text-xs); color: var(--gray-400);">Skip</span>
+        </div>
+      </div>
+
+      <!-- 5 OPPORTUNITY -->
+      <div class="finding">
+        <div class="finding-body">
+          <span class="badge opportunity">Opportunity</span>
+          <h3 class="finding-title">AI visibility + AEO = compounding inbound</h3>
+          <p class="finding-why">Brands that fix all five gaps typically see citation rate climb 4-6× within 90 days. AI referrers convert higher than organic search.</p>
+        </div>
+        <div class="finding-actions">
+          <span class="btn secondary small">+ Fix this</span>
+          <span style="font-size: var(--text-xs); color: var(--gray-400);">Skip</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="annotation" style="max-width: 800px; margin: var(--space-md) auto 0;">
+      <strong>Intent:</strong> Kevin's micro-commitment mechanic. User reads each card, clicks "Fix this" or "Skip", their selections accumulate into the tally bar at top. By Step 4 they've actively built their own priorities — high conversion to the "yes" close.
+      <br><br>
+      <strong>States visible above:</strong> 2 cards "Saved" (committed style, darker border + filled button), 3 cards "Fix this" (default state, secondary button). Real interaction: clicking "+ Fix this" turns the card into the committed state + bumps the tally.
+      <br><br>
+      <strong>Severity vocabulary (3 levels, not 4):</strong> CRITICAL (blocking — invisible to AI), WARNING (real gap, fixable), OPPORTUNITY (upside framing, not a problem). Replaces v2's "+50 pillar lift" jargon.
+      <br><br>
+      <strong>Persistence:</strong> selections saved to URL fragment or localStorage so refresh + back-button work. Posted to backend at Step 4 entry so sales has the priority list before the call.
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="wf alt" style="text-align:center;">
+    <span class="section-label">Primary CTA · gated</span>
+    <div class="centered">
+      <p style="font-size: var(--text-base); color: var(--gray-600);">Ready to see what shipping those fixes would look like?</p>
+      <div class="btn-row center">
+        <a class="btn" href="04-math-and-options.html">See your options →</a>
+      </div>
+      <p style="font-size: var(--text-xs); color: var(--gray-400); margin-top: var(--space-md);">CTA enabled once at least 1 fix is saved. Greyed otherwise.</p>
+    </div>
+
+    <div class="annotation" style="max-width: 640px; margin: var(--space-md) auto 0;">
+      <strong>Gating logic:</strong> primary CTA disabled until 1+ findings are saved. Reinforces the commitment. Reader can still skip back via nav, but the forward path requires at least one explicit "yes."
+    </div>
+  </section>
+
+  <div class="wireframe-footer">
+    <span>aeo-audit-prototype/wireframes/03-what-we-found.html</span>
+    <span>Desktop view · 1100px max</span>
+  </div>
+
+</div>
+
+</body>
+</html>

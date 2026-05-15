@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step 1 — Where You Stand · AEO Audit Wireframe</title>
+<link rel="stylesheet" href="styles-wireframe.css">
+</head>
+<body>
+
+<div class="wireframe-page">
+
+  <div class="wireframe-header">
+    <strong>Step 1 · Where You Stand</strong>
+    <span>Wireframe · gray-scale</span>
+  </div>
+
+  <div class="fake-browser">
+    <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="url">factor8.leanlabs.com/report/abc123/step-1</div>
+  </div>
+
+  <!-- NAV -->
+  <section class="wf tight">
+    <span class="section-label">Nav</span>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top: var(--space-sm);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="width:24px; height:24px; background:var(--gray-200); border-radius:4px;"></div>
+        <strong style="color:var(--gray-800); font-size: var(--text-base);">LEAN LABS · AEO Audit</strong>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <a class="btn secondary small" href="index.html">Back</a>
+        <span class="btn small">Book a Call</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section class="wf tight" style="border-bottom: none;">
+    <div class="progress">
+      <span>Step 1 of 4</span>
+      <div class="progress-dots">
+        <span class="progress-dot active"></span>
+        <span class="progress-dot"></span>
+        <span class="progress-dot"></span>
+        <span class="progress-dot"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- HERO: 3 SCORES -->
+  <section class="wf hero" style="text-align:center;">
+    <span class="section-label">Hero · 3 scores</span>
+
+    <div class="centered">
+      <h1 class="step-heading">Here's where you stand.</h1>
+      <p style="font-size: var(--text-base); color: var(--gray-600);">Three scores based on your audit. The rest of the report explains them.</p>
+    </div>
+
+    <div class="grid-3" style="max-width: 760px; margin: var(--space-lg) auto 0;">
+      <div class="score-card">
+        <div class="score-donut">
+          <span class="num">22</span>
+          <span class="max">/100</span>
+        </div>
+        <div class="name">AI Visibility</div>
+        <div class="hint">How often AI recommends you</div>
+      </div>
+      <div class="score-card">
+        <div class="score-donut">
+          <span class="num">45</span>
+          <span class="max">/100</span>
+        </div>
+        <div class="name">Website Pipeline</div>
+        <div class="hint">How well your site converts buyers</div>
+      </div>
+      <div class="score-card">
+        <div class="score-donut">
+          <span class="num">45</span>
+          <span class="max">/100</span>
+        </div>
+        <div class="name">Pipeline Health</div>
+        <div class="hint">Source performance overall</div>
+      </div>
+    </div>
+
+    <div class="annotation" style="max-width: 760px; margin: var(--space-lg) auto 0; text-align: left;">
+      <strong>Intent:</strong> replace v2's 9-pillar bar (too granular) with 3 top-line scores. Mirrors Kevin's "AI Growth Report" pattern. The donut style is suggestive — Jonathan can resolve to ring/dial/gauge.
+      <br><br>
+      <strong>Mapping to v2 pillars:</strong> AI Visibility = citation pillar score; Website Pipeline = weighted avg of extractability + schema + faq_coverage; Pipeline Health = weighted avg of crawler_access + entity + eeat + freshness + llms_txt.
+      <br><br>
+      <strong>Color note for designer:</strong> Lean Labs brand gradient applied later. Severity-by-tone optional (red ring under 30, amber 30-60, green 60+) — confirm with Kevin.
+    </div>
+  </section>
+
+  <!-- BOTTOM LINE -->
+  <section class="wf alt">
+    <span class="section-label">Bottom Line</span>
+    <div class="centered wide">
+      <span class="eyebrow">The Headline</span>
+      <h2 class="section-heading">lean-labs.com is invisible to AI-powered buyer journeys.</h2>
+      <p style="font-size: var(--text-base); color: var(--gray-600);">When buyers ask ChatGPT, Claude, or Perplexity about your space, you are not recommended. Your competitors are.</p>
+    </div>
+
+    <div class="callout critical" style="max-width: 720px; margin: var(--space-md) auto 0;">
+      <div class="callout-eyebrow">⚠ Biggest Growth Opportunity</div>
+      <div class="callout-body">
+        Your AI answer visibility scored <strong>4 out of 10</strong> — the dimension that most directly determines whether you appear in ChatGPT, Perplexity, and Google AI answers. You're missing the formats AI engines actually quote: FAQ content, author attribution, and content freshness dates. <strong>These are quick to add.</strong>
+      </div>
+    </div>
+
+    <div class="annotation" style="max-width: 720px; margin: var(--space-md) auto 0;">
+      <strong>Intent:</strong> single most-actionable insight surfaced as a named callout. Lifts from Kevin's "Biggest Growth Opportunity" pattern in his schema score example. Reader leaves Step 1 with one clear takeaway, not a number salad.
+      <br><br>
+      <strong>Copy generation rule:</strong> programmatically pick the lowest-scoring pillar with the highest-severity finding, then surface that finding's "why it matters" in plain english.
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="wf" style="text-align:center;">
+    <span class="section-label">Primary CTA</span>
+    <div class="centered">
+      <p style="font-size: var(--text-base); color: var(--gray-600);">Want to see why?</p>
+      <div class="btn-row center">
+        <a class="btn" href="02-what-buyers-see.html">See what buyers see →</a>
+      </div>
+      <p style="font-size: var(--text-xs); color: var(--gray-400); margin-top: var(--space-md);">No competing CTA. One step at a time.</p>
+    </div>
+
+    <div class="annotation" style="max-width: 640px; margin: var(--space-md) auto 0;">
+      <strong>Critical rule:</strong> single primary CTA per step. No secondary "Book a Call" duplicated here — that lives in the nav. Reader's only on-screen decision = continue or close.
+    </div>
+  </section>
+
+  <div class="wireframe-footer">
+    <span>aeo-audit-prototype/wireframes/01-where-you-stand.html</span>
+    <span>Desktop view · 1100px max</span>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step 4 — Math &amp; Options · AEO Audit Wireframe</title>
+<link rel="stylesheet" href="styles-wireframe.css">
+</head>
+<body>
+
+<div class="wireframe-page">
+
+  <div class="wireframe-header">
+    <strong>Step 4 · Math &amp; Options (the closer)</strong>
+    <span>Wireframe · gray-scale</span>
+  </div>
+
+  <div class="fake-browser">
+    <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="url">factor8.leanlabs.com/report/abc123/step-4</div>
+  </div>
+
+  <!-- NAV -->
+  <section class="wf tight">
+    <span class="section-label">Nav</span>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top: var(--space-sm);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="width:24px; height:24px; background:var(--gray-200); border-radius:4px;"></div>
+        <strong style="color:var(--gray-800); font-size: var(--text-base);">LEAN LABS · AEO Audit</strong>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <a class="btn secondary small" href="03-what-we-found.html">Back</a>
+        <span class="btn small">Book a Call</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section class="wf tight" style="border-bottom: none;">
+    <div class="progress">
+      <span>Step 4 of 4</span>
+      <div class="progress-dots">
+        <span class="progress-dot done"></span>
+        <span class="progress-dot done"></span>
+        <span class="progress-dot done"></span>
+        <span class="progress-dot active"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- HERO -->
+  <section class="wf" style="text-align:center; padding-bottom: var(--space-md);">
+    <span class="section-label">Hero</span>
+    <div class="centered">
+      <h1 class="step-heading">The math and your options.</h1>
+      <p style="font-size: var(--text-base); color: var(--gray-600);">Based on your average deal value of <strong>$50,000</strong>. You saved <strong>2 of 5 fixes</strong> in Step 3.</p>
+    </div>
+  </section>
+
+  <!-- TIERS -->
+  <section class="wf" style="padding-top: 0;">
+    <span class="section-label">Packages · 2 tiers</span>
+
+    <div class="grid-2" style="max-width: 880px; margin: 0 auto;">
+
+      <!-- TIER 1 — CORE -->
+      <div class="tier">
+        <span class="tier-eyebrow">AEO Core</span>
+        <div class="tier-price">$5k <span class="tier-price-suffix">one-time</span></div>
+        <p style="font-size: var(--text-sm); color: var(--gray-600); margin-top: 4px;">Ship the 2 fixes you saved. Schema markup + FAQ pages.</p>
+
+        <div style="margin-top: var(--space-md);">
+          <div class="tier-row"><span class="lbl">Investment</span><span class="val">$5,000</span></div>
+          <div class="tier-row"><span class="lbl">2 customer revenue</span><span class="val">$100,000</span></div>
+          <div class="tier-row"><span class="lbl">Timeline</span><span class="val">2 weeks</span></div>
+        </div>
+
+        <div class="tier-roi">
+          <div class="tier-roi-num">1,900%</div>
+          <div class="tier-roi-label">Return on investment</div>
+        </div>
+
+        <div class="btn-row" style="margin-top: var(--space-md);">
+          <a class="btn secondary" href="#" style="flex: 1; justify-content:center;">Lock in the Core →</a>
+        </div>
+      </div>
+
+      <!-- TIER 2 — DOMINATION (featured) -->
+      <div class="tier featured">
+        <span class="tier-eyebrow">AEO Domination <span style="margin-left:6px; padding: 2px 6px; background: var(--gray-900); color: var(--white); border-radius: 3px;">Full Program</span></span>
+        <div class="tier-price">$50k <span class="tier-price-suffix">total</span></div>
+        <p style="font-size: var(--text-sm); color: var(--gray-600); margin-top: 4px;">Ship all 5 fixes + ongoing monitoring + new buyer content engine.</p>
+
+        <div style="margin-top: var(--space-md);">
+          <div class="tier-row"><span class="lbl">Investment</span><span class="val">$50,000</span></div>
+          <div class="tier-row"><span class="lbl">2 customers/mo revenue</span><span class="val">$100,000/mo</span></div>
+          <div class="tier-row"><span class="lbl">Timeline</span><span class="val">90 days</span></div>
+        </div>
+
+        <div class="tier-roi">
+          <div class="tier-roi-num">2,300%</div>
+          <div class="tier-roi-label">Annual ROI</div>
+        </div>
+
+        <div class="btn-row" style="margin-top: var(--space-md);">
+          <a class="btn" href="#" style="flex: 1; justify-content:center;">Book a Call →</a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="annotation" style="max-width: 880px; margin: var(--space-md) auto 0;">
+      <strong>Intent:</strong> the page Kevin explicitly loved. Two tiers side-by-side: small one-time for buyers who want to test, full program for buyers ready to commit. ROI math front and center.
+      <br><br>
+      <strong>Personalization:</strong> deal value pulled from the lead intake form (when present) or defaulted to $50k. "2 customer revenue" math is deal_value × 2. Tier 1 ROI = ((2 × deal_value − price) / price) × 100%.
+      <br><br>
+      <strong>Tier 1 prices map to:</strong> AEO Core = $5k fixed-scope. Tier 2 = AEO Domination = $50k full retainer. Confirm both with Kevin before design pass.
+    </div>
+  </section>
+
+  <!-- CONSERVATIVE SCENARIO -->
+  <section class="wf alt">
+    <span class="section-label">Conservative Math</span>
+    <div class="centered wide">
+      <span class="eyebrow">What if this is all you got?</span>
+      <h2 class="section-heading">Even conservative scenarios make the math work.</h2>
+    </div>
+
+    <div class="grid-2" style="max-width: 760px; margin: var(--space-md) auto 0;">
+      <div class="card">
+        <div style="font-size: var(--text-xs); text-transform:uppercase; letter-spacing:1.5px; color: var(--gray-400); font-weight: 700; margin-bottom: 6px;">AEO Core</div>
+        <h3 class="card-heading" style="margin-bottom: var(--space-sm);">What if you only got <strong>1 customer instead of 2?</strong></h3>
+        <div class="tier-row"><span class="lbl">Investment</span><span class="val">$5,000</span></div>
+        <div class="tier-row"><span class="lbl">1 customer revenue</span><span class="val">$50,000</span></div>
+        <div class="tier-row"><span class="lbl">ROI</span><span class="val">900%</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size: var(--text-xs); text-transform:uppercase; letter-spacing:1.5px; color: var(--gray-400); font-weight: 700; margin-bottom: 6px;">AEO Domination</div>
+        <h3 class="card-heading" style="margin-bottom: var(--space-sm);">What if you only got <strong>1 customer per quarter?</strong></h3>
+        <div class="tier-row"><span class="lbl">Investment</span><span class="val">$50,000</span></div>
+        <div class="tier-row"><span class="lbl">4 customers revenue</span><span class="val">$200,000</span></div>
+        <div class="tier-row"><span class="lbl">ROI</span><span class="val">300%</span></div>
+      </div>
+    </div>
+
+    <div class="annotation" style="max-width: 760px; margin: var(--space-md) auto 0;">
+      <strong>Intent:</strong> remove the "what if this doesn't work" objection. Show the math still wins even at half the projected outcomes. Kevin called the math "the part that spoke to him" — make sure conservative case is visible too.
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="wf hero" style="text-align:center; background: var(--gray-50);">
+    <span class="section-label">Final CTA · Close</span>
+
+    <div class="centered">
+      <h2 class="section-heading">Want Kevin to walk you through it?</h2>
+      <p style="font-size: var(--text-base); color: var(--gray-600);">45 minutes. He'll read your audit live with you, pick the top 3 fixes worth shipping first, and hand you the drafts. No deck, no pitch.</p>
+      <div class="btn-row center">
+        <a class="btn" href="#">Grab 45 Minutes with Kevin →</a>
+      </div>
+      <p style="font-size: var(--text-xs); color: var(--gray-400); margin-top: var(--space-md);">Free. Kevin only takes 4 calls per week.</p>
+    </div>
+
+    <div class="annotation" style="max-width: 640px; margin: var(--space-md) auto 0; text-align:left;">
+      <strong>Intent:</strong> the human close after the math close. Buyers ready for the full program click "Book a Call" in the tier above. Buyers still on the fence get this softer "spend 45 min with Kevin" offer — same Calendly link, lower friction framing.
+    </div>
+  </section>
+
+  <!-- FOOTER LINKS -->
+  <section class="wf tight" style="background: var(--gray-100); text-align: center;">
+    <span class="section-label">Footer</span>
+    <div style="display:flex; gap: var(--space-md); justify-content:center; flex-wrap: wrap; margin-top: var(--space-sm); font-size: var(--text-xs);">
+      <a href="#" style="color: var(--gray-600); text-decoration: underline;">See technical detail (deferred to v2)</a>
+      <span style="color: var(--gray-300);">·</span>
+      <a href="#" style="color: var(--gray-600); text-decoration: underline;">Developer handoff (deferred)</a>
+      <span style="color: var(--gray-300);">·</span>
+      <a href="#" style="color: var(--gray-600); text-decoration: underline;">Methodology</a>
+    </div>
+    <div class="annotation" style="max-width: 720px; margin: var(--space-sm) auto 0;">
+      <strong>Footer pattern:</strong> all the dense v2 content (per-pillar deep dives, page-by-page table, methodology) lives behind these footer links — opt-in, not in the main flow. Per Kevin: "see the details, see the details, see the details."
+    </div>
+  </section>
+
+  <div class="wireframe-footer">
+    <span>aeo-audit-prototype/wireframes/04-math-and-options.html</span>
+    <span>Desktop view · 1100px max</span>
+  </div>
+
+</div>
+
+</body>
+</html>

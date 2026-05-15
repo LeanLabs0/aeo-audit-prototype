@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full AEO Audit Report — Lean Labs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="report-v3.css">
+<link rel="stylesheet" href="report-full.css">
+</head>
+<body class="full-body">
+
+<!-- Banner: this is the emailed-report mockup -->
+<div class="full-banner">
+  <strong>📄 Full AEO Audit Report</strong>
+  <span>This is what lands in your inbox after submitting your email on Step 4. Mockup view — same content arrives as PDF + hosted link.</span>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-logo">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24"/></svg>
+    </div>
+    <span class="nav-logo-text">AEO <span class="gradient-text">Audit</span></span>
+  </div>
+  <div class="nav-right-actions">
+    <a class="btn-nav btn-nav-back" href="report-v3.html">← Back to walkthrough</a>
+    <a class="btn-nav btn-nav-book" href="https://calendly.com/leanlabs/momentum-multiplier" target="_blank">Book a Call</a>
+  </div>
+</div>
+
+<main class="full-main">
+
+  <!-- ============================================================ -->
+  <!-- COVER                                                         -->
+  <!-- ============================================================ -->
+  <section class="full-cover">
+    <div class="full-inner">
+      <span class="full-eyebrow">Full AEO Audit Report</span>
+      <h1 class="full-cover-title">lean-labs.com</h1>
+      <p class="full-cover-date">May 13, 2026 · 10 pages audited · 9 pillars scored</p>
+
+      <div class="full-cover-stat">
+        <div class="full-cover-score">58</div>
+        <div class="full-cover-score-meta">
+          <span class="full-cover-grade">Grade C+</span>
+          <span class="full-cover-label">AEO Composite Score</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="full-divider">
+
+  <!-- ============================================================ -->
+  <!-- EXECUTIVE SUMMARY                                             -->
+  <!-- ============================================================ -->
+  <section class="full-section">
+    <div class="full-inner">
+      <span class="full-section-label">Executive Summary</span>
+      <h2 class="full-h2">Where you stand, in plain english</h2>
+
+      <p class="full-p">
+        lean-labs.com scored <strong>58/100</strong> across nine AEO pillars. AI crawlers can reach every audited page without blocks, schema coverage is well above baseline (92/100), and 7 of 10 pages already carry named-author bylines. That's a working foundation.
+      </p>
+      <p class="full-p">
+        The score is held back by three things: <strong>content extractability (34/100)</strong> — AI engines cannot extract a clean answer from the first 500 tokens of most pages; <strong>entity authority (34/100)</strong> — no Wikidata Q-ID, sparse sameAs network; and <strong>freshness signals (10/100)</strong> — average page age is over 3.7 years, with no machine-readable dateModified on key surfaces.
+      </p>
+      <p class="full-p">
+        Fix the top three priorities in this report and the composite moves from C+ to B+ territory. None of them require new content — they're all metadata, schema, or first-paragraph rewrites.
+      </p>
+    </div>
+  </section>
+
+  <hr class="full-divider">
+
+  <!-- ============================================================ -->
+  <!-- HIGHEST-IMPACT GAPS                                           -->
+  <!-- ============================================================ -->
+  <section class="full-section">
+    <div class="full-inner">
+      <span class="full-section-label">Highest-impact gaps</span>
+      <h2 class="full-h2">What to fix first</h2>
+      <p class="full-p-sub">Sorted by composite impact. Top 3 alone account for ~12 composite points.</p>
+
+      <ul class="full-gaps">
+        <li class="full-gap">
+          <span class="full-gap-title">FAQPage schema · site-wide</span>
+          <span class="full-gap-sev sev-critical">Critical</span>
+        </li>
+        <li class="full-gap">
+          <span class="full-gap-title">Wikidata Q-ID · brand entity</span>
+          <span class="full-gap-sev sev-high">High</span>
+        </li>
+        <li class="full-gap">
+          <span class="full-gap-title">Answer-first first paragraph · /pricing</span>
+          <span class="full-gap-sev sev-high">High</span>
+        </li>
+        <li class="full-gap">
+          <span class="full-gap-title">Answer-first first paragraph · /solutions/*</span>
+          <span class="full-gap-sev sev-high">High</span>
+        </li>
+        <li class="full-gap">
+          <span class="full-gap-title">sameAs links · LinkedIn / Crunchbase / G2</span>
+          <span class="full-gap-sev sev-med">Medium</span>
+        </li>
+        <li class="full-gap">
+          <span class="full-gap-title">dateModified · /pricing + /solutions + /blog</span>
+          <span class="full-gap-sev sev-med">Medium</span>
+        </li>
+        <li class="full-gap">
+          <span class="full-gap-title">Author bylines · /pricing + /solutions</span>
+          <span class="full-gap-sev sev-med">Medium</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="full-divider">
+
+  <!-- ============================================================ -->
+  <!-- GAP MATRIX 1 · pages × AEO signals                            -->
+  <!-- ============================================================ -->
+  <section class="full-section">
+    <div class="full-inner">
+      <span class="full-section-label">Page-by-page · AEO signals</span>
+      <h2 class="full-h2">The gap map</h2>
+      <p class="full-p-sub">10 audited pages × 5 AEO signals. Every cell is a real audit reading.</p>
+
+      <div class="full-matrix-wrap">
+        <table class="full-matrix">
+          <thead>
+            <tr>
+              <th class="full-matrix-col-page">Page</th>
+              <th>Extract.</th>
+              <th>Schema</th>
+              <th>Author</th>
+              <th>Date</th>
+              <th>FAQ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>/pricing</td>                                          <td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-amber">●</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-red">●</span></td></tr>
+            <tr><td>/solutions/growthrocket/examples/services/</td>        <td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-amber">●</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-red">●</span></td></tr>
+            <tr><td>/blog</td>                                             <td><span class="v3-cell v3-cell-amber">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-red">●</span></td></tr>
+            <tr><td>/blog/the-keys-to-creating-cost-effective-...</td>     <td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td></tr>
+            <tr><td>/blog/how-long-take-get-results-...</td>               <td><span class="v3-cell v3-cell-amber">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td></tr>
+            <tr><td>/blog/how-long-take-design-build-...</td>              <td><span class="v3-cell v3-cell-amber">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td></tr>
+            <tr><td>/blog/keyword-usage-mistakes-...</td>                  <td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td></tr>
+            <tr><td>/blog/hubspot-marketing-hub-onboarding-startups</td>   <td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td></tr>
+            <tr><td>/blog/what-tech-saas-growth-team-does</td>             <td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td></tr>
+            <tr><td>/blog/b2b-buyers-journey</td>                          <td><span class="v3-cell v3-cell-amber">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ul class="v3-matrix-legend full-legend">
+        <li><span class="v3-cell v3-cell-green">✓</span> Present</li>
+        <li><span class="v3-cell v3-cell-amber">●</span> Partial / weak</li>
+        <li><span class="v3-cell v3-cell-red">●</span> Missing</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="full-divider">
+
+  <!-- ============================================================ -->
+  <!-- GAP MATRIX 2 · pages × schema types                           -->
+  <!-- ============================================================ -->
+  <section class="full-section alt">
+    <div class="full-inner">
+      <span class="full-section-label">Page-by-page · Schema types</span>
+      <h2 class="full-h2">Schema coverage by page</h2>
+      <p class="full-p-sub">Which JSON-LD type lives on which page. Reds are the highest-leverage wins.</p>
+
+      <div class="full-matrix-wrap">
+        <table class="full-matrix">
+          <thead>
+            <tr>
+              <th class="full-matrix-col-page">Page</th>
+              <th>Org</th>
+              <th>WebSite</th>
+              <th>WebPage</th>
+              <th>Article</th>
+              <th>FAQPage</th>
+              <th>Breadcrumb</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>/ (home)</td>                                          <td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td></tr>
+            <tr><td>/pricing</td>                                          <td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td></tr>
+            <tr><td>/solutions/...</td>                                    <td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td></tr>
+            <tr><td>/blog</td>                                             <td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td></tr>
+            <tr><td>/blog/the-keys-to-creating-...</td>                    <td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td></tr>
+            <tr><td>/blog/how-long-take-get-results-...</td>               <td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td></tr>
+            <tr><td>/blog/how-long-take-design-build-...</td>              <td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td></tr>
+            <tr><td>/blog/keyword-usage-mistakes-...</td>                  <td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td></tr>
+            <tr><td>/blog/hubspot-marketing-hub-...</td>                   <td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td></tr>
+            <tr><td>/blog/b2b-buyers-journey</td>                          <td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-green">✓</span></td><td><span class="v3-cell v3-cell-red">●</span></td><td><span class="v3-cell v3-cell-green">✓</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="full-matrix-takeaway">
+        <strong>Takeaway:</strong> baseline schema (Org / WebSite / WebPage / Breadcrumb) is solid across the board. The single highest-leverage gap = <strong>FAQPage schema, missing on every page</strong>. Code snippet to ship it →
+      </p>
+    </div>
+  </section>
+
+  <hr class="full-divider">
+
+  <!-- ============================================================ -->
+  <!-- READY-TO-PASTE SNIPPETS                                       -->
+  <!-- ============================================================ -->
+  <section class="full-section">
+    <div class="full-inner">
+      <span class="full-section-label">Ship it today</span>
+      <h2 class="full-h2">Ready-to-paste schema snippets</h2>
+      <p class="full-p-sub">Drop into the &lt;head&gt; of each page. Tested against schema.org validator.</p>
+
+      <!-- Snippet 1 -->
+      <div class="full-snippet">
+        <div class="full-snippet-head">
+          <span class="full-snippet-label">Snippet 1 of 5</span>
+          <span class="full-snippet-target">FAQPage schema · /pricing</span>
+          <span class="full-gap-sev sev-critical">Critical</span>
+        </div>
+        <p class="full-snippet-why">Why this matters: Lean Labs' pricing page already answers buyer questions in prose. Wrapping each Q&amp;A in FAQPage JSON-LD turns those answers into AI-extractable blocks. Single biggest AEO win on the site.</p>
+        <pre class="full-code"><code>&lt;script type="application/ld+json"&gt;
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How much does Lean Labs cost?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Lean Labs engagements start at $5,000 for one-time AEO Core fixes and scale to $50,000 for full 90-day AEO Domination programs. Pricing depends on scope, deal value, and timeline."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What's included in the AEO Core package?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Schema markup deployment across top pages, FAQ schema generation, and a 2-week implementation cycle. Delivered as a one-time engagement."
+      }
+    }
+  ]
+}
+&lt;/script&gt;</code></pre>
+        <button class="full-copy-btn" data-copy="snippet1">Copy snippet</button>
+      </div>
+
+      <!-- Snippet 2 -->
+      <div class="full-snippet">
+        <div class="full-snippet-head">
+          <span class="full-snippet-label">Snippet 2 of 5</span>
+          <span class="full-snippet-target">Organization sameAs · site-wide</span>
+          <span class="full-gap-sev sev-high">High</span>
+        </div>
+        <p class="full-snippet-why">Why this matters: AI engines disambiguate brand mentions through canonical profile links. Adding LinkedIn, Crunchbase, and G2 to your Organization schema gives them an anchor.</p>
+        <pre class="full-code"><code>&lt;script type="application/ld+json"&gt;
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Lean Labs",
+  "url": "https://www.lean-labs.com",
+  "logo": "https://www.lean-labs.com/logo.png",
+  "sameAs": [
+    "https://www.linkedin.com/company/lean-labs-llc/",
+    "https://www.crunchbase.com/organization/lean-labs",
+    "https://www.g2.com/products/lean-labs/reviews"
+  ]
+}
+&lt;/script&gt;</code></pre>
+        <button class="full-copy-btn" data-copy="snippet2">Copy snippet</button>
+      </div>
+
+      <!-- Snippet 3 -->
+      <div class="full-snippet">
+        <div class="full-snippet-head">
+          <span class="full-snippet-label">Snippet 3 of 5</span>
+          <span class="full-snippet-target">Article schema w/ author + dateModified · blog posts</span>
+          <span class="full-gap-sev sev-high">High</span>
+        </div>
+        <p class="full-snippet-why">Why this matters: AI engines weight author credentialing + content freshness heavily. Adding dateModified to existing Article schema is the smallest possible change with the biggest freshness lift.</p>
+        <pre class="full-code"><code>&lt;script type="application/ld+json"&gt;
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "How Long Does It Take to Get Results from Inbound Marketing?",
+  "datePublished": "2024-08-15T00:00:00-05:00",
+  "dateModified": "2026-05-13T00:00:00-05:00",
+  "author": {
+    "@type": "Person",
+    "name": "Kevin Barber",
+    "url": "https://www.linkedin.com/in/kevinrayebarber/"
+  }
+}
+&lt;/script&gt;</code></pre>
+        <button class="full-copy-btn" data-copy="snippet3">Copy snippet</button>
+      </div>
+
+      <!-- Snippet 4 -->
+      <div class="full-snippet">
+        <div class="full-snippet-head">
+          <span class="full-snippet-label">Snippet 4 of 5</span>
+          <span class="full-snippet-target">Author byline + Person schema · /pricing + /solutions/*</span>
+          <span class="full-gap-sev sev-med">Medium</span>
+        </div>
+        <p class="full-snippet-why">Why this matters: /pricing and /solutions are currently anonymous. AI trust ranking favors named experts with credentialed profiles. Adding a single visible byline + Person schema anchors the page to a real human.</p>
+        <pre class="full-code"><code>&lt;script type="application/ld+json"&gt;
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Pricing — Lean Labs",
+  "author": {
+    "@type": "Person",
+    "name": "Kevin Barber",
+    "jobTitle": "Founder, Lean Labs",
+    "url": "https://www.linkedin.com/in/kevinrayebarber/"
+  },
+  "dateModified": "2026-05-13"
+}
+&lt;/script&gt;</code></pre>
+        <button class="full-copy-btn" data-copy="snippet4">Copy snippet</button>
+      </div>
+
+      <!-- Snippet 5 -->
+      <div class="full-snippet">
+        <div class="full-snippet-head">
+          <span class="full-snippet-label">Snippet 5 of 5</span>
+          <span class="full-snippet-target">Answer-first opening · /pricing first 500 tokens</span>
+          <span class="full-gap-sev sev-high">High</span>
+        </div>
+        <p class="full-snippet-why">Why this matters: AI engines extract definitive answers from the first 500 tokens. Your /pricing page currently opens with brand narrative. Replace the first paragraph with a direct answer, then the story can follow.</p>
+        <pre class="full-code"><code>&lt;!-- Suggested first paragraph for /pricing --&gt;
+&lt;p&gt;
+  &lt;strong&gt;Lean Labs engagements range from $5,000 to $50,000.&lt;/strong&gt;
+  AEO Core packages (one-time, 2-week delivery) start at $5,000 and
+  cover schema deployment plus FAQ generation across top pages.
+  AEO Domination (90-day, full-program) is $50,000 total and includes
+  monitoring, citation tracking, and a new buyer-content engine.
+  Pricing scales with deal value, scope, and timeline.
+&lt;/p&gt;</code></pre>
+        <button class="full-copy-btn" data-copy="snippet5">Copy snippet</button>
+      </div>
+    </div>
+  </section>
+
+  <hr class="full-divider">
+
+  <!-- ============================================================ -->
+  <!-- PER-PILLAR SUMMARY                                            -->
+  <!-- ============================================================ -->
+  <section class="full-section alt">
+    <div class="full-inner">
+      <span class="full-section-label">All 9 pillars at a glance</span>
+      <h2 class="full-h2">Full pillar breakdown</h2>
+
+      <table class="full-pillar-table">
+        <thead><tr><th>Pillar</th><th>Score</th><th>Weight</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Content Extractability</td><td>34</td><td>20%</td><td><span class="pill-bad">Drag</span></td></tr>
+          <tr><td>Schema Coverage</td>       <td>92</td><td>15%</td><td><span class="pill-ok">Strong</span></td></tr>
+          <tr><td>AI Crawler Access</td>     <td>100</td><td>12%</td><td><span class="pill-ok">Strong</span></td></tr>
+          <tr><td>Entity &amp; Brand Authority</td><td>34</td><td>12%</td><td><span class="pill-bad">Drag</span></td></tr>
+          <tr><td>E-E-A-T Signals</td>       <td>70</td><td>10%</td><td><span class="pill-ok">Solid</span></td></tr>
+          <tr><td>Live Citation Test</td>    <td>22</td><td>12%</td><td><span class="pill-bad">Drag</span></td></tr>
+          <tr><td>Freshness Signals</td>     <td>10</td><td>6%</td><td><span class="pill-bad">Drag</span></td></tr>
+          <tr><td>FAQ Coverage</td>          <td>45</td><td>8%</td><td><span class="pill-mid">Partial</span></td></tr>
+          <tr><td>llms.txt Presence</td>     <td>80</td><td>5%</td><td><span class="pill-ok">Strong</span></td></tr>
+          <tr class="full-pillar-total"><td><strong>Composite</strong></td><td><strong>58</strong></td><td colspan="2"><strong>Grade C+</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="full-divider">
+
+  <!-- ============================================================ -->
+  <!-- CLOSE · Kevin                                                 -->
+  <!-- ============================================================ -->
+  <section class="full-section">
+    <div class="full-inner">
+      <div class="full-kevin-card">
+        <span class="v3-kevin-eyebrow">Got the report. Now what?</span>
+        <h3 class="v3-kevin-title">Get Kevin's read on it, live</h3>
+        <p class="v3-kevin-body">
+          You can ship every snippet above today. But if you want a second pair of eyes — Kevin will spend 45 minutes with you, pull out the 3 fixes worth your time first based on YOUR business, and hand you the drafts. No deck. No pitch.
+        </p>
+        <a class="btn-primary v3-cta v3-kevin-cta" href="https://calendly.com/leanlabs/momentum-multiplier" target="_blank">Book a 45-min walkthrough with Kevin →</a>
+        <p class="v3-kevin-foot">Free. Kevin only takes 4 calls per week — most weeks fill up fast.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="full-divider">
+
+  <footer class="full-footer">
+    <div class="full-inner">
+      <p>Generated by <a href="https://www.lean-labs.com" target="_blank" rel="noopener">Lean Labs AEO Audit</a> · May 13, 2026 · <a href="report-v3.html">View interactive walkthrough →</a></p>
+    </div>
+  </footer>
+
+</main>
+
+<script src="report-full.js"></script>
+</body>
+</html>

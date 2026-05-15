@@ -1058,3 +1058,189 @@
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* Preview link on thank-you */
+.v3-thanks-preview {
+  margin-top: var(--space-md);
+  font-size: var(--text-sm);
+}
+.v3-thanks-preview a {
+  color: var(--ll-purple);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid var(--ll-purple-border);
+  padding-bottom: 2px;
+}
+.v3-thanks-preview a:hover { color: var(--ll-magenta); }
+
+/* ============================================================
+   STEP 4 · matrix preview (gap map teaser)
+   ============================================================ */
+.v3-matrix-preview {
+  max-width: 760px;
+  margin: var(--space-lg) auto 0;
+  padding: var(--space-lg);
+  background: var(--ll-white);
+  border: 1px solid var(--ll-border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+.v3-matrix-head {
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+.v3-matrix-eyebrow {
+  display: inline-block;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--ll-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+.v3-matrix-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ll-heading);
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+.v3-matrix-sub {
+  font-size: var(--text-sm);
+  color: var(--ll-body);
+  margin: 0;
+}
+
+.v3-matrix-wrap {
+  position: relative;
+  margin-top: var(--space-md);
+  border: 1px solid var(--ll-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--ll-white);
+}
+.v3-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  font-family: var(--font-family);
+}
+.v3-matrix thead {
+  background: var(--ll-off-white);
+}
+.v3-matrix th,
+.v3-matrix td {
+  padding: 10px 14px;
+  text-align: center;
+  border-bottom: 1px solid var(--ll-border-light);
+  white-space: nowrap;
+}
+.v3-matrix th {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ll-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+.v3-matrix-col-page {
+  text-align: left !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--ll-purple);
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.v3-matrix tbody tr:last-child td { border-bottom: none; }
+
+/* Cell dots */
+.v3-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+.v3-cell-green {
+  background: rgba(107, 201, 80, 0.15);
+  color: var(--ll-success);
+}
+.v3-cell-amber {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--grade-amber);
+  font-size: 18px;
+}
+.v3-cell-red {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--grade-red);
+  font-size: 18px;
+}
+
+/* Locked rows fade */
+.v3-matrix-locked td {
+  filter: blur(4px);
+  opacity: 0.4;
+  pointer-events: none;
+}
+.v3-matrix-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 130px;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.85) 50%, var(--ll-white) 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 14px;
+  pointer-events: none;
+}
+.v3-matrix-lock-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--ll-gradient);
+  color: var(--ll-white);
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(118, 18, 250, 0.3);
+  pointer-events: auto;
+}
+.v3-matrix-lock-pill svg {
+  width: 14px;
+  height: 14px;
+}
+
+.v3-matrix-legend {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+  margin: var(--space-md) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-xs);
+  color: var(--ll-muted);
+}
+.v3-matrix-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.v3-matrix-legend .v3-cell {
+  width: 16px;
+  height: 16px;
+  font-size: 11px;
+}
+
+@media (max-width: 760px) {
+  .v3-matrix th,
+  .v3-matrix td { padding: 8px 6px; }
+  .v3-matrix-col-page { font-size: 10px; }
+  .v3-matrix-legend { flex-direction: column; align-items: flex-start; gap: 8px; }
+}

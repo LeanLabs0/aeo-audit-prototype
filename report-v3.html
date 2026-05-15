@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEO Audit Report — Lean Labs (v3)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="report-v3.css">
+</head>
+<body class="v3-body">
+
+<!-- NAV (persistent) -->
+<div class="nav">
+  <div class="nav-logo">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24"/></svg>
+    </div>
+    <span class="nav-logo-text">AEO <span class="gradient-text">Audit</span></span>
+  </div>
+  <div class="nav-right-actions">
+    <button id="navBack" class="btn-nav btn-nav-back" hidden>← Back</button>
+    <a class="btn-nav btn-nav-book" href="https://calendly.com/leanlabs/momentum-multiplier" target="_blank">Book a Call</a>
+  </div>
+</div>
+
+<!-- PROGRESS (hidden on entry, shown step 1-4) -->
+<div id="progressBar" class="v3-progress" hidden>
+  <span class="v3-progress-label">Step <span id="stepCurrent">1</span> of 4</span>
+  <div class="v3-progress-dots">
+    <span class="v3-dot" data-dot="1"></span>
+    <span class="v3-dot" data-dot="2"></span>
+    <span class="v3-dot" data-dot="3"></span>
+    <span class="v3-dot" data-dot="4"></span>
+  </div>
+</div>
+
+<!-- TALLY BAR (only on step 3) -->
+<div id="tallyBar" class="v3-tally" hidden>
+  <span class="v3-tally-label">Save the fixes you'd want shipped</span>
+  <span class="v3-tally-count">
+    <span class="v3-tally-pill"><span id="tallyN">0</span> of 5</span>
+    saved to your fix list
+  </span>
+</div>
+
+<main class="v3-main">
+
+  <!-- ============================================================ -->
+  <!-- STEP 0 · ENTRY                                                -->
+  <!-- ============================================================ -->
+  <section class="v3-step v3-step-entry active" data-step="0">
+    <div class="v3-entry-inner">
+      <span class="v3-eyebrow">● Report Ready</span>
+      <h1 class="v3-hero-title">AI Growth Report</h1>
+      <p class="v3-hero-url gradient-text">lean-labs.com</p>
+      <p class="v3-hero-date">Generated May 13, 2026 · based on 10 pages audited</p>
+      <button class="btn-primary v3-cta" data-go="1">Walk Through Your Report →</button>
+      <p class="v3-hero-meta">4 steps · 90 seconds</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- STEP 1 · WHERE YOU STAND                                      -->
+  <!-- ============================================================ -->
+  <section class="v3-step" data-step="1">
+    <div class="v3-step-inner">
+
+      <header class="v3-step-header">
+        <h2 class="v3-step-title">Here's where you stand.</h2>
+        <p class="v3-step-sub">Three scores based on your audit. The rest of this report explains them.</p>
+      </header>
+
+      <div class="v3-score-grid">
+        <div class="v3-score-card">
+          <div class="v3-donut" style="--score: 22; --color: #ef4444;">
+            <span class="v3-donut-num">22</span>
+            <span class="v3-donut-max">/100</span>
+          </div>
+          <div class="v3-score-name">AI Visibility</div>
+          <div class="v3-score-hint">How often AI engines recommend you</div>
+        </div>
+        <div class="v3-score-card">
+          <div class="v3-donut" style="--score: 45; --color: #f59e0b;">
+            <span class="v3-donut-num">45</span>
+            <span class="v3-donut-max">/100</span>
+          </div>
+          <div class="v3-score-name">Website Pipeline</div>
+          <div class="v3-score-hint">How well your site converts AI buyers</div>
+        </div>
+        <div class="v3-score-card">
+          <div class="v3-donut" style="--score: 45; --color: #f59e0b;">
+            <span class="v3-donut-num">45</span>
+            <span class="v3-donut-max">/100</span>
+          </div>
+          <div class="v3-score-name">Pipeline Health</div>
+          <div class="v3-score-hint">Source performance overall</div>
+        </div>
+      </div>
+
+      <div class="v3-bottom-line">
+        <h3 class="v3-bottom-line-title">lean-labs.com is <span class="gradient-text">invisible</span> to AI-powered buyer journeys.</h3>
+        <p>When buyers ask ChatGPT, Claude, or Perplexity about your space, you are not being recommended. Your competitors are.</p>
+      </div>
+
+      <div class="v3-opportunity">
+        <span class="v3-opportunity-eyebrow">⚡ Biggest Growth Opportunity</span>
+        <p class="v3-opportunity-body">
+          Your AI answer visibility scored <strong>4 out of 10</strong> — the dimension that most directly determines whether you appear in ChatGPT, Perplexity, and Google AI answers. You're missing the formats AI engines actually quote: FAQ content, author attribution, and content freshness signals. <strong>These are quick to add.</strong>
+        </p>
+      </div>
+
+      <div class="v3-step-cta">
+        <button class="btn-primary v3-cta" data-go="2">See what buyers see →</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- STEP 2 · WHAT BUYERS SEE                                      -->
+  <!-- ============================================================ -->
+  <section class="v3-step" data-step="2">
+    <div class="v3-step-inner">
+
+      <header class="v3-step-header">
+        <h2 class="v3-step-title">This is what buyers see.</h2>
+        <p class="v3-step-sub">We asked AI models about agencies in your space.</p>
+      </header>
+
+      <div class="v3-ai-card">
+        <div class="v3-ai-prompt-row">
+          <span class="v3-ai-label">PROMPT</span>
+          <span class="v3-ai-prompt-text">"What are the best growth marketing agencies for B2B SaaS companies $5M–$50M ARR on HubSpot?"</span>
+        </div>
+        <div class="v3-ai-response-row">
+          <span class="v3-ai-label">AI RESPONSE</span>
+          <p class="v3-ai-intro">Based on my research, here are strong options:</p>
+          <ol class="v3-ai-list">
+            <li><strong>SmartBug Media</strong> — Comprehensive HubSpot partner, strong market presence.</li>
+            <li><strong>IMPACT</strong> — Robust inbound expertise, good case studies.</li>
+            <li><strong>New Breed Marketing</strong> — HubSpot Elite, scalable approach.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="v3-not-mentioned">
+        <strong class="v3-not-mentioned-title">lean-labs.com was not mentioned.</strong>
+        <span class="v3-not-mentioned-sub">Your competitors were. You weren't.</span>
+      </div>
+
+      <div class="v3-bridge">
+        <h3>Why does this happen?</h3>
+        <p>AI engines weight specific signals — structured data, citation authority, content extractability. We found <strong>5 things</strong> driving your invisibility.</p>
+      </div>
+
+      <div class="v3-step-cta">
+        <button class="btn-primary v3-cta" data-go="3">See what we found →</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- STEP 3 · WHAT WE FOUND                                        -->
+  <!-- ============================================================ -->
+  <section class="v3-step" data-step="3">
+    <div class="v3-step-inner">
+
+      <header class="v3-step-header">
+        <h2 class="v3-step-title">What we found.</h2>
+        <p class="v3-step-sub">Five things driving your AI invisibility. Tag what matters to you — we'll build your fix list as you go.</p>
+      </header>
+
+      <div class="v3-findings" id="findingsList">
+
+        <div class="v3-finding" data-id="f1">
+          <div class="v3-finding-body">
+            <span class="v3-badge v3-badge-critical">Critical</span>
+            <h3 class="v3-finding-title">lean-labs.com is invisible to all major AI models</h3>
+            <p class="v3-finding-why">Across 30 test prompts on ChatGPT, Claude, and Perplexity, you were not named once. SmartBug Media and IMPACT appeared in 70% of responses.</p>
+          </div>
+          <div class="v3-finding-actions">
+            <button class="v3-finding-toggle" data-toggle="f1">
+              <span class="v3-toggle-default">+ Fix this</span>
+              <span class="v3-toggle-active">✓ Saved</span>
+            </button>
+            <button class="v3-finding-skip" data-skip="f1">Skip</button>
+          </div>
+        </div>
+
+        <div class="v3-finding" data-id="f2">
+          <div class="v3-finding-body">
+            <span class="v3-badge v3-badge-warning">Warning</span>
+            <h3 class="v3-finding-title">Schema markup is missing or incomplete</h3>
+            <p class="v3-finding-why">No FAQPage schema anywhere on the site. AI engines extract Q&A blocks directly from this format. You're already writing Q&A content — just not marking it up.</p>
+          </div>
+          <div class="v3-finding-actions">
+            <button class="v3-finding-toggle" data-toggle="f2">
+              <span class="v3-toggle-default">+ Fix this</span>
+              <span class="v3-toggle-active">✓ Saved</span>
+            </button>
+            <button class="v3-finding-skip" data-skip="f2">Skip</button>
+          </div>
+        </div>
+
+        <div class="v3-finding" data-id="f3">
+          <div class="v3-finding-body">
+            <span class="v3-badge v3-badge-warning">Warning</span>
+            <h3 class="v3-finding-title">MediaJunction.com has more AI-readable content than you</h3>
+            <p class="v3-finding-why">Your top competitor has 3× the FAQ surface area and a documented author network. AI engines weight published expertise — they're being read, you're not.</p>
+          </div>
+          <div class="v3-finding-actions">
+            <button class="v3-finding-toggle" data-toggle="f3">
+              <span class="v3-toggle-default">+ Fix this</span>
+              <span class="v3-toggle-active">✓ Saved</span>
+            </button>
+            <button class="v3-finding-skip" data-skip="f3">Skip</button>
+          </div>
+        </div>
+
+        <div class="v3-finding" data-id="f4">
+          <div class="v3-finding-body">
+            <span class="v3-badge v3-badge-opp">Opportunity</span>
+            <h3 class="v3-finding-title">Your expertise exists, it just isn't published for AI</h3>
+            <p class="v3-finding-why">7 of 10 audited pages already carry named-author bylines. Adding structured author metadata + 5 FAQ pages would push you into AI citation range fast.</p>
+          </div>
+          <div class="v3-finding-actions">
+            <button class="v3-finding-toggle" data-toggle="f4">
+              <span class="v3-toggle-default">+ Fix this</span>
+              <span class="v3-toggle-active">✓ Saved</span>
+            </button>
+            <button class="v3-finding-skip" data-skip="f4">Skip</button>
+          </div>
+        </div>
+
+        <div class="v3-finding" data-id="f5">
+          <div class="v3-finding-body">
+            <span class="v3-badge v3-badge-opp">Opportunity</span>
+            <h3 class="v3-finding-title">AI visibility + AEO = compounding inbound</h3>
+            <p class="v3-finding-why">Brands that fix all five gaps typically see citation rate climb 4-6× within 90 days. AI referrers convert higher than organic search.</p>
+          </div>
+          <div class="v3-finding-actions">
+            <button class="v3-finding-toggle" data-toggle="f5">
+              <span class="v3-toggle-default">+ Fix this</span>
+              <span class="v3-toggle-active">✓ Saved</span>
+            </button>
+            <button class="v3-finding-skip" data-skip="f5">Skip</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="v3-step-cta">
+        <button class="btn-primary v3-cta" data-go="4" id="step3Cta" disabled>See your options →</button>
+        <p class="v3-cta-hint" id="step3CtaHint">Save at least 1 fix to continue</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- STEP 4 · MATH & OPTIONS                                       -->
+  <!-- ============================================================ -->
+  <section class="v3-step" data-step="4">
+    <div class="v3-step-inner">
+
+      <header class="v3-step-header">
+        <h2 class="v3-step-title">The math and your options.</h2>
+        <p class="v3-step-sub">Based on your average deal value of <strong>$50,000</strong>. You saved <strong><span id="step4Tally">0</span> of 5</strong> fixes in the last step.</p>
+      </header>
+
+      <div class="v3-tier-grid">
+
+        <div class="v3-tier">
+          <span class="v3-tier-eyebrow">AEO Core</span>
+          <div class="v3-tier-price">$5k <span>one-time</span></div>
+          <p class="v3-tier-pitch">Ship the fixes you saved. Schema markup + FAQ pages. 2 weeks.</p>
+          <div class="v3-tier-rows">
+            <div class="v3-tier-row"><span>Investment</span><span>$5,000</span></div>
+            <div class="v3-tier-row"><span>2 customer revenue</span><span>$100,000</span></div>
+            <div class="v3-tier-row"><span>Timeline</span><span>2 weeks</span></div>
+          </div>
+          <div class="v3-tier-roi">
+            <div class="v3-tier-roi-num">1,900%</div>
+            <div class="v3-tier-roi-label">Return on investment</div>
+          </div>
+          <button class="btn-cta-secondary v3-tier-cta">Lock in the Core →</button>
+        </div>
+
+        <div class="v3-tier v3-tier-featured">
+          <span class="v3-tier-eyebrow">AEO Domination <span class="v3-tier-tag">Full Program</span></span>
+          <div class="v3-tier-price">$50k <span>total</span></div>
+          <p class="v3-tier-pitch">Ship all 5 fixes + ongoing monitoring + AI-buyer content engine. 90 days.</p>
+          <div class="v3-tier-rows">
+            <div class="v3-tier-row"><span>Investment</span><span>$50,000</span></div>
+            <div class="v3-tier-row"><span>2 customers/mo revenue</span><span>$100,000/mo</span></div>
+            <div class="v3-tier-row"><span>Timeline</span><span>90 days</span></div>
+          </div>
+          <div class="v3-tier-roi">
+            <div class="v3-tier-roi-num">2,300%</div>
+            <div class="v3-tier-roi-label">Annual ROI</div>
+          </div>
+          <a class="btn-cta-primary v3-tier-cta" href="https://calendly.com/leanlabs/momentum-multiplier" target="_blank">Book a Call →</a>
+        </div>
+
+      </div>
+
+      <div class="v3-conservative">
+        <span class="v3-conservative-eyebrow">What if this is all you got?</span>
+        <h3 class="v3-conservative-title">Even conservative scenarios make the math work.</h3>
+        <div class="v3-conservative-grid">
+          <div class="v3-cons-card">
+            <span class="v3-cons-tier">AEO Core</span>
+            <p class="v3-cons-q">What if you only got <strong>1 customer instead of 2?</strong></p>
+            <div class="v3-tier-row"><span>Investment</span><span>$5,000</span></div>
+            <div class="v3-tier-row"><span>1 customer revenue</span><span>$50,000</span></div>
+            <div class="v3-tier-row"><span>ROI</span><span>900%</span></div>
+          </div>
+          <div class="v3-cons-card">
+            <span class="v3-cons-tier">AEO Domination</span>
+            <p class="v3-cons-q">What if you only got <strong>1 customer per quarter?</strong></p>
+            <div class="v3-tier-row"><span>Investment</span><span>$50,000</span></div>
+            <div class="v3-tier-row"><span>4 customers revenue</span><span>$200,000</span></div>
+            <div class="v3-tier-row"><span>ROI</span><span>300%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="v3-final-close">
+        <h3>Want Kevin to walk you through it?</h3>
+        <p>45 minutes. He'll read your audit live with you, pick the top 3 fixes worth shipping first, and hand you the drafts. No deck, no pitch.</p>
+        <a class="btn-primary v3-cta" href="https://calendly.com/leanlabs/momentum-multiplier" target="_blank">Grab 45 Minutes with Kevin →</a>
+        <p class="v3-cta-hint">Free. Kevin only takes 4 calls per week.</p>
+      </div>
+
+      <div class="v3-footer-links">
+        <a href="report.html">See full technical detail →</a>
+        <span class="v3-footer-divider">·</span>
+        <a href="#" onclick="alert('Developer handoff page — deferred to v2'); return false;">Developer handoff</a>
+        <span class="v3-footer-divider">·</span>
+        <a href="#" onclick="alert('Methodology doc — deferred'); return false;">Methodology</a>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<script src="report-v3.js"></script>
+</body>
+</html>

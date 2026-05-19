@@ -767,3 +767,18 @@
 .tag-impact-high     { background: var(--ll-gradient); color: var(--ll-white); }
 .tag-impact-medium   { background: var(--ll-purple-tint); color: var(--ll-purple); }
 .tag-impact-low      { background: var(--ll-border-light); color: var(--ll-muted); }
+
+/* 9-pillar card status + weight */
+.full-pillar-status {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.full-pillar-weight {
+  font-size: var(--text-xs);
+  color: var(--ll-muted);
+  margin-top: 4px;
+}

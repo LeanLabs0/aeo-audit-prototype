@@ -140,16 +140,16 @@
   <hr class="full-divider">
 
   <!-- ============================================================ -->
-  <!-- 6 DIMENSION CARDS                                             -->
+  <!-- 9-PILLAR BREAKDOWN                                            -->
   <!-- ============================================================ -->
   <section class="full-section alt">
     <div class="full-inner">
-      <span class="full-section-label">Dimension breakdown</span>
-      <h2 class="full-h2">6 dimensions of AI search visibility</h2>
-      <p class="full-p-sub">Each dimension rolls up 1–3 of the underlying 9 audit pillars into a buyer-readable score. <span class="full-warn-key">!</span> marks dimensions below 60.</p>
+      <span class="full-section-label">Pillar breakdown</span>
+      <h2 class="full-h2">All 9 audit pillars</h2>
+      <p class="full-p-sub">Every pillar scored from a real tool reading. Weight = share of the composite. Cards below 60 are flagged.</p>
 
-      <div class="full-dim-grid" id="dimGrid">
-        <!-- Cards rendered by JS from AEO_REPORT_DATA.dimensions -->
+      <div class="full-dim-grid" id="pillarGrid">
+        <!-- Cards rendered by JS from AEO_REPORT_DATA.pillars -->
       </div>
     </div>
   </section>
@@ -273,23 +273,6 @@
       </div>
 
       <p class="full-prompt-note"><strong>Read:</strong> branded queries cite you perfectly (#1 across all engines). Category queries omit you entirely on ChatGPT and Gemini. The gap = AEO surface area, not brand strength.</p>
-    </div>
-  </section>
-
-  <hr class="full-divider">
-
-  <!-- ============================================================ -->
-  <!-- CITATION SOURCE BREAKDOWN                                     -->
-  <!-- ============================================================ -->
-  <section class="full-section alt">
-    <div class="full-inner">
-      <span class="full-section-label">Citation source breakdown</span>
-      <h2 class="full-h2">Where your AI citations come from</h2>
-      <p class="full-p-sub">When AI engines DO cite you, here's the source mix. <span class="full-est-pill">Estimated · live source-attribution wiring in v2</span></p>
-
-      <div class="full-source-grid" id="sourceGrid">
-        <!-- rendered by JS -->
-      </div>
     </div>
   </section>
 
@@ -439,13 +422,13 @@
   <hr class="full-divider">
 
   <!-- ============================================================ -->
-  <!-- PRIORITY RECOMMENDATIONS — effort × impact                    -->
+  <!-- PRIORITY RECOMMENDATIONS                                      -->
   <!-- ============================================================ -->
   <section class="full-section alt">
     <div class="full-inner">
       <span class="full-section-label">Priority recommendations</span>
-      <h2 class="full-h2">Where to start (sorted by impact × effort)</h2>
-      <p class="full-p-sub">Each fix is tagged with effort + impact so you can sequence them. Low-effort, High-impact first.</p>
+      <h2 class="full-h2">Where to start</h2>
+      <p class="full-p-sub">Ordered to clear the highest-impact gaps first. Each maps to a real finding in the audit above.</p>
 
       <div class="full-rec-grid" id="recGrid">
         <!-- rendered by JS -->

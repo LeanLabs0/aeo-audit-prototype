@@ -14,21 +14,25 @@ function renderKpiStrip() {
   `).join('');
 }
 
-function renderDimensions() {
-  const host = document.getElementById('dimGrid');
+function renderPillars() {
+  const host = document.getElementById('pillarGrid');
   if (!host || !window.AEO_REPORT_DATA) return;
-  host.innerHTML = window.AEO_REPORT_DATA.dimensions.map(d => `
-    <div class="full-dim-card${d.warn ? ' warn' : ''}${d.estimated ? ' estimated' : ''}">
+  const statusClass = (s) => ({
+    Strong: "ok", Solid: "ok", Partial: "mid", Drag: "bad",
+  })[s] || "mid";
+  host.innerHTML = window.AEO_REPORT_DATA.pillars.map(p => {
+    const warn = p.score < 60;
+    return `
+    <div class="full-dim-card${warn ? ' warn' : ''}">
       <div class="full-dim-head">
-        <span class="full-dim-name">${d.name}</span>
-        ${d.warn ? '<span class="full-dim-warn">!</span>' : ''}
-        ${d.estimated ? '<span class="full-dim-est">est.</span>' : ''}
+        <span class="full-dim-name">${p.name}</span>
+        <span class="full-pillar-status pill-${statusClass(p.status)}">${p.status}</span>
       </div>
-      <div class="full-dim-score">${d.score}<span>/100</span></div>
-      <div class="full-dim-bar"><div class="full-dim-bar-fill" style="width:${d.score}%"></div></div>
-      <p class="full-dim-desc">${d.desc}</p>
-    </div>
-  `).join('');
+      <div class="full-dim-score">${p.score}<span>/100</span></div>
+      <div class="full-dim-bar"><div class="full-dim-bar-fill" style="width:${p.score}%"></div></div>
+      <div class="full-pillar-weight">${p.weight}% of composite</div>
+    </div>`;
+  }).join('');
 }
 
 function renderPromptTable() {
@@ -53,40 +57,15 @@ function renderPromptTable() {
   `).join('');
 }
 
-function renderSources() {
-  const host = document.getElementById('sourceGrid');
-  if (!host || !window.AEO_REPORT_DATA) return;
-  host.innerHTML = window.AEO_REPORT_DATA.citation_sources.map(s => `
-    <div class="full-source-row">
-      <div class="full-source-head">
-        <span class="full-source-label">${s.label}</span>
-        <span class="full-source-pct">${s.pct}%</span>
-      </div>
-      <div class="full-source-bar"><div class="full-source-bar-fill" style="width:${s.pct}%"></div></div>
-      <div class="full-source-note">${s.note}</div>
-    </div>
-  `).join('');
-}
-
 function renderRecs() {
   const host = document.getElementById('recGrid');
   if (!host || !window.AEO_REPORT_DATA) return;
-  const impactRank = { High: 0, Medium: 1, Low: 2 };
-  const effortRank = { Low: 0, Medium: 1, High: 2 };
-  const sorted = [...window.AEO_REPORT_DATA.recommendations].sort((a, b) => {
-    if (impactRank[a.impact] !== impactRank[b.impact]) return impactRank[a.impact] - impactRank[b.impact];
-    return effortRank[a.effort] - effortRank[b.effort];
-  });
-  host.innerHTML = sorted.map((r, i) => `
+  host.innerHTML = window.AEO_REPORT_DATA.recommendations.map((r, i) => `
     <div class="full-rec-card">
       <div class="full-rec-num">${i + 1}</div>
       <div class="full-rec-body">
         <h4 class="full-rec-title">${r.title}</h4>
         <p class="full-rec-why">${r.why}</p>
-        <div class="full-rec-tags">
-          <span class="full-rec-tag tag-effort tag-effort-${r.effort.toLowerCase()}">${r.effort} effort</span>
-          <span class="full-rec-tag tag-impact tag-impact-${r.impact.toLowerCase()}">${r.impact} impact</span>
-        </div>
       </div>
     </div>
   `).join('');
@@ -115,9 +94,8 @@ function wireCopyButtons() {
 
 document.addEventListener('DOMContentLoaded', () => {
   renderKpiStrip();
-  renderDimensions();
+  renderPillars();
   renderPromptTable();
-  renderSources();
   renderRecs();
   wireCopyButtons();
 });

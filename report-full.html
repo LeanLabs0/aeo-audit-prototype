@@ -57,21 +57,38 @@
   <hr class="full-divider">
 
   <!-- ============================================================ -->
+  <!-- 5-KPI STRIP                                                   -->
+  <!-- ============================================================ -->
+  <section class="full-section">
+    <div class="full-inner">
+      <span class="full-section-label">At a glance</span>
+      <h2 class="full-h2">The 5 numbers that matter</h2>
+      <p class="full-p-sub">No vanity metrics. These are the AEO scoreboard items buyers see when they ask AI about your category.</p>
+
+      <div class="full-kpi-strip" id="kpiStrip">
+        <!-- Cards rendered by JS from AEO_REPORT_DATA.kpis -->
+      </div>
+    </div>
+  </section>
+
+  <hr class="full-divider">
+
+  <!-- ============================================================ -->
   <!-- EXECUTIVE SUMMARY                                             -->
   <!-- ============================================================ -->
   <section class="full-section">
     <div class="full-inner">
       <span class="full-section-label">Executive Summary</span>
-      <h2 class="full-h2">Where you stand, in plain english</h2>
+      <h2 class="full-h2">5 factors driving your AI search visibility</h2>
 
       <p class="full-p">
-        lean-labs.com scored <strong>58/100</strong> across nine AEO pillars. AI crawlers can reach every audited page without blocks, schema coverage is well above baseline (92/100), and 7 of 10 pages already carry named-author bylines. That's a working foundation.
+        This audit analyzed <strong>lean-labs.com</strong> across <strong>5 core answer-engine visibility factors</strong>: content structure and answer clarity, prompt visibility across ChatGPT / Claude / Perplexity / Gemini, citation and source presence, competitor share of voice, and technical trust signals. Each factor was scored from the 9 backend pillars, then rolled into a single composite.
       </p>
       <p class="full-p">
-        The score is held back by three things: <strong>content extractability (34/100)</strong> — AI engines cannot extract a clean answer from the first 500 tokens of most pages; <strong>entity authority (34/100)</strong> — no Wikidata Q-ID, sparse sameAs network; and <strong>freshness signals (10/100)</strong> — average page age is over 3.7 years, with no machine-readable dateModified on key surfaces.
+        <strong>Headline:</strong> Lean Labs scored <strong>58/100 (Grade C+)</strong>. Crawler access and schema coverage are strong. Content extractability, entity authority, and freshness signals are dragging the composite — and AI engines barely cite the brand when buyers ask category-level questions.
       </p>
       <p class="full-p">
-        Fix the top three priorities in this report and the composite moves from C+ to B+ territory. None of them require new content — they're all metadata, schema, or first-paragraph rewrites.
+        <strong>The path forward:</strong> the Priority Recommendations near the bottom of this report are sorted by effort × impact. The top three lift the composite by ~12 points and require no new content — schema, metadata, and one paragraph rewrite.
       </p>
     </div>
   </section>
@@ -117,6 +134,23 @@
           <span class="full-gap-sev sev-med">Medium</span>
         </li>
       </ul>
+    </div>
+  </section>
+
+  <hr class="full-divider">
+
+  <!-- ============================================================ -->
+  <!-- 9-PILLAR BREAKDOWN                                            -->
+  <!-- ============================================================ -->
+  <section class="full-section alt">
+    <div class="full-inner">
+      <span class="full-section-label">Pillar breakdown</span>
+      <h2 class="full-h2">All 9 audit pillars</h2>
+      <p class="full-p-sub">Every pillar scored from a real tool reading. Weight = share of the composite. Cards below 60 are flagged.</p>
+
+      <div class="full-dim-grid" id="pillarGrid">
+        <!-- Cards rendered by JS from AEO_REPORT_DATA.pillars -->
+      </div>
     </div>
   </section>
 
@@ -208,6 +242,37 @@
       <p class="full-matrix-takeaway">
         <strong>Takeaway:</strong> baseline schema (Org / WebSite / WebPage / Breadcrumb) is solid across the board. The single highest-leverage gap = <strong>FAQPage schema, missing on every page</strong>. Code snippet to ship it →
       </p>
+    </div>
+  </section>
+
+  <hr class="full-divider">
+
+  <!-- ============================================================ -->
+  <!-- PROMPT TRACKING TABLE                                         -->
+  <!-- ============================================================ -->
+  <section class="full-section">
+    <div class="full-inner">
+      <span class="full-section-label">Prompt tracking</span>
+      <h2 class="full-h2">What buyers actually see</h2>
+      <p class="full-p-sub">5 real buyer prompts × 4 AI engines. <strong>Cited</strong> = your brand named. <strong>Hallucinated</strong> = wrong facts attributed. <strong>Omitted</strong> = competitor named, you weren't.</p>
+
+      <div class="full-prompt-wrap">
+        <table class="full-prompt-table" id="promptTable">
+          <thead>
+            <tr>
+              <th class="col-prompt">Prompt</th>
+              <th class="col-intent">Intent</th>
+              <th>ChatGPT</th>
+              <th>Claude</th>
+              <th>Perplexity</th>
+              <th>Gemini</th>
+            </tr>
+          </thead>
+          <tbody><!-- rendered by JS --></tbody>
+        </table>
+      </div>
+
+      <p class="full-prompt-note"><strong>Read:</strong> branded queries cite you perfectly (#1 across all engines). Category queries omit you entirely on ChatGPT and Gemini. The gap = AEO surface area, not brand strength.</p>
     </div>
   </section>
 
@@ -357,28 +422,17 @@
   <hr class="full-divider">
 
   <!-- ============================================================ -->
-  <!-- PER-PILLAR SUMMARY                                            -->
+  <!-- PRIORITY RECOMMENDATIONS                                      -->
   <!-- ============================================================ -->
   <section class="full-section alt">
     <div class="full-inner">
-      <span class="full-section-label">All 9 pillars at a glance</span>
-      <h2 class="full-h2">Full pillar breakdown</h2>
+      <span class="full-section-label">Priority recommendations</span>
+      <h2 class="full-h2">Where to start</h2>
+      <p class="full-p-sub">Ordered to clear the highest-impact gaps first. Each maps to a real finding in the audit above.</p>
 
-      <table class="full-pillar-table">
-        <thead><tr><th>Pillar</th><th>Score</th><th>Weight</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td>Content Extractability</td><td>34</td><td>20%</td><td><span class="pill-bad">Drag</span></td></tr>
-          <tr><td>Schema Coverage</td>       <td>92</td><td>15%</td><td><span class="pill-ok">Strong</span></td></tr>
-          <tr><td>AI Crawler Access</td>     <td>100</td><td>12%</td><td><span class="pill-ok">Strong</span></td></tr>
-          <tr><td>Entity &amp; Brand Authority</td><td>34</td><td>12%</td><td><span class="pill-bad">Drag</span></td></tr>
-          <tr><td>E-E-A-T Signals</td>       <td>70</td><td>10%</td><td><span class="pill-ok">Solid</span></td></tr>
-          <tr><td>Live Citation Test</td>    <td>22</td><td>12%</td><td><span class="pill-bad">Drag</span></td></tr>
-          <tr><td>Freshness Signals</td>     <td>10</td><td>6%</td><td><span class="pill-bad">Drag</span></td></tr>
-          <tr><td>FAQ Coverage</td>          <td>45</td><td>8%</td><td><span class="pill-mid">Partial</span></td></tr>
-          <tr><td>llms.txt Presence</td>     <td>80</td><td>5%</td><td><span class="pill-ok">Strong</span></td></tr>
-          <tr class="full-pillar-total"><td><strong>Composite</strong></td><td><strong>58</strong></td><td colspan="2"><strong>Grade C+</strong></td></tr>
-        </tbody>
-      </table>
+      <div class="full-rec-grid" id="recGrid">
+        <!-- rendered by JS -->
+      </div>
     </div>
   </section>
 
@@ -411,6 +465,7 @@
 
 </main>
 
+<script src="report-data.js"></script>
 <script src="report-full.js"></script>
 </body>
 </html>

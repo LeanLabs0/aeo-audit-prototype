@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEO Scanner | How AI engines see your site</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="scan.css">
+</head>
+<body class="scan-body">
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-logo">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24"/></svg>
+    </div>
+    <span class="nav-logo-text">AEO <span class="gradient-text">Scanner</span></span>
+  </div>
+  <span class="nav-right">by <span class="gradient-text">Lean Labs</span></span>
+</div>
+
+<!-- HERO -->
+<section class="scan-hero">
+  <div class="input-glow-bg"></div>
+  <div class="scan-hero-inner">
+    <h1 class="scan-hero-title">How <span class="gradient-text">AI engines</span> see your site</h1>
+    <p class="scan-hero-sub">Scan any site to see whether ChatGPT, Claude, Perplexity &amp; Gemini can read, trust, and recommend you.</p>
+    <form id="scanForm" class="scan-form" autocomplete="off">
+      <div class="scan-input-wrap">
+        <svg class="scan-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="scanUrl" class="scan-input" type="url" value="https://lean-labs.com" placeholder="https://yourcompany.com" required>
+      </div>
+      <button type="submit" class="btn-primary scan-submit">Scan my site</button>
+    </form>
+    <p class="scan-hero-foot">Free · no signup to see your score · ~30 seconds</p>
+  </div>
+</section>
+
+<!-- STATE CONTAINER (error / empty states) -->
+<section id="scanState" class="scan-state" hidden></section>
+
+<!-- RESULTS SHELL -->
+<main id="results" class="results">
+
+  <!-- Score header: gauge + level + brand context -->
+  <section class="results-head">
+    <div id="gauge" class="gauge"></div>
+    <div id="levelLabel" class="level-label"></div>
+    <div id="brandContext" class="brand-context"></div>
+  </section>
+
+  <!-- 5 category donuts -->
+  <section class="results-block">
+    <h2 class="block-title">Your five AEO scores</h2>
+    <div id="categories" class="categories"></div>
+  </section>
+
+  <!-- Per-check rows grouped under category headers -->
+  <section class="results-block">
+    <h2 class="block-title">What we found</h2>
+    <p class="block-sub">Expand any item to see why it matters and the exact fix.</p>
+    <div id="checks" class="checks"></div>
+  </section>
+
+  <!-- Citation evidence -->
+  <section id="citationSection" class="results-block citation-section"></section>
+
+</main>
+
+<!-- EMAIL GATE BANNER -->
+<div id="gateBanner" class="gate-banner" hidden>
+  <div class="gate-inner">
+    <div class="gate-copy">
+      <strong class="gate-title">Your diagnosis is ready.</strong>
+      <span class="gate-sub">Enter your email to unlock every fix — step-by-step instructions + copy-paste prompts.</span>
+    </div>
+    <form id="gateForm" class="gate-form" autocomplete="off">
+      <input id="gateEmail" class="gate-email" type="email" placeholder="you@company.com" required>
+      <button type="submit" class="btn-primary gate-submit">Unlock my fixes</button>
+    </form>
+  </div>
+</div>
+
+<script src="scan-mock-data.js"></script>
+<script src="scan.js"></script>
+</body>
+</html>

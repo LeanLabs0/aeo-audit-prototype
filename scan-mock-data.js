@@ -2,60 +2,91 @@
 // scanner API will return. Static mockup only — no network, no backend.
 window.AEO_SCAN_MOCK = {
   brand_context: { brand: "Lean Labs", category: "HubSpot growth marketing agency", icp: "B2B SaaS companies" },
-  pages_fetched: 10,
+  pages_fetched: 8,
   readable: true,
-  report: {
-    composite_score: 58, grade: "C+",
-    pillars: [
-      // 9 pillars. fields: pillar, score, weight, findings[]
-      { pillar:"extractability", score:34, weight:0.20, findings:[
-        { severity:"critical", title:"Pages bury the answer below the fold", why_it_matters:"AI engines extract the first answer-shaped paragraph; yours start with brand narrative so they grab nothing.", fix_hint:"Rewrite the first 500 tokens of /pricing and /solutions/* as a direct answer.", page_url:"https://lean-labs.com/pricing" },
-        { severity:"high", title:"Paragraphs too long to quote", why_it_matters:"Long paragraphs aren't cleanly quotable, so engines skip them.", fix_hint:"Break into 1-2 sentence atomic paragraphs.", page_url:null }
-      ]},
-      { pillar:"schema", score:92, weight:0.15, findings:[] },
-      { pillar:"crawler_access", score:100, weight:0.12, findings:[] },
-      { pillar:"entity", score:34, weight:0.12, findings:[
-        { severity:"high", title:"No Wikidata entity for the brand", why_it_matters:"Without a canonical Q-ID, AI engines fall back to fuzzy name matching and may confuse you with others.", fix_hint:"File a Wikidata entry for Lean Labs.", page_url:null },
-        { severity:"medium", title:"Missing sameAs links (LinkedIn, Crunchbase, G2)", why_it_matters:"sameAs binds your brand to canonical profiles engines already trust.", fix_hint:"Add sameAs array to Organization JSON-LD.", page_url:null }
-      ]},
-      { pillar:"citation", score:50, weight:0.12, findings:[
-        { severity:"critical", title:"AI engines cite you in only 25% of buyer prompts", why_it_matters:"Buyers using AI search rarely see you surfaced as a recommendation.", fix_hint:"Ship schema + extractability + entity fixes, then re-test in 30 days.", page_url:null }
-      ]},
-      { pillar:"eeat", score:70, weight:0.10, findings:[
-        { severity:"medium", title:"Blog posts lack named authors", why_it_matters:"Named authors lift E-E-A-T trust ranking.", fix_hint:"Add author + dateModified to Article schema.", page_url:null }
-      ]},
-      { pillar:"faq_coverage", score:45, weight:0.08, findings:[
-        { severity:"critical", title:"No FAQPage schema site-wide", why_it_matters:"Engines extract Q&A blocks directly; you answer the questions but never wrap them.", fix_hint:"Add FAQPage schema to /pricing + /solutions/*.", page_url:null }
-      ]},
-      { pillar:"freshness", score:10, weight:0.06, findings:[
-        { severity:"medium", title:"Pages missing dateModified", why_it_matters:"Freshness is weighted heavily; undated pages look stale to engines.", fix_hint:"Add dateModified to pricing, solutions, and blog.", page_url:null }
-      ]},
-      { pillar:"llms_txt", score:80, weight:0.05, findings:[] }
-    ]
-  },
-  // citation evidence — shape mirrors the real engine output
-  citation: {
-    score: 50,
-    evidence: {
-      overall_mention_rate: 0.25,
-      by_engine: { chatgpt:{total:30, mention_rate:0.13}, claude:{total:30, mention_rate:0.40}, perplexity:{total:30, mention_rate:0.30}, gemini:{total:30, mention_rate:0.17} },
-      prompts: [
-        { prompt:"What are the best HubSpot growth marketing agency options for B2B SaaS?", intent:"Comparative" },
-        { prompt:"Top 5 HubSpot growth marketing agency companies serving B2B SaaS", intent:"Comparative" },
-        { prompt:"Which HubSpot growth marketing agency should I hire for B2B SaaS?", intent:"Comparative" },
-        { prompt:"How to choose a HubSpot growth marketing agency for B2B SaaS", intent:"Evaluative" },
-        { prompt:"Tell me about Lean Labs", intent:"Branded" }
-      ],
-      // per-prompt per-engine status for the table (Cited/Omitted + optional rank)
-      prompt_tracking: [
-        { prompt:"What are the best HubSpot growth marketing agency options for B2B SaaS?", intent:"Comparative", chatgpt:{status:"Omitted",rank:null}, claude:{status:"Cited",rank:null}, perplexity:{status:"Omitted",rank:null}, gemini:{status:"Cited",rank:7} },
-        { prompt:"Top 5 HubSpot growth marketing agency companies serving B2B SaaS", intent:"Comparative", chatgpt:{status:"Omitted",rank:null}, claude:{status:"Cited",rank:null}, perplexity:{status:"Cited",rank:2}, gemini:{status:"Omitted",rank:null} },
-        { prompt:"Which HubSpot growth marketing agency should I hire for B2B SaaS?", intent:"Comparative", chatgpt:{status:"Omitted",rank:null}, claude:{status:"Omitted",rank:null}, perplexity:{status:"Cited",rank:null}, gemini:{status:"Cited",rank:7} },
-        { prompt:"How to choose a HubSpot growth marketing agency for B2B SaaS", intent:"Evaluative", chatgpt:{status:"Omitted",rank:null}, claude:{status:"Omitted",rank:null}, perplexity:{status:"Omitted",rank:null}, gemini:{status:"Omitted",rank:null} },
-        { prompt:"Tell me about Lean Labs", intent:"Branded", chatgpt:{status:"Cited",rank:3}, claude:{status:"Cited",rank:1}, perplexity:{status:"Cited",rank:1}, gemini:{status:"Cited",rank:null} }
-      ],
-      // one verbatim "buyers see this" response where brand was OMITTED (for the red callout)
-      verbatim_omitted: { engine:"chatgpt", prompt:"What are the best HubSpot growth marketing agency options for B2B SaaS?", text:"Here are strong options for B2B SaaS growth on HubSpot: 1) New Breed, 2) SmartBug Media, 3) Six & Flow, 4) Kalungi, 5) Refine Labs. Each has documented HubSpot expertise and SaaS case studies." }
-    }
+  report: { composite_score: 58, grade: "C+" },
+  // 5 categories, each: {key, name, score (0-100 = % subchecks passing), subchecks:[...]}
+  // subcheck: {key, name, status:"pass"|"fail", goal, result?, issue?, how_to_implement?, resources:[{label,url}]}
+  checks: [
+    { key:"ai_citations", name:"AI Citations", score:50, subchecks:[
+      { key:"cited_chatgpt", name:"Cited by ChatGPT", status:"fail",
+        goal:"Get named when buyers ask ChatGPT for recommendations in your category.",
+        issue:"Never surfaced on ChatGPT across 30 buyer prompts.",
+        how_to_implement:"Citation lift lags fixes — improve the signals ChatGPT weighs (schema, extractability, entity authority), then re-test in ~30 days.",
+        resources:[{label:"What is AEO",url:"https://www.lean-labs.com/"}] },
+      { key:"cited_claude", name:"Cited by Claude", status:"pass",
+        goal:"Get named when buyers ask Claude for recommendations in your category.",
+        result:"Mentioned in 40% of buyer prompts on Claude (12 of 30).",
+        resources:[{label:"What is AEO",url:"https://www.lean-labs.com/"}] },
+      { key:"cited_perplexity", name:"Cited by Perplexity", status:"pass",
+        goal:"Get named when buyers ask Perplexity for recommendations in your category.",
+        result:"Mentioned in 30% of buyer prompts on Perplexity (9 of 30).",
+        resources:[{label:"What is AEO",url:"https://www.lean-labs.com/"}] },
+      { key:"cited_gemini", name:"Cited by Gemini", status:"fail",
+        goal:"Get named when buyers ask Gemini for recommendations in your category.",
+        issue:"Never surfaced on Gemini across 30 buyer prompts.",
+        how_to_implement:"Citation lift lags fixes — improve the signals Gemini weighs, then re-test in ~30 days.",
+        resources:[{label:"What is AEO",url:"https://www.lean-labs.com/"}] },
+    ]},
+    { key:"content", name:"Content & Answers", score:25, subchecks:[
+      { key:"answer_first", name:"Answer-first opening", status:"fail",
+        goal:"Open each page with a direct, quotable answer in the first ~500 tokens.",
+        issue:"Pages bury the answer (density 18%) — engines grab brand narrative, not your answer.",
+        how_to_implement:"Rewrite the first 500 tokens of key pages (pricing, solutions) to lead with the answer, then context.",
+        resources:[{label:"Featured snippet best practices",url:"https://developers.google.com/search/docs/appearance/featured-snippets"}] },
+      { key:"atomic_paragraphs", name:"Atomic, quotable paragraphs", status:"fail",
+        goal:"Keep paragraphs short (1-3 sentences) so engines can quote them cleanly.",
+        issue:"Paragraphs too long to quote (~5.2 sentences each).",
+        how_to_implement:"Break long paragraphs into 1-2 sentence chunks; one idea per block.",
+        resources:[] },
+      { key:"question_headings", name:"Question-style headings", status:"pass",
+        goal:"Use question-shaped headings (How/What/Why) matching how buyers ask.",
+        result:"Question-style headings present (ratio 0.42).", resources:[] },
+      { key:"faq_schema", name:"FAQ Q&A blocks", status:"fail",
+        goal:"Wrap Q&A in FAQPage schema so engines extract them directly.",
+        issue:"No FAQPage schema (found 6 question-style headings not wrapped in schema).",
+        how_to_implement:"Add FAQPage JSON-LD to pricing + solutions pages wrapping existing Q&A.",
+        resources:[{label:"FAQPage schema",url:"https://schema.org/FAQPage"},{label:"Google FAQ docs",url:"https://developers.google.com/search/docs/appearance/structured-data/faqpage"}] },
+    ]},
+    { key:"structured_data", name:"Structured Data", score:75, subchecks:[
+      { key:"organization_schema", name:"Organization schema", status:"pass",
+        goal:"Publish Organization JSON-LD so engines know who you are.",
+        result:"Organization schema present.", resources:[{label:"schema.org/Organization",url:"https://schema.org/Organization"}] },
+      { key:"page_schema", name:"WebSite / WebPage schema", status:"pass",
+        goal:"Mark up pages with WebSite/WebPage schema.",
+        result:"Page-level schema present (WebSite, WebPage).", resources:[] },
+      { key:"jsonld_coverage", name:"Valid JSON-LD coverage", status:"pass",
+        goal:"Carry valid JSON-LD on most pages.",
+        result:"8 pages carry valid JSON-LD (80% coverage).", resources:[] },
+      { key:"freshness", name:"Freshness (recent dates)", status:"fail",
+        goal:"Show recent dateModified so engines trust content is current.",
+        issue:"Content looks stale (avg age ~520 days).",
+        how_to_implement:"Add dateModified to Article/WebPage schema; keep key pages updated.", resources:[] },
+    ]},
+    { key:"crawler_access", name:"AI Crawler Access", score:86, subchecks:[
+      { key:"bot_gptbot", name:"GPTBot can reach you", status:"pass", goal:"Let GPTBot fetch your pages.", result:"GPTBot reaches your site (HTTP 200).", resources:[{label:"GPTBot docs",url:"https://platform.openai.com/docs/gptbot"}] },
+      { key:"bot_claudebot", name:"ClaudeBot can reach you", status:"pass", goal:"Let ClaudeBot fetch your pages.", result:"ClaudeBot reaches your site (HTTP 200).", resources:[] },
+      { key:"bot_perplexitybot", name:"PerplexityBot can reach you", status:"pass", goal:"Let PerplexityBot fetch your pages.", result:"PerplexityBot reaches your site (HTTP 200).", resources:[] },
+      { key:"bot_google_extended", name:"Google-Extended can reach you", status:"pass", goal:"Let Google-Extended fetch your pages.", result:"Google-Extended reaches your site (HTTP 200).", resources:[] },
+      { key:"robots_ai", name:"robots.txt allows AI", status:"pass", goal:"Allow AI crawlers in robots.txt.", result:"robots.txt allows AI crawlers.", resources:[] },
+      { key:"ssr", name:"Server-side rendering", status:"pass", goal:"Serve content without requiring JavaScript.", result:"Pages are server-rendered (content in initial HTML).", resources:[] },
+      { key:"llms_txt", name:"llms.txt published", status:"fail", goal:"Publish /llms.txt summarizing key pages for AI agents.", issue:"No llms.txt found.", how_to_implement:"Add /llms.txt with an H1 and links to your key pages.", resources:[{label:"llmstxt.org",url:"https://llmstxt.org"}] },
+    ]},
+    { key:"entity", name:"Entity & Authority", score:33, subchecks:[
+      { key:"wikidata", name:"Wikidata entity (Q-ID)", status:"fail", goal:"Have a canonical Wikidata Q-ID for your brand.", issue:"No Wikidata entity — engines fall back to fuzzy name matching.", how_to_implement:"File a Wikidata entry for your brand.", resources:[{label:"Wikidata",url:"https://www.wikidata.org"}] },
+      { key:"sameas", name:"sameAs — LinkedIn/Crunchbase/G2", status:"fail", goal:"Bind your brand to canonical profiles via sameAs.", issue:"Only 1 of 3 canonical profiles linked (LinkedIn, Crunchbase, G2).", how_to_implement:"Add sameAs links (LinkedIn, Crunchbase, G2) to Organization schema.", resources:[] },
+      { key:"authors", name:"Named authors / bylines", status:"pass", goal:"Attribute content to named authors.", result:"Named authors on 6 of 8 pages.", resources:[] },
+    ]},
+  ],
+  // Jonathan prompt-tracking table + verbatim, shown inside the AI Citations category
+  citation_extra: {
+    prompt_tracking: [
+      { prompt:"What are the best HubSpot growth marketing agency options for B2B SaaS?", intent:"Comparative", chatgpt:{status:"Omitted",rank:null}, claude:{status:"Cited",rank:null}, perplexity:{status:"Omitted",rank:null}, gemini:{status:"Cited",rank:7} },
+      { prompt:"Top 5 HubSpot growth marketing agency companies serving B2B SaaS", intent:"Comparative", chatgpt:{status:"Omitted",rank:null}, claude:{status:"Cited",rank:null}, perplexity:{status:"Cited",rank:2}, gemini:{status:"Omitted",rank:null} },
+      { prompt:"Which HubSpot growth marketing agency should I hire for B2B SaaS?", intent:"Comparative", chatgpt:{status:"Omitted",rank:null}, claude:{status:"Omitted",rank:null}, perplexity:{status:"Cited",rank:null}, gemini:{status:"Cited",rank:7} },
+      { prompt:"How to choose a HubSpot growth marketing agency for B2B SaaS", intent:"Evaluative", chatgpt:{status:"Omitted",rank:null}, claude:{status:"Omitted",rank:null}, perplexity:{status:"Omitted",rank:null}, gemini:{status:"Omitted",rank:null} },
+      { prompt:"Tell me about Lean Labs", intent:"Branded", chatgpt:{status:"Cited",rank:3}, claude:{status:"Cited",rank:1}, perplexity:{status:"Cited",rank:1}, gemini:{status:"Cited",rank:null} },
+    ],
+    verbatim_omitted: { engine:"ChatGPT", prompt:"What are the best HubSpot growth marketing agency options for B2B SaaS?", text:"Here are strong options for B2B SaaS growth on HubSpot: 1) New Breed, 2) SmartBug Media, 3) Six & Flow, 4) Kalungi, 5) Refine Labs. Each has documented HubSpot expertise and SaaS case studies." }
   }
 };

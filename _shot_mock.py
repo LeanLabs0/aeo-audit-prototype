@@ -1,12 +1,13 @@
-"""Throwaway proof-shot script for the static AEO scanner mockup.
-Assumes a static server is already running on 127.0.0.1:8770 serving the
-prototype dir. Captures console errors; there must be NONE.
+"""Throwaway proof-shot script for the reworked static AEO scanner mockup (v2).
+Open per-check cards (Goal/Result/Issue/How-to/Resources), no email gate.
+Captures console errors; there must be NONE.
+
 Run server first (background):
-  python -m http.server 8770 --bind 127.0.0.1 --directory "C:/Users/Sistemas/aeo-audit-prototype"
+  python -m http.server 8772 --bind 127.0.0.1 --directory "C:/Users/Sistemas/aeo-audit-prototype"
 """
 from playwright.sync_api import sync_playwright
 
-BASE = "http://127.0.0.1:8770"
+BASE = "http://127.0.0.1:8772"
 OUT = "C:/Users/Sistemas/aeo-audit-prototype"
 
 DESKTOP = {"width": 1280, "height": 900}
@@ -35,49 +36,42 @@ def main():
         pg = new(DESKTOP)
         pg.goto(f"{BASE}/scan.html", wait_until="networkidle")
         pg.wait_for_timeout(1300)
-        grab(pg, f"{OUT}/_scan_mock_default_desktop.png")
+        grab(pg, f"{OUT}/_scan_v2_desktop.png")
         pg.close()
 
         # 2. default mobile
         pg = new(MOBILE)
         pg.goto(f"{BASE}/scan.html", wait_until="networkidle")
         pg.wait_for_timeout(1300)
-        grab(pg, f"{OUT}/_scan_mock_default_mobile.png")
+        grab(pg, f"{OUT}/_scan_v2_mobile.png")
         pg.close()
 
         # 3. unreadable
         pg = new(DESKTOP)
         pg.goto(f"{BASE}/scan.html?state=unreadable", wait_until="networkidle")
         pg.wait_for_timeout(700)
-        grab(pg, f"{OUT}/_scan_mock_unreadable.png")
+        grab(pg, f"{OUT}/_scan_v2_unreadable.png")
         pg.close()
 
         # 4. citation-capacity
         pg = new(DESKTOP)
         pg.goto(f"{BASE}/scan.html?state=citation-capacity", wait_until="networkidle")
         pg.wait_for_timeout(1300)
-        grab(pg, f"{OUT}/_scan_mock_capacity.png")
+        grab(pg, f"{OUT}/_scan_v2_capacity.png")
         pg.close()
 
-        # 5. all-green
-        pg = new(DESKTOP)
-        pg.goto(f"{BASE}/scan.html?state=all-green", wait_until="networkidle")
-        pg.wait_for_timeout(1300)
-        grab(pg, f"{OUT}/_scan_mock_allgreen.png")
-        pg.close()
-
-        # 6. unlocked: open a check row, submit the gate, then shoot
+        # 5. cards: one passing card expanded AND one failing card expanded.
+        # Failing cards start expanded by default. Open the FIRST passing
+        # (collapsed) card so the shot shows both a Result and an Issue body.
         pg = new(DESKTOP)
         pg.goto(f"{BASE}/scan.html", wait_until="networkidle")
         pg.wait_for_timeout(1300)
-        # open the first check row (a real finding)
-        pg.locator(".check-row[data-row] .check-head").first.click()
-        pg.wait_for_timeout(300)
-        # submit the gate to unlock fixes
-        pg.fill("#gateEmail", "ralph@lean-labs.com")
-        pg.click(".gate-submit")
-        pg.wait_for_timeout(500)
-        grab(pg, f"{OUT}/_scan_mock_unlocked.png")
+        # First passing card lives in AI Citations (Cited by Claude). It is
+        # collapsed by default — click its head to expand it.
+        passing = pg.locator(".scan-card--pass:not(.open) .scan-card-head").first
+        passing.click()
+        pg.wait_for_timeout(400)
+        grab(pg, f"{OUT}/_scan_v2_cards.png")
         pg.close()
 
         browser.close()

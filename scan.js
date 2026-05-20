@@ -1,32 +1,9 @@
 /* scan.js — static AEO scanner mockup renderer.
  * No network calls. Reads window.AEO_SCAN_MOCK + ?state= switch.
+ * Open report: NO gate. Every sub-check is a full card (pass + fail).
  */
 (function () {
   "use strict";
-
-  // ── Config: pillar metadata + category grouping ───────────────────────
-  const PILLAR_LABEL = {
-    extractability: "Content Extractability",
-    schema: "Schema Coverage",
-    crawler_access: "AI Crawler Access",
-    entity: "Entity & Brand Authority",
-    citation: "Live Citation Test",
-    eeat: "E-E-A-T Signals",
-    faq_coverage: "FAQ Coverage",
-    freshness: "Freshness Signals",
-    llms_txt: "llms.txt Presence",
-  };
-
-  // 5 categories, each mapping to one-or-more pillars.
-  const CATEGORIES = [
-    { key: "discoverability", label: "Discoverability & Access", pillars: ["crawler_access", "llms_txt"] },
-    { key: "content",         label: "Content & Answers",        pillars: ["extractability", "faq_coverage", "freshness"] },
-    { key: "structured",      label: "Structured Data",          pillars: ["schema"] },
-    { key: "authority",       label: "Authority & Trust",        pillars: ["entity", "eeat"] },
-    { key: "citations",       label: "AI Citations",             pillars: ["citation"] },
-  ];
-
-  const SEVERITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3 };
 
   const ENGINE_LABELS = { chatgpt: "ChatGPT", claude: "Claude", perplexity: "Perplexity", gemini: "Gemini" };
 
@@ -49,30 +26,16 @@
     return "Level 1 · Invisible to AI";
   }
 
-  function weightedAvg(pillars) {
-    let num = 0, den = 0;
-    pillars.forEach((p) => { num += p.score * p.weight; den += p.weight; });
-    return den ? Math.round(num / den) : 0;
+  function passCount(cat) {
+    const subs = cat.subchecks || [];
+    const pass = subs.filter((s) => s.status === "pass").length;
+    return { pass, total: subs.length };
   }
 
   // ── State switch (clone + mutate the mock for synthetic states) ────────
   function getState() {
     const m = new URLSearchParams(window.location.search).get("state");
     return m || "default";
-  }
-
-  function buildAllGreenData(base) {
-    // Clone the mock, bump pillar scores high, empty most findings.
-    const data = JSON.parse(JSON.stringify(base));
-    data.report.composite_score = 90;
-    data.report.grade = "A-";
-    data.report.pillars.forEach((p) => {
-      p.score = Math.max(p.score, 88);
-      p.findings = []; // all green → "no issues found" rows everywhere
-    });
-    data.citation.score = 88;
-    data.citation.evidence.overall_mention_rate = 0.82;
-    return data;
   }
 
   // ── GAUGE ──────────────────────────────────────────────────────────────
@@ -122,17 +85,6 @@
   }
 
   // ── CATEGORY DONUTS ─────────────────────────────────────────────────────
-  function categoryData(data) {
-    const byKey = {};
-    data.report.pillars.forEach((p) => { byKey[p.pillar] = p; });
-    return CATEGORIES.map((cat) => {
-      const pillars = cat.pillars.map((k) => byKey[k]).filter(Boolean);
-      const score = weightedAvg(pillars);
-      const issues = pillars.reduce((n, p) => n + (p.findings ? p.findings.length : 0), 0);
-      return { ...cat, score, issues, pillars };
-    });
-  }
-
   function donutSvg(score, masked) {
     const r = 26, c = 2 * Math.PI * r;
     const pct = masked ? 0 : Math.max(0, Math.min(100, score)) / 100;
@@ -148,133 +100,29 @@
       </svg>`;
   }
 
-  function renderCategories(cats, opts) {
+  function renderCategories(checks, opts) {
     const host = $("#categories");
     const capacityCitations = opts && opts.citationCapacity;
-    host.innerHTML = cats.map((cat) => {
-      const masked = capacityCitations && cat.key === "citations";
+    host.innerHTML = checks.map((cat) => {
+      const masked = capacityCitations && cat.key === "ai_citations";
+      const { pass, total } = passCount(cat);
       const sub = masked
         ? `<span class="cat-note">AI citation test at capacity — try again later.</span>`
-        : (cat.issues === 0
-            ? `<span class="cat-issues cat-issues--ok">No issues</span>`
-            : `<span class="cat-issues">${cat.issues} issue${cat.issues === 1 ? "" : "s"}</span>`);
+        : `<span class="cat-passing">${pass} of ${total} passing</span>`;
       return `
         <div class="cat-card">
           <div class="cat-donut">${donutSvg(cat.score, masked)}</div>
-          <div class="cat-label">${esc(cat.label)}</div>
+          <div class="cat-label">${esc(cat.name)}</div>
           ${sub}
         </div>`;
     }).join("");
   }
 
-  // ── CHECK ROWS ───────────────────────────────────────────────────────────
-  function dotClass(sev) {
-    if (sev === "critical" || sev === "high") return "dot-bad";
-    if (sev === "medium") return "dot-warn";
-    return "dot-ok";
-  }
-
-  function buildPrompt(url, f) {
-    return `I run ${url}. An AEO audit found: ${f.title}. Why it matters: ${f.why_it_matters} Recommended fix: ${f.fix_hint} Write the exact code/content to implement this, ready to paste.`;
-  }
-
-  function renderChecks(cats, url) {
-    const host = $("#checks");
-    host.innerHTML = cats.map((cat) => {
-      // Gather + sort findings across this category's pillars.
-      let findings = [];
-      cat.pillars.forEach((p) => {
-        (p.findings || []).forEach((f) => findings.push(f));
-      });
-      findings.sort((a, b) => (SEVERITY_ORDER[a.severity] ?? 9) - (SEVERITY_ORDER[b.severity] ?? 9));
-
-      const rows = findings.length === 0
-        ? `<div class="check-row check-row--clean">
-             <span class="check-dot dot-ok"></span>
-             <span class="check-title">No issues found</span>
-             <svg class="check-clean-tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-           </div>`
-        : findings.map((f, i) => {
-            const prompt = buildPrompt(url, f);
-            const sevTag = `<span class="check-sev sev-${f.severity}">${f.severity}</span>`;
-            const pageLink = f.page_url
-              ? `<a class="check-page" href="${esc(f.page_url)}" target="_blank" rel="noopener">${esc(f.page_url.replace(/^https?:\/\//, ""))}</a>`
-              : "";
-            return `
-              <div class="check-row" data-row>
-                <button type="button" class="check-head" aria-expanded="false">
-                  <span class="check-dot ${dotClass(f.severity)}"></span>
-                  <span class="check-title">${esc(f.title)}</span>
-                  ${sevTag}
-                  <svg class="check-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-                <div class="check-body">
-                  <p class="check-why"><span class="check-why-label">Why it matters</span>${esc(f.why_it_matters)}</p>
-                  ${pageLink ? `<div class="check-pageline">Affected page: ${pageLink}</div>` : ""}
-                  <div class="fix-block locked">
-                    <div class="lock-badge" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                      Unlock with email
-                    </div>
-                    <div class="fix-inner">
-                      <div class="fix-label">How to fix</div>
-                      <p class="fix-hint">${esc(f.fix_hint)}</p>
-                      <details class="fix-prompt">
-                        <summary>Get the copy-paste AI prompt</summary>
-                        <textarea class="prompt-text" readonly rows="4">${esc(prompt)}</textarea>
-                        <button type="button" class="copy-btn" data-copy>Copy prompt</button>
-                      </details>
-                    </div>
-                  </div>
-                </div>
-              </div>`;
-          }).join("");
-
-      return `
-        <div class="check-group">
-          <div class="check-group-head">
-            <span class="check-group-name">${esc(cat.label)}</span>
-            <span class="check-group-score ${tintClass(cat.score)}">${cat.score}</span>
-          </div>
-          ${rows}
-        </div>`;
-    }).join("");
-
-    wireChecks();
-  }
-
-  function wireChecks() {
-    document.querySelectorAll(".check-head").forEach((head) => {
-      head.addEventListener("click", () => {
-        const row = head.closest("[data-row]");
-        const open = row.classList.toggle("open");
-        head.setAttribute("aria-expanded", open ? "true" : "false");
-      });
-    });
-    document.querySelectorAll("[data-copy]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const ta = btn.parentElement.querySelector(".prompt-text");
-        if (!ta) return;
-        const done = () => {
-          const orig = btn.textContent;
-          btn.textContent = "✓ Copied";
-          btn.classList.add("copied");
-          setTimeout(() => { btn.textContent = orig; btn.classList.remove("copied"); }, 1600);
-        };
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(ta.value).then(done).catch(done);
-        } else {
-          ta.select(); done();
-        }
-      });
-    });
-  }
-
-  // ── CITATION SECTION ─────────────────────────────────────────────────────
-  function renderCitation(data) {
-    const host = $("#citationSection");
-    const ev = data.citation.evidence;
-    const v = ev.verbatim_omitted;
+  // ── CITATION EXTRA (Jonathan block, rendered INSIDE AI Citations) ────────
+  function citationExtraHtml(data) {
+    const extra = data.citation_extra;
+    if (!extra) return "";
+    const v = extra.verbatim_omitted;
     const brand = data.brand_context.brand;
     const category = data.brand_context.category;
 
@@ -285,55 +133,150 @@
       return `<td><span class="${klass}">${esc(s)}</span>${rank}</td>`;
     };
 
-    const rows = ev.prompt_tracking.map((r) => `
+    const rows = extra.prompt_tracking.map((r) => `
       <tr>
         <td class="col-prompt">"${esc(r.prompt)}"</td>
         <td class="col-intent"><span class="pt-intent">${esc(r.intent)}</span></td>
         ${cell(r.chatgpt)}${cell(r.claude)}${cell(r.perplexity)}${cell(r.gemini)}
       </tr>`).join("");
 
-    const ratePct = Math.round(ev.overall_mention_rate * 100);
+    return `
+      <div class="cite-extra">
+        <div class="cite-callout">
+          <div class="cite-callout-head">When buyers ask AI about <b>${esc(category)}</b>, here's what they see —</div>
+          <div class="cite-verbatim"><span class="cite-engine">${esc(ENGINE_LABELS[String(v.engine).toLowerCase()] || v.engine)}</span>${esc(v.text)}</div>
+          <div class="cite-omitted-line">${esc(brand)} was not mentioned. Your competitors were.</div>
+        </div>
 
-    host.innerHTML = `
-      <h2 class="block-title">What AI engines say about you</h2>
-      <p class="block-sub">Across ${esc(ev.prompts.length)} buyer prompts × 4 engines · you were named <b>${ratePct}%</b> of the time.</p>
-
-      <div class="cite-callout">
-        <div class="cite-callout-head">When buyers ask AI about <b>${esc(category)}</b>, here's what they see —</div>
-        <div class="cite-verbatim"><span class="cite-engine">${esc(ENGINE_LABELS[v.engine] || v.engine)}</span>${esc(v.text)}</div>
-        <div class="cite-omitted-line">${esc(brand)} was not mentioned. Your competitors were.</div>
-      </div>
-
-      <div class="cite-table-wrap">
-        <table class="prompt-table">
-          <thead>
-            <tr>
-              <th class="th-prompt">Prompt</th>
-              <th class="th-intent">Intent</th>
-              <th>ChatGPT</th><th>Claude</th><th>Perplexity</th><th>Gemini</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
+        <div class="cite-table-wrap">
+          <table class="prompt-table">
+            <thead>
+              <tr>
+                <th class="th-prompt">Prompt</th>
+                <th class="th-intent">Intent</th>
+                <th>ChatGPT</th><th>Claude</th><th>Perplexity</th><th>Gemini</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
       </div>`;
   }
 
-  // ── EMAIL GATE ───────────────────────────────────────────────────────────
-  function wireGate() {
-    const banner = $("#gateBanner");
-    const form = $("#gateForm");
-    if (!banner || !form) return;
-    banner.removeAttribute("hidden");
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      // Visual unlock: drop .locked from every fix block with a fade.
-      document.querySelectorAll(".fix-block.locked").forEach((el) => {
-        el.classList.add("unlocking");
-        // allow the fade transition to start, then strip locked.
-        requestAnimationFrame(() => el.classList.remove("locked"));
+  // ── SUB-CHECK CARDS ──────────────────────────────────────────────────────
+  function iconSvg(pass) {
+    if (pass) {
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 12 2.5 2.5L16 9"/></svg>`;
+    }
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6m0-6 6 6"/></svg>`;
+  }
+
+  function resourcesHtml(resources) {
+    if (!resources || !resources.length) return "";
+    const chips = resources.map((r) =>
+      `<a class="resource-chip" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.label)}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7m0 0H8m9 0v9"/></svg>
+      </a>`).join("");
+    return `
+      <div class="card-section">
+        <div class="card-label">Resources</div>
+        <div class="resource-chips">${chips}</div>
+      </div>`;
+  }
+
+  function cardHtml(sub) {
+    const pass = sub.status === "pass";
+    const openClass = pass ? "" : " open"; // failing cards expanded by default
+    const expanded = pass ? "false" : "true";
+
+    let body = `
+      <div class="card-section">
+        <div class="card-label">Goal</div>
+        <p class="card-text">${esc(sub.goal)}</p>
+      </div>`;
+
+    if (pass) {
+      body += `
+        <div class="card-section">
+          <div class="card-label">Result</div>
+          <p class="result-text">${esc(sub.result)}</p>
+        </div>`;
+    } else {
+      body += `
+        <div class="card-section">
+          <div class="card-label">Issue</div>
+          <p class="issue-text">${esc(sub.issue)}</p>
+        </div>
+        <div class="card-section">
+          <div class="card-label">How to implement</div>
+          <p class="card-text">${esc(sub.how_to_implement)}</p>
+        </div>`;
+    }
+
+    body += resourcesHtml(sub.resources);
+
+    if (!pass) {
+      body += `
+        <div class="card-actions">
+          <a class="book-btn" href="#book">Book a meeting to fix this issue</a>
+        </div>`;
+    }
+
+    return `
+      <div class="scan-card scan-card--${pass ? "pass" : "fail"}${openClass}" data-card>
+        <button type="button" class="scan-card-head" aria-expanded="${expanded}">
+          <span class="card-status ${pass ? "status-pass" : "status-fail"}" aria-hidden="true">${iconSvg(pass)}</span>
+          <span class="card-name">${esc(sub.name)}</span>
+          <span class="card-badge ${pass ? "badge-pass" : "badge-fail"}">${pass ? "Pass" : "Fail"}</span>
+          <svg class="card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="scan-card-body">${body}</div>
+      </div>`;
+  }
+
+  function renderChecks(data, opts) {
+    const host = $("#checks");
+    const checks = data.checks || [];
+    const capacityCitations = opts && opts.citationCapacity;
+
+    host.innerHTML = checks.map((cat) => {
+      const { pass, total } = passCount(cat);
+      const cards = (cat.subchecks || []).map(cardHtml).join("");
+
+      // AI Citations: render Jonathan's evidence block BEFORE the cards.
+      const extra = (cat.key === "ai_citations" && !capacityCitations) ? citationExtraHtml(data) : "";
+
+      const capacityNote = (cat.key === "ai_citations" && capacityCitations)
+        ? `<div class="cat-capacity-note">AI citation test is at capacity right now — these results will refresh once it's available again.</div>`
+        : "";
+
+      return `
+        <div class="check-group">
+          <div class="check-group-head">
+            <span class="check-group-name">${esc(cat.name)}</span>
+            <span class="check-group-meta">
+              <span class="check-group-passing">${pass} of ${total} passing</span>
+              <span class="check-group-score ${tintClass(cat.score)}">${cat.score}</span>
+            </span>
+          </div>
+          <div class="check-group-body">
+            ${capacityNote}
+            ${extra}
+            <div class="card-stack">${cards}</div>
+          </div>
+        </div>`;
+    }).join("");
+
+    wireCards();
+  }
+
+  function wireCards() {
+    document.querySelectorAll(".scan-card-head").forEach((head) => {
+      head.addEventListener("click", () => {
+        const card = head.closest("[data-card]");
+        const open = card.classList.toggle("open");
+        head.setAttribute("aria-expanded", open ? "true" : "false");
       });
-      banner.classList.add("dismissed");
-      setTimeout(() => banner.setAttribute("hidden", ""), 280);
     });
   }
 
@@ -377,25 +320,14 @@
     $("#scanState").setAttribute("hidden", "");
     $("#results").removeAttribute("hidden");
 
-    const url = $("#scanUrl") ? $("#scanUrl").value : "https://lean-labs.com";
     const report = data.report;
 
     renderGauge(report.composite_score, report.grade);
     $("#levelLabel").textContent = levelText(report.composite_score);
     renderBrandContext(data.brand_context);
 
-    const cats = categoryData(data);
-    renderCategories(cats, { citationCapacity: opts.citationCapacity });
-    renderChecks(cats, url);
-
-    if (opts.citationCapacity) {
-      $("#citationSection").setAttribute("hidden", "");
-    } else {
-      $("#citationSection").removeAttribute("hidden");
-      renderCitation(data);
-    }
-
-    wireGate();
+    renderCategories(data.checks, { citationCapacity: opts.citationCapacity });
+    renderChecks(data, { citationCapacity: opts.citationCapacity });
   }
 
   // ── BOOT ─────────────────────────────────────────────────────────────────
@@ -423,9 +355,6 @@
         break;
       case "citation-capacity":
         renderFull(mock, { citationCapacity: true });
-        break;
-      case "all-green":
-        renderFull(buildAllGreenData(mock));
         break;
       default:
         renderFull(mock);

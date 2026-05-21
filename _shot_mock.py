@@ -1,13 +1,16 @@
-"""Throwaway proof-shot script for the reworked static AEO scanner mockup (v2).
-Open per-check cards (Goal/Result/Issue/How-to/Resources), no email gate.
+"""Throwaway proof-shot script for the reworked static AEO scanner mockup (v3).
+
+Jonathan v3: overall-score callout (no letter grade), pre-run optional inputs,
+condensed category summary tiles, 2-card teaser + email gate (blur), single CTA.
+
 Captures console errors; there must be NONE.
 
 Run server first (background):
-  python -m http.server 8772 --bind 127.0.0.1 --directory "C:/Users/Sistemas/aeo-audit-prototype"
+  python -m http.server 8773 --bind 127.0.0.1 --directory "C:/Users/Sistemas/aeo-audit-prototype"
 """
 from playwright.sync_api import sync_playwright
 
-BASE = "http://127.0.0.1:8772"
+BASE = "http://127.0.0.1:8773"
 OUT = "C:/Users/Sistemas/aeo-audit-prototype"
 
 DESKTOP = {"width": 1280, "height": 900}
@@ -32,46 +35,45 @@ def main():
             pg.on("pageerror", lambda e: all_console.append(f"[PAGEERROR] {e}"))
             return pg
 
-        # 1. default desktop
+        # 1. default desktop (full page: overall score, summary tiles, CTA,
+        #    AI-Citations hook open, teaser cards + blurred gate)
         pg = new(DESKTOP)
         pg.goto(f"{BASE}/scan.html", wait_until="networkidle")
         pg.wait_for_timeout(1300)
-        grab(pg, f"{OUT}/_scan_v2_desktop.png")
+        grab(pg, f"{OUT}/_scan_v3_desktop.png")
         pg.close()
 
         # 2. default mobile
         pg = new(MOBILE)
         pg.goto(f"{BASE}/scan.html", wait_until="networkidle")
         pg.wait_for_timeout(1300)
-        grab(pg, f"{OUT}/_scan_v2_mobile.png")
+        grab(pg, f"{OUT}/_scan_v3_mobile.png")
         pg.close()
 
-        # 3. unreadable
+        # 3. optional inputs block expanded in the hero (click the toggle first)
         pg = new(DESKTOP)
-        pg.goto(f"{BASE}/scan.html?state=unreadable", wait_until="networkidle")
-        pg.wait_for_timeout(700)
-        grab(pg, f"{OUT}/_scan_v2_unreadable.png")
+        pg.goto(f"{BASE}/scan.html", wait_until="networkidle")
+        pg.wait_for_timeout(800)
+        pg.locator("#ctxToggle").click()
+        pg.wait_for_timeout(500)
+        grab(pg, f"{OUT}/_scan_v3_inputs.png")
         pg.close()
 
-        # 4. citation-capacity
-        pg = new(DESKTOP)
-        pg.goto(f"{BASE}/scan.html?state=citation-capacity", wait_until="networkidle")
-        pg.wait_for_timeout(1300)
-        grab(pg, f"{OUT}/_scan_v2_capacity.png")
-        pg.close()
-
-        # 5. cards: one passing card expanded AND one failing card expanded.
-        # Failing cards start expanded by default. Open the FIRST passing
-        # (collapsed) card so the shot shows both a Result and an Issue body.
+        # 4. after submitting the email gate (blur removed everywhere)
         pg = new(DESKTOP)
         pg.goto(f"{BASE}/scan.html", wait_until="networkidle")
         pg.wait_for_timeout(1300)
-        # First passing card lives in AI Citations (Cited by Claude). It is
-        # collapsed by default — click its head to expand it.
-        passing = pg.locator(".scan-card--pass:not(.open) .scan-card-head").first
-        passing.click()
-        pg.wait_for_timeout(400)
-        grab(pg, f"{OUT}/_scan_v2_cards.png")
+        pg.locator("#gateEmail").fill("ralph@lean-labs.com")
+        pg.locator("#gateForm button[type=submit]").click()
+        pg.wait_for_timeout(600)
+        grab(pg, f"{OUT}/_scan_v3_unlocked.png")
+        pg.close()
+
+        # 5. unreadable error state
+        pg = new(DESKTOP)
+        pg.goto(f"{BASE}/scan.html?state=unreadable", wait_until="networkidle")
+        pg.wait_for_timeout(700)
+        grab(pg, f"{OUT}/_scan_v3_unreadable.png")
         pg.close()
 
         browser.close()

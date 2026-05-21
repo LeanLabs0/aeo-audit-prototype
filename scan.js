@@ -1,11 +1,26 @@
-/* scan.js — static AEO scanner mockup renderer.
+/* scan.js — static AEO scanner mockup renderer (Jonathan v3).
  * No network calls. Reads window.AEO_SCAN_MOCK + ?state= switch.
- * Open report: NO gate. Every sub-check is a full card (pass + fail).
+ *
+ * v3 changes:
+ *  - No letter grade chip; eyebrow "OVERALL SCORE" above the gauge.
+ *  - 5 categories render as clickable SUMMARY TILES (donut + name + score +
+ *    one-line summary). Detail blocks below are COLLAPSED by default.
+ *  - AI Citations detail block is open by default as the hook (unblurred):
+ *    callout + verbatim + prompt table with first 2 rows shown, rest .locked.
+ *  - Teaser: exactly 2 sub-check cards unblurred across the rest of the report
+ *    (one passing green, one failing red). Everything else is .locked (blurred).
+ *  - One email gate (#gateBanner) over the blurred region; on submit it removes
+ *    .locked everywhere, hides the gate, shows a "Sent to {email}" confirmation.
+ *  - No per-card "Book a meeting" button. One consolidated CTA up near summaries.
  */
 (function () {
   "use strict";
 
   const ENGINE_LABELS = { chatgpt: "ChatGPT", claude: "Claude", perplexity: "Perplexity", gemini: "Gemini" };
+
+  // The 2 unblurred teaser cards (one pass, one fail) by subcheck key.
+  const TEASER_PASS_KEY = "organization_schema"; // green teaser
+  const TEASER_FAIL_KEY = "wikidata";            // red teaser
 
   // ── Small DOM helpers ─────────────────────────────────────────────────
   const $ = (sel) => document.querySelector(sel);
@@ -32,14 +47,22 @@
     return { pass, total: subs.length };
   }
 
-  // ── State switch (clone + mutate the mock for synthetic states) ────────
+  // Derive the one-line summary text shown under each category tile.
+  function summaryLine(cat, masked) {
+    if (masked) return "AI citation test at capacity — try again later.";
+    const { pass, total } = passCount(cat);
+    if (cat.key === "ai_citations") return `Cited in ${pass} of 4 AI engines`;
+    return `${pass} of ${total} checks passing`;
+  }
+
+  // ── State switch ───────────────────────────────────────────────────────
   function getState() {
     const m = new URLSearchParams(window.location.search).get("state");
     return m || "default";
   }
 
-  // ── GAUGE ──────────────────────────────────────────────────────────────
-  function renderGauge(score, grade) {
+  // ── GAUGE (no grade chip) ──────────────────────────────────────────────
+  function renderGauge(score) {
     const host = $("#gauge");
     host.innerHTML = `
       <div class="gauge-wrap">
@@ -52,10 +75,8 @@
         </svg>
         <div class="gauge-center">
           <div class="gauge-score">${score}<span class="gauge-of">/100</span></div>
-          <div class="gauge-grade tint-${tintClass(score).replace("tint-", "")}">${esc(grade)}</div>
         </div>
       </div>`;
-    // Animate the arc after paint.
     const arc = $("#gaugeArc");
     requestAnimationFrame(() => {
       requestAnimationFrame(() => { arc.style.strokeDashoffset = String(100 - score); });
@@ -67,24 +88,44 @@
     const host = $("#brandContext");
     host.innerHTML = `
       <div class="brand-line">Detected: <b>${esc(ctx.category)}</b> for <b>${esc(ctx.icp)}</b>
-        · <button type="button" class="link-btn" id="refineBtn">not right? refine</button></div>
-      <div class="refine-panel" id="refinePanel" hidden>
-        <label class="refine-field">Category
-          <input type="text" class="refine-input" value="${esc(ctx.category)}">
-        </label>
-        <label class="refine-field">Ideal customer
-          <input type="text" class="refine-input" value="${esc(ctx.icp)}">
-        </label>
-        <button type="button" class="btn-secondary refine-apply">Re-scan with these</button>
-      </div>`;
-    const btn = $("#refineBtn"), panel = $("#refinePanel");
-    btn.addEventListener("click", () => {
-      const open = panel.hasAttribute("hidden");
-      if (open) panel.removeAttribute("hidden"); else panel.setAttribute("hidden", "");
+        · <button type="button" class="link-btn" id="refineBtn">refine</button></div>`;
+    const btn = $("#refineBtn");
+    if (btn) {
+      btn.addEventListener("click", () => {
+        // "refine" reveals + scrolls to the same pre-run inputs in the hero.
+        const panel = $("#ctxPanel"), toggle = $("#ctxToggle");
+        if (panel && panel.hasAttribute("hidden")) openCtxPanel(panel, toggle);
+        const hero = $(".hero-context");
+        if (hero) hero.scrollIntoView({ behavior: "smooth", block: "center" });
+        const cat = $("#inputCategory");
+        if (cat) cat.focus();
+      });
+    }
+  }
+
+  // ── PRE-RUN OPTIONAL INPUTS (hero) ──────────────────────────────────────
+  function openCtxPanel(panel, toggle) {
+    panel.removeAttribute("hidden");
+    toggle.setAttribute("aria-expanded", "true");
+    const sign = toggle.querySelector(".ctx-toggle-sign");
+    if (sign) sign.textContent = "–";
+  }
+  function closeCtxPanel(panel, toggle) {
+    panel.setAttribute("hidden", "");
+    toggle.setAttribute("aria-expanded", "false");
+    const sign = toggle.querySelector(".ctx-toggle-sign");
+    if (sign) sign.textContent = "+";
+  }
+  function wireCtxToggle() {
+    const toggle = $("#ctxToggle"), panel = $("#ctxPanel");
+    if (!toggle || !panel) return;
+    toggle.addEventListener("click", () => {
+      if (panel.hasAttribute("hidden")) openCtxPanel(panel, toggle);
+      else closeCtxPanel(panel, toggle);
     });
   }
 
-  // ── CATEGORY DONUTS ─────────────────────────────────────────────────────
+  // ── CATEGORY SUMMARY TILES ──────────────────────────────────────────────
   function donutSvg(score, masked) {
     const r = 26, c = 2 * Math.PI * r;
     const pct = masked ? 0 : Math.max(0, Math.min(100, score)) / 100;
@@ -105,20 +146,36 @@
     const capacityCitations = opts && opts.citationCapacity;
     host.innerHTML = checks.map((cat) => {
       const masked = capacityCitations && cat.key === "ai_citations";
-      const { pass, total } = passCount(cat);
-      const sub = masked
-        ? `<span class="cat-note">AI citation test at capacity — try again later.</span>`
-        : `<span class="cat-passing">${pass} of ${total} passing</span>`;
+      const line = summaryLine(cat, masked);
+      const scoreChip = masked
+        ? `<span class="cat-score-chip tint-muted">—</span>`
+        : `<span class="cat-score-chip ${tintClass(cat.score)}">${cat.score}</span>`;
       return `
-        <div class="cat-card">
+        <button type="button" class="cat-card" data-cat-tile data-target="cat-${esc(cat.key)}" aria-expanded="false">
           <div class="cat-donut">${donutSvg(cat.score, masked)}</div>
           <div class="cat-label">${esc(cat.name)}</div>
-          ${sub}
-        </div>`;
+          ${scoreChip}
+          <span class="cat-summary">${esc(line)}</span>
+        </button>`;
     }).join("");
+
+    host.querySelectorAll("[data-cat-tile]").forEach((tile) => {
+      tile.addEventListener("click", () => {
+        const target = tile.getAttribute("data-target");
+        const group = document.getElementById(target);
+        if (!group) return;
+        // Expand the detail block + smooth scroll to it.
+        openGroup(group);
+        host.querySelectorAll("[data-cat-tile]").forEach((t) =>
+          t.setAttribute("aria-expanded", t === tile ? "true" : t.getAttribute("aria-expanded")));
+        tile.setAttribute("aria-expanded", "true");
+        group.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
   }
 
-  // ── CITATION EXTRA (Jonathan block, rendered INSIDE AI Citations) ────────
+  // ── CITATION EXTRA (Jonathan block, inside AI Citations) ─────────────────
+  // First 2 prompt rows unblurred; remaining rows get .locked.
   function citationExtraHtml(data) {
     const extra = data.citation_extra;
     if (!extra) return "";
@@ -133,8 +190,8 @@
       return `<td><span class="${klass}">${esc(s)}</span>${rank}</td>`;
     };
 
-    const rows = extra.prompt_tracking.map((r) => `
-      <tr>
+    const rows = extra.prompt_tracking.map((r, i) => `
+      <tr class="${i >= 2 ? "locked" : ""}">
         <td class="col-prompt">"${esc(r.prompt)}"</td>
         <td class="col-intent"><span class="pt-intent">${esc(r.intent)}</span></td>
         ${cell(r.chatgpt)}${cell(r.claude)}${cell(r.perplexity)}${cell(r.gemini)}
@@ -163,7 +220,7 @@
       </div>`;
   }
 
-  // ── SUB-CHECK CARDS ──────────────────────────────────────────────────────
+  // ── SUB-CHECK CARDS (no per-card book button) ────────────────────────────
   function iconSvg(pass) {
     if (pass) {
       return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 12 2.5 2.5L16 9"/></svg>`;
@@ -184,10 +241,12 @@
       </div>`;
   }
 
-  function cardHtml(sub) {
+  // teaser = true → unblurred & expanded; teaser = false → blurred (.locked) & collapsed.
+  function cardHtml(sub, teaser) {
     const pass = sub.status === "pass";
-    const openClass = pass ? "" : " open"; // failing cards expanded by default
-    const expanded = pass ? "false" : "true";
+    const openClass = teaser ? " open" : "";
+    const lockedClass = teaser ? "" : " locked";
+    const expanded = teaser ? "true" : "false";
 
     let body = `
       <div class="card-section">
@@ -215,15 +274,8 @@
 
     body += resourcesHtml(sub.resources);
 
-    if (!pass) {
-      body += `
-        <div class="card-actions">
-          <a class="book-btn" href="#book">Book a meeting to fix this issue</a>
-        </div>`;
-    }
-
     return `
-      <div class="scan-card scan-card--${pass ? "pass" : "fail"}${openClass}" data-card>
+      <div class="scan-card scan-card--${pass ? "pass" : "fail"}${openClass}${lockedClass}" data-card>
         <button type="button" class="scan-card-head" aria-expanded="${expanded}">
           <span class="card-status ${pass ? "status-pass" : "status-fail"}" aria-hidden="true">${iconSvg(pass)}</span>
           <span class="card-name">${esc(sub.name)}</span>
@@ -234,31 +286,50 @@
       </div>`;
   }
 
+  // ── DETAIL REGION (one collapsible block per category) ───────────────────
+  function openGroup(group) {
+    group.classList.add("open");
+    const head = group.querySelector(".check-group-head");
+    if (head) head.setAttribute("aria-expanded", "true");
+  }
+
   function renderChecks(data, opts) {
     const host = $("#checks");
     const checks = data.checks || [];
     const capacityCitations = opts && opts.citationCapacity;
 
-    host.innerHTML = checks.map((cat) => {
+    host.innerHTML = checks.map((cat, idx) => {
       const { pass, total } = passCount(cat);
-      const cards = (cat.subchecks || []).map(cardHtml).join("");
+      const isCitations = cat.key === "ai_citations";
+      const subs = cat.subchecks || [];
+      const hasTeaser = subs.some((s) => s.key === TEASER_PASS_KEY || s.key === TEASER_FAIL_KEY);
+      // Open by default: AI Citations (the hook) + any group holding a teaser
+      // card, so the first compact view shows the unblurred "some good, some
+      // bad" teaser. All other groups stay collapsed (summaries only).
+      const openClass = (isCitations || hasTeaser) ? " open" : "";
+      const headExpanded = (isCitations || hasTeaser) ? "true" : "false";
 
-      // AI Citations: render Jonathan's evidence block BEFORE the cards.
-      const extra = (cat.key === "ai_citations" && !capacityCitations) ? citationExtraHtml(data) : "";
+      const cards = subs.map((sub) => {
+        const teaser = sub.key === TEASER_PASS_KEY || sub.key === TEASER_FAIL_KEY;
+        return cardHtml(sub, teaser);
+      }).join("");
 
-      const capacityNote = (cat.key === "ai_citations" && capacityCitations)
+      const extra = (isCitations && !capacityCitations) ? citationExtraHtml(data) : "";
+
+      const capacityNote = (isCitations && capacityCitations)
         ? `<div class="cat-capacity-note">AI citation test is at capacity right now — these results will refresh once it's available again.</div>`
         : "";
 
       return `
-        <div class="check-group">
-          <div class="check-group-head">
+        <div class="check-group${openClass}" id="cat-${esc(cat.key)}">
+          <button type="button" class="check-group-head" aria-expanded="${headExpanded}">
             <span class="check-group-name">${esc(cat.name)}</span>
             <span class="check-group-meta">
               <span class="check-group-passing">${pass} of ${total} passing</span>
               <span class="check-group-score ${tintClass(cat.score)}">${cat.score}</span>
+              <svg class="group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </span>
-          </div>
+          </button>
           <div class="check-group-body">
             ${capacityNote}
             ${extra}
@@ -267,9 +338,22 @@
         </div>`;
     }).join("");
 
+    wireGroups();
     wireCards();
   }
 
+  // Category detail headers toggle open/closed.
+  function wireGroups() {
+    document.querySelectorAll(".check-group-head").forEach((head) => {
+      head.addEventListener("click", () => {
+        const group = head.closest(".check-group");
+        const open = group.classList.toggle("open");
+        head.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    });
+  }
+
+  // Individual sub-check cards toggle open/closed (blurred ones are pointer-none).
   function wireCards() {
     document.querySelectorAll(".scan-card-head").forEach((head) => {
       head.addEventListener("click", () => {
@@ -277,6 +361,32 @@
         const open = card.classList.toggle("open");
         head.setAttribute("aria-expanded", open ? "true" : "false");
       });
+    });
+  }
+
+  // ── EMAIL GATE ───────────────────────────────────────────────────────────
+  function wireGate() {
+    const banner = $("#gateBanner");
+    if (banner) banner.removeAttribute("hidden");
+    const form = $("#gateForm");
+    if (!form) return;
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = ($("#gateEmail").value || "").trim() || "you@company.com";
+      // Reveal everything: drop .locked from cards + rows.
+      document.querySelectorAll(".locked").forEach((el) => el.classList.remove("locked"));
+      // Hide the gate form, show confirmation.
+      form.setAttribute("hidden", "");
+      const lock = $(".gate-lock"), title = $(".gate-title"), sub = $(".gate-sub");
+      if (lock) lock.setAttribute("hidden", "");
+      if (title) title.setAttribute("hidden", "");
+      if (sub) sub.setAttribute("hidden", "");
+      const confirm = $("#gateConfirm");
+      if (confirm) {
+        confirm.innerHTML = `<span class="gate-check">✓</span> Sent to <b>${esc(email)}</b>`;
+        confirm.removeAttribute("hidden");
+      }
+      banner.classList.add("gate-banner--done");
     });
   }
 
@@ -322,20 +432,22 @@
 
     const report = data.report;
 
-    renderGauge(report.composite_score, report.grade);
+    renderGauge(report.composite_score);
     $("#levelLabel").textContent = levelText(report.composite_score);
     renderBrandContext(data.brand_context);
 
     renderCategories(data.checks, { citationCapacity: opts.citationCapacity });
     renderChecks(data, { citationCapacity: opts.citationCapacity });
+    wireGate();
   }
 
   // ── BOOT ─────────────────────────────────────────────────────────────────
   function boot() {
+    wireCtxToggle();
+
     const mock = window.AEO_SCAN_MOCK;
     if (!mock) { console.warn("AEO_SCAN_MOCK not loaded"); return; }
 
-    // Re-scanning from the hero form: in the mock this just re-renders.
     const form = $("#scanForm");
     if (form) {
       form.addEventListener("submit", (e) => {

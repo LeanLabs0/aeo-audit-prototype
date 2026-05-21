@@ -231,7 +231,7 @@
 .score-subtitle {
   font-size: var(--text-base, 1rem);
   color: var(--ll-muted, #6b7280);
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-xl);
 }
 .gauge { display: flex; justify-content: center; }
 .gauge-wrap {
@@ -361,7 +361,7 @@
 }
 
 /* ── CATEGORY GROUPS + SUB-CHECK CARDS ────────────────────── */
-.checks { display: flex; flex-direction: column; gap: var(--space-md); }
+.checks { display: flex; flex-direction: column; gap: var(--space-md); margin-top: var(--space-lg); }
 .check-group {
   background: var(--ll-white);
   border: 1px solid var(--ll-border-light);
@@ -706,7 +706,7 @@ tr.locked {
 }
 
 /* ── FOOTER CTA ───────────────────────────────────────────── */
-.footer-cta { margin-top: var(--space-lg); }
+.footer-cta { margin-top: var(--space-sm); }
 .footer-cta-inner {
   background: var(--ll-white);
   border: 1px solid var(--ll-purple-border);

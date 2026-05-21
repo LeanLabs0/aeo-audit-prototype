@@ -17,20 +17,38 @@
   background: var(--ll-off-white);
 }
 
+/* ── SCREEN STATES ────────────────────────────────────────── */
+/* Screen 1 = entry (default). Screen 2 = results (revealed on Scan). */
+.scan-entry[hidden],
+.results-screen[hidden] { display: none; }
+
+/* ── SCREEN 1: ENTRY (full viewport, above the fold) ──────── */
+.scan-entry {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.scan-entry .nav { flex: 0 0 auto; }
+
 /* ── HERO ─────────────────────────────────────────────────── */
 .scan-hero {
   position: relative;
   overflow: hidden;
   background: var(--ll-white);
-  padding: var(--space-2xl) var(--space-lg) var(--space-xl);
+  /* fill the remaining viewport below the nav */
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl) var(--space-lg);
   text-align: center;
-  border-bottom: 1px solid var(--ll-border-light);
 }
 .scan-hero-inner {
   position: relative;
   z-index: 2;
   max-width: 640px;
   margin: 0 auto;
+  width: 100%;
 }
 .scan-hero-title {
   font-size: var(--text-3xl);
@@ -92,47 +110,16 @@
 }
 .scan-submit { height: 52px; }
 
-/* Pre-run optional category / audience inputs */
+/* Pre-run optional category / audience inputs — always visible */
 .hero-context {
   max-width: 560px;
-  margin: var(--space-sm) auto 0;
-  text-align: center;
-}
-.hero-context-toggle {
-  background: none;
-  border: none;
-  color: var(--ll-purple);
-  font-family: var(--font-family);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  cursor: pointer;
-  padding: 4px 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.hero-context-toggle:hover { color: var(--ll-magenta); }
-.ctx-toggle-sign {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--ll-purple-tint);
-  color: var(--ll-purple);
-  font-weight: 700;
-  line-height: 1;
-}
-.hero-context-panel {
-  margin-top: var(--space-sm);
+  margin: var(--space-md) auto 0;
   padding: var(--space-sm) var(--space-md);
   background: var(--ll-purple-tint);
   border: 1px solid var(--ll-purple-border);
   border-radius: var(--radius-md);
-  animation: bodyIn 0.25s ease;
+  text-align: center;
 }
-.hero-context-panel[hidden] { display: none; }
 .ctx-fields {
   display: flex;
   gap: 12px;
@@ -174,6 +161,28 @@
   text-align: left;
 }
 
+/* ── COMPACT HEADER (results screen) ──────────────────────── */
+.compact-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.compact-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+.compact-url {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ll-heading);
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── RESULTS layout ───────────────────────────────────────── */
 .results {
   max-width: 920px;
@@ -197,7 +206,7 @@
   margin-bottom: var(--space-md);
 }
 
-/* ── SCORE HEAD: gauge + level + brand ────────────────────── */
+/* ── SCORE HEAD: big heading + gauge + level + brand ──────── */
 .results-head {
   background: var(--ll-white);
   border: 1px solid var(--ll-border-light);
@@ -206,13 +215,18 @@
   padding: var(--space-lg) var(--space-md) var(--space-md);
   text-align: center;
 }
-.score-eyebrow {
-  font-size: var(--text-xs);
+/* Make the Overall Score block visually dominant at the top. */
+.score-section {
+  margin-top: var(--space-md);
+  padding: var(--space-xl) var(--space-md) var(--space-lg);
+}
+.score-heading {
+  font-size: 2rem;             /* ~ between text-2xl and text-3xl, big */
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--ll-muted);
-  margin-bottom: var(--space-xs);
+  letter-spacing: -0.02em;
+  color: var(--ll-heading);
+  margin-bottom: var(--space-md);
+  line-height: 1.1;
 }
 .gauge { display: flex; justify-content: center; }
 .gauge-wrap {
@@ -540,54 +554,30 @@
 .resource-chip:hover { background: var(--ll-light-purple); }
 .resource-chip svg { width: 12px; height: 12px; }
 
-/* ── BLUR GATE (.locked) ──────────────────────────────────── */
-.locked {
+/* ── INLINE PROMPT-ROW GATE (deepest AI-citation layer only) ─ */
+/* Only the extra prompt-table rows are blurred — nothing else. */
+tr.locked {
+  display: table-row;
   filter: blur(5px);
   user-select: none;
   pointer-events: none;
 }
-/* keep the table row laid out while blurred */
-tr.locked { display: table-row; }
 
-/* checks region is positioned so the gate banner can overlay it */
-.checks-region { position: relative; }
-
-/* ── EMAIL GATE BANNER ────────────────────────────────────── */
-.gate-banner {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: 38%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: var(--space-lg) var(--space-md);
-  background: linear-gradient(180deg, rgba(248, 248, 250, 0) 0%, rgba(248, 248, 250, 0.78) 26%, rgba(248, 248, 250, 0.97) 58%, var(--ll-off-white) 80%);
-  border-radius: var(--radius-lg);
-  z-index: 3;
-}
-.gate-banner[hidden] { display: none; }
-.gate-banner--done {
-  position: static;
-  top: auto;
-  background: none;
-  padding: var(--space-md) 0 0;
-}
-.gate-banner-inner {
-  max-width: 460px;
-  width: 100%;
+/* the inline gate sits right under the visible prompt rows */
+.cite-gate {
+  margin-top: var(--space-md);
   text-align: center;
   background: var(--ll-white);
   border: 1px solid var(--ll-purple-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-lg) var(--space-md);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-md);
 }
-.gate-lock {
-  width: 52px;
-  height: 52px;
-  margin: 0 auto var(--space-sm);
+.cite-gate[hidden] { display: none; }
+.cite-gate-lock {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto var(--space-xs);
   border-radius: 50%;
   background: var(--ll-purple-tint);
   color: var(--ll-purple);
@@ -595,32 +585,28 @@ tr.locked { display: table-row; }
   align-items: center;
   justify-content: center;
 }
-.gate-lock svg { width: 26px; height: 26px; }
-.gate-lock[hidden] { display: none; }
-.gate-title {
-  font-size: var(--text-xl);
+.cite-gate-lock svg { width: 22px; height: 22px; }
+.cite-gate-title {
+  font-size: var(--text-lg);
   font-weight: 700;
   color: var(--ll-heading);
   letter-spacing: -0.01em;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
-.gate-title[hidden] { display: none; }
-.gate-sub {
+.cite-gate-sub {
   font-size: var(--text-sm);
   color: var(--ll-body);
   line-height: 1.6;
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-sm);
 }
-.gate-sub[hidden] { display: none; }
-.gate-form {
+.cite-gate-form {
   display: flex;
-  flex-direction: column;
   gap: 10px;
-  max-width: 360px;
+  max-width: 420px;
   margin: 0 auto;
 }
-.gate-form[hidden] { display: none; }
-.gate-email {
+.cite-gate-email {
+  flex: 1;
   height: 46px;
   padding: 0 14px;
   border: 1px solid var(--ll-border);
@@ -632,17 +618,17 @@ tr.locked { display: table-row; }
   outline: none;
   transition: all var(--transition);
 }
-.gate-email:focus {
+.cite-gate-email:focus {
   border-color: var(--ll-purple);
   box-shadow: 0 0 0 3px rgba(118, 18, 250, 0.12);
 }
-.gate-submit { width: 100%; height: 46px; }
-.gate-confirm {
+.cite-gate-submit { height: 46px; white-space: nowrap; }
+.cite-gate-confirm {
   font-size: var(--text-base);
   font-weight: 600;
   color: var(--ok);
 }
-.gate-confirm[hidden] { display: none; }
+.cite-gate-confirm[hidden] { display: none; }
 .gate-check {
   display: inline-flex;
   align-items: center;
@@ -657,18 +643,38 @@ tr.locked { display: table-row; }
   vertical-align: middle;
 }
 
-/* ── PRIMARY CTA (moved up near summaries) ───────────────────── */
-.primary-cta-block {
-  display: flex;
-  justify-content: center;
+/* ── CTA BAND (its own section between tiles and detail) ────── */
+.cta-band {
+  margin-top: var(--space-lg);
+  background: var(--ll-purple-tint);
+  border-top: 1px solid var(--ll-purple-border);
+  border-bottom: 1px solid var(--ll-purple-border);
+  padding: var(--space-xl) var(--space-md);
 }
-.primary-book-btn {
+.cta-band-inner {
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: center;
+}
+.cta-band-title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ll-heading);
+  margin-bottom: var(--space-xs);
+}
+.cta-band-sub {
+  font-size: var(--text-base);
+  color: var(--ll-body);
+  margin-bottom: var(--space-md);
+}
+.cta-band-btn {
   height: 52px;
-  padding: 0 30px;
+  padding: 0 32px;
   font-size: var(--text-base);
   gap: 8px;
 }
-.primary-book-btn svg { width: 18px; height: 18px; }
+.cta-band-btn svg { width: 18px; height: 18px; }
 
 /* book-a-meeting button */
 .book-btn {
@@ -905,15 +911,20 @@ tr.locked { display: table-row; }
   .scan-card-head { padding: 12px var(--space-sm); }
 
   /* CTAs stack full-width */
-  .primary-cta-block { display: block; }
-  .primary-book-btn { width: 100%; }
+  .cta-band { padding: var(--space-lg) var(--space-sm); }
+  .cta-band-btn { width: 100%; }
   .footer-cta-inner { flex-direction: column; align-items: stretch; text-align: left; }
   .footer-book-btn { width: 100%; }
 
-  /* gate banner: a touch tighter on mobile */
-  .gate-banner { top: 30%; padding: var(--space-md) var(--space-sm); }
-  .gate-banner-inner { padding: var(--space-md) var(--space-sm); }
+  /* inline citation gate: stack input + button on mobile */
+  .cite-gate-form { flex-direction: column; }
+  .cite-gate-submit { width: 100%; }
+
+  /* compact header: hide the long URL, keep logo + scan-another */
+  .compact-url { max-width: 140px; }
 
   .results { padding: var(--space-md) var(--space-sm) var(--space-2xl); }
   .results-head { padding: var(--space-md) var(--space-sm); }
+  .score-section { padding: var(--space-lg) var(--space-sm); }
+  .score-heading { font-size: var(--text-2xl); }
 }

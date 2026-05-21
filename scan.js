@@ -1,26 +1,28 @@
-/* scan.js — static AEO scanner mockup renderer (Jonathan v3).
+/* scan.js — static AEO scanner mockup renderer (Jonathan v4).
  * No network calls. Reads window.AEO_SCAN_MOCK + ?state= switch.
  *
- * v3 changes:
- *  - No letter grade chip; eyebrow "OVERALL SCORE" above the gauge.
- *  - 5 categories render as clickable SUMMARY TILES (donut + name + score +
- *    one-line summary). Detail blocks below are COLLAPSED by default.
- *  - AI Citations detail block is open by default as the hook (unblurred):
- *    callout + verbatim + prompt table with first 2 rows shown, rest .locked.
- *  - Teaser: exactly 2 sub-check cards unblurred across the rest of the report
- *    (one passing green, one failing red). Everything else is .locked (blurred).
- *  - One email gate (#gateBanner) over the blurred region; on submit it removes
- *    .locked everywhere, hides the gate, shows a "Sent to {email}" confirmation.
- *  - No per-card "Book a meeting" button. One consolidated CTA up near summaries.
+ * v4 changes:
+ *  - TWO screens: #entry (full-viewport hero, default) and #results
+ *    (compact header + report). Submitting "Scan my site" hides #entry and
+ *    reveals #results.
+ *  - Optional category/audience inputs are ALWAYS visible (no collapse).
+ *  - HYBRID gating: every category's sub-check cards are OPEN and UNBLURRED.
+ *    The ONLY gated thing is the deepest AI-citation layer — the prompt table
+ *    keeps its red callout + verbatim + first 2 rows visible; the remaining
+ *    rows are blurred behind ONE small inline email gate. On submit (visual)
+ *    the rows unblur, the gate hides, and a "✓ Sent to {email}" line shows.
+ *  - BIG "Overall Score" heading; CTA band is its own section between the
+ *    summary tiles and "What we found".
+ *  - ?state=unreadable|unreachable|citation-capacity still works, rendered in
+ *    the results view.
  */
 (function () {
   "use strict";
 
   const ENGINE_LABELS = { chatgpt: "ChatGPT", claude: "Claude", perplexity: "Perplexity", gemini: "Gemini" };
 
-  // The 2 unblurred teaser cards (one pass, one fail) by subcheck key.
-  const TEASER_PASS_KEY = "organization_schema"; // green teaser
-  const TEASER_FAIL_KEY = "wikidata";            // red teaser
+  // How many prompt-table rows stay visible before the gate.
+  const VISIBLE_PROMPT_ROWS = 2;
 
   // ── Small DOM helpers ─────────────────────────────────────────────────
   const $ = (sel) => document.querySelector(sel);
@@ -61,6 +63,20 @@
     return m || "default";
   }
 
+  // ── SCREEN SWITCHING (entry ↔ results) ──────────────────────────────────
+  function showEntry() {
+    const entry = $("#entry"), results = $("#results");
+    if (results) results.setAttribute("hidden", "");
+    if (entry) entry.removeAttribute("hidden");
+  }
+
+  function showResults() {
+    const entry = $("#entry"), results = $("#results");
+    if (entry) entry.setAttribute("hidden", "");
+    if (results) results.removeAttribute("hidden");
+    window.scrollTo({ top: 0 });
+  }
+
   // ── GAUGE (no grade chip) ──────────────────────────────────────────────
   function renderGauge(score) {
     const host = $("#gauge");
@@ -92,37 +108,14 @@
     const btn = $("#refineBtn");
     if (btn) {
       btn.addEventListener("click", () => {
-        // "refine" reveals + scrolls to the same pre-run inputs in the hero.
-        const panel = $("#ctxPanel"), toggle = $("#ctxToggle");
-        if (panel && panel.hasAttribute("hidden")) openCtxPanel(panel, toggle);
-        const hero = $(".hero-context");
-        if (hero) hero.scrollIntoView({ behavior: "smooth", block: "center" });
+        // "refine" jumps back to the entry screen where the inputs live.
+        showEntry();
+        const fields = $("#ctxFields");
+        if (fields) fields.scrollIntoView({ behavior: "smooth", block: "center" });
         const cat = $("#inputCategory");
         if (cat) cat.focus();
       });
     }
-  }
-
-  // ── PRE-RUN OPTIONAL INPUTS (hero) ──────────────────────────────────────
-  function openCtxPanel(panel, toggle) {
-    panel.removeAttribute("hidden");
-    toggle.setAttribute("aria-expanded", "true");
-    const sign = toggle.querySelector(".ctx-toggle-sign");
-    if (sign) sign.textContent = "–";
-  }
-  function closeCtxPanel(panel, toggle) {
-    panel.setAttribute("hidden", "");
-    toggle.setAttribute("aria-expanded", "false");
-    const sign = toggle.querySelector(".ctx-toggle-sign");
-    if (sign) sign.textContent = "+";
-  }
-  function wireCtxToggle() {
-    const toggle = $("#ctxToggle"), panel = $("#ctxPanel");
-    if (!toggle || !panel) return;
-    toggle.addEventListener("click", () => {
-      if (panel.hasAttribute("hidden")) openCtxPanel(panel, toggle);
-      else closeCtxPanel(panel, toggle);
-    });
   }
 
   // ── CATEGORY SUMMARY TILES ──────────────────────────────────────────────
@@ -164,7 +157,7 @@
         const target = tile.getAttribute("data-target");
         const group = document.getElementById(target);
         if (!group) return;
-        // Expand the detail block + smooth scroll to it.
+        // Cards are already open; just make sure the group is open + scroll to it.
         openGroup(group);
         host.querySelectorAll("[data-cat-tile]").forEach((t) =>
           t.setAttribute("aria-expanded", t === tile ? "true" : t.getAttribute("aria-expanded")));
@@ -175,7 +168,8 @@
   }
 
   // ── CITATION EXTRA (Jonathan block, inside AI Citations) ─────────────────
-  // First 2 prompt rows unblurred; remaining rows get .locked.
+  // First N prompt rows visible; remaining rows blurred (.locked) behind an
+  // inline email gate — this is the ONLY gated thing in the report.
   function citationExtraHtml(data) {
     const extra = data.citation_extra;
     if (!extra) return "";
@@ -191,11 +185,26 @@
     };
 
     const rows = extra.prompt_tracking.map((r, i) => `
-      <tr class="${i >= 2 ? "locked" : ""}">
+      <tr class="${i >= VISIBLE_PROMPT_ROWS ? "locked" : ""}">
         <td class="col-prompt">"${esc(r.prompt)}"</td>
         <td class="col-intent"><span class="pt-intent">${esc(r.intent)}</span></td>
         ${cell(r.chatgpt)}${cell(r.claude)}${cell(r.perplexity)}${cell(r.gemini)}
       </tr>`).join("");
+
+    const hiddenCount = Math.max(0, extra.prompt_tracking.length - VISIBLE_PROMPT_ROWS);
+    const gate = hiddenCount === 0 ? "" : `
+      <div class="cite-gate" id="citeGate">
+        <div class="cite-gate-lock" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h4 class="cite-gate-title">See the full prompt-by-prompt breakdown</h4>
+        <p class="cite-gate-sub">Enter your email — we'll unlock every prompt and send you the complete report.</p>
+        <form id="citeGateForm" class="cite-gate-form" autocomplete="off">
+          <input type="email" id="citeGateEmail" class="cite-gate-email" placeholder="you@company.com" required>
+          <button type="submit" class="btn-primary cite-gate-submit">Unlock &amp; email me</button>
+        </form>
+      </div>
+      <div id="citeGateConfirm" class="cite-gate-confirm" hidden></div>`;
 
     return `
       <div class="cite-extra">
@@ -217,10 +226,11 @@
             <tbody>${rows}</tbody>
           </table>
         </div>
+        ${gate}
       </div>`;
   }
 
-  // ── SUB-CHECK CARDS (no per-card book button) ────────────────────────────
+  // ── SUB-CHECK CARDS (all open & unblurred) ───────────────────────────────
   function iconSvg(pass) {
     if (pass) {
       return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 12 2.5 2.5L16 9"/></svg>`;
@@ -241,12 +251,9 @@
       </div>`;
   }
 
-  // teaser = true → unblurred & expanded; teaser = false → blurred (.locked) & collapsed.
-  function cardHtml(sub, teaser) {
+  // Every card renders OPEN and UNBLURRED. The full diagnosis is visible.
+  function cardHtml(sub) {
     const pass = sub.status === "pass";
-    const openClass = teaser ? " open" : "";
-    const lockedClass = teaser ? "" : " locked";
-    const expanded = teaser ? "true" : "false";
 
     let body = `
       <div class="card-section">
@@ -275,8 +282,8 @@
     body += resourcesHtml(sub.resources);
 
     return `
-      <div class="scan-card scan-card--${pass ? "pass" : "fail"}${openClass}${lockedClass}" data-card>
-        <button type="button" class="scan-card-head" aria-expanded="${expanded}">
+      <div class="scan-card scan-card--${pass ? "pass" : "fail"} open" data-card>
+        <button type="button" class="scan-card-head" aria-expanded="true">
           <span class="card-status ${pass ? "status-pass" : "status-fail"}" aria-hidden="true">${iconSvg(pass)}</span>
           <span class="card-name">${esc(sub.name)}</span>
           <span class="card-badge ${pass ? "badge-pass" : "badge-fail"}">${pass ? "Pass" : "Fail"}</span>
@@ -298,21 +305,13 @@
     const checks = data.checks || [];
     const capacityCitations = opts && opts.citationCapacity;
 
-    host.innerHTML = checks.map((cat, idx) => {
+    host.innerHTML = checks.map((cat) => {
       const { pass, total } = passCount(cat);
       const isCitations = cat.key === "ai_citations";
       const subs = cat.subchecks || [];
-      const hasTeaser = subs.some((s) => s.key === TEASER_PASS_KEY || s.key === TEASER_FAIL_KEY);
-      // Open by default: AI Citations (the hook) + any group holding a teaser
-      // card, so the first compact view shows the unblurred "some good, some
-      // bad" teaser. All other groups stay collapsed (summaries only).
-      const openClass = (isCitations || hasTeaser) ? " open" : "";
-      const headExpanded = (isCitations || hasTeaser) ? "true" : "false";
 
-      const cards = subs.map((sub) => {
-        const teaser = sub.key === TEASER_PASS_KEY || sub.key === TEASER_FAIL_KEY;
-        return cardHtml(sub, teaser);
-      }).join("");
+      // Every category group is OPEN by default — the diagnosis is visible.
+      const cards = subs.map((sub) => cardHtml(sub)).join("");
 
       const extra = (isCitations && !capacityCitations) ? citationExtraHtml(data) : "";
 
@@ -321,8 +320,8 @@
         : "";
 
       return `
-        <div class="check-group${openClass}" id="cat-${esc(cat.key)}">
-          <button type="button" class="check-group-head" aria-expanded="${headExpanded}">
+        <div class="check-group open" id="cat-${esc(cat.key)}">
+          <button type="button" class="check-group-head" aria-expanded="true">
             <span class="check-group-name">${esc(cat.name)}</span>
             <span class="check-group-meta">
               <span class="check-group-passing">${pass} of ${total} passing</span>
@@ -340,6 +339,7 @@
 
     wireGroups();
     wireCards();
+    wireCiteGate();
   }
 
   // Category detail headers toggle open/closed.
@@ -353,7 +353,7 @@
     });
   }
 
-  // Individual sub-check cards toggle open/closed (blurred ones are pointer-none).
+  // Individual sub-check cards toggle open/closed.
   function wireCards() {
     document.querySelectorAll(".scan-card-head").forEach((head) => {
       head.addEventListener("click", () => {
@@ -364,35 +364,30 @@
     });
   }
 
-  // ── EMAIL GATE ───────────────────────────────────────────────────────────
-  function wireGate() {
-    const banner = $("#gateBanner");
-    if (banner) banner.removeAttribute("hidden");
-    const form = $("#gateForm");
+  // ── INLINE AI-CITATION GATE (the only gate) ──────────────────────────────
+  function wireCiteGate() {
+    const form = $("#citeGateForm");
     if (!form) return;
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const email = ($("#gateEmail").value || "").trim() || "you@company.com";
-      // Reveal everything: drop .locked from cards + rows.
-      document.querySelectorAll(".locked").forEach((el) => el.classList.remove("locked"));
-      // Hide the gate form, show confirmation.
-      form.setAttribute("hidden", "");
-      const lock = $(".gate-lock"), title = $(".gate-title"), sub = $(".gate-sub");
-      if (lock) lock.setAttribute("hidden", "");
-      if (title) title.setAttribute("hidden", "");
-      if (sub) sub.setAttribute("hidden", "");
-      const confirm = $("#gateConfirm");
+      const email = ($("#citeGateEmail").value || "").trim() || "you@company.com";
+      // Unblur the remaining prompt-table rows.
+      document.querySelectorAll("tr.locked").forEach((el) => el.classList.remove("locked"));
+      // Hide the gate, show the "Sent to {email}" confirmation in its place.
+      const gate = $("#citeGate");
+      if (gate) gate.setAttribute("hidden", "");
+      const confirm = $("#citeGateConfirm");
       if (confirm) {
         confirm.innerHTML = `<span class="gate-check">✓</span> Sent to <b>${esc(email)}</b>`;
         confirm.removeAttribute("hidden");
       }
-      banner.classList.add("gate-banner--done");
     });
   }
 
-  // ── STATE RENDERERS (error / empty) ──────────────────────────────────────
+  // ── STATE RENDERERS (error / empty) — shown in the results view ──────────
   function showStateCard(html) {
-    $("#results").setAttribute("hidden", "");
+    showResults();
+    $("#report").setAttribute("hidden", "");
     const sec = $("#scanState");
     sec.removeAttribute("hidden");
     sec.innerHTML = html;
@@ -427,8 +422,14 @@
   // ── MAIN RENDER ──────────────────────────────────────────────────────────
   function renderFull(data, opts) {
     opts = opts || {};
+    showResults();
     $("#scanState").setAttribute("hidden", "");
-    $("#results").removeAttribute("hidden");
+    $("#report").removeAttribute("hidden");
+
+    // compact header URL
+    const urlEl = $("#compactUrl");
+    const urlInput = $("#scanUrl");
+    if (urlEl) urlEl.textContent = (urlInput && urlInput.value) ? urlInput.value : "https://lean-labs.com";
 
     const report = data.report;
 
@@ -438,13 +439,10 @@
 
     renderCategories(data.checks, { citationCapacity: opts.citationCapacity });
     renderChecks(data, { citationCapacity: opts.citationCapacity });
-    wireGate();
   }
 
   // ── BOOT ─────────────────────────────────────────────────────────────────
   function boot() {
-    wireCtxToggle();
-
     const mock = window.AEO_SCAN_MOCK;
     if (!mock) { console.warn("AEO_SCAN_MOCK not loaded"); return; }
 
@@ -453,10 +451,18 @@
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         renderFull(mock);
-        $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
 
+    const scanAnother = $("#scanAnotherBtn");
+    if (scanAnother) {
+      scanAnother.addEventListener("click", () => {
+        showEntry();
+        window.scrollTo({ top: 0 });
+      });
+    }
+
+    // ?state= switch — error/capacity states render in the results view.
     const state = getState();
     switch (state) {
       case "unreadable":
@@ -469,7 +475,8 @@
         renderFull(mock, { citationCapacity: true });
         break;
       default:
-        renderFull(mock);
+        // default = entry screen only (above the fold). No results yet.
+        showEntry();
     }
   }
 

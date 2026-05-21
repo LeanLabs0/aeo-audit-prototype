@@ -12,37 +12,38 @@
 </head>
 <body class="scan-body">
 
-<!-- NAV -->
-<div class="nav">
-  <div class="nav-logo">
-    <div class="nav-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24"/></svg>
-    </div>
-    <span class="nav-logo-text">AEO <span class="gradient-text">Scanner</span></span>
-  </div>
-  <span class="nav-right">by <span class="gradient-text">Lean Labs</span></span>
-</div>
-
-<!-- HERO -->
-<section class="scan-hero">
-  <div class="input-glow-bg"></div>
-  <div class="scan-hero-inner">
-    <h1 class="scan-hero-title">How <span class="gradient-text">AI engines</span> see your site</h1>
-    <p class="scan-hero-sub">Scan any site to see whether ChatGPT, Claude, Perplexity &amp; Gemini can read, trust, and recommend you.</p>
-    <form id="scanForm" class="scan-form" autocomplete="off">
-      <div class="scan-input-wrap">
-        <svg class="scan-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="scanUrl" class="scan-input" type="url" value="https://lean-labs.com" placeholder="https://yourcompany.com" required>
+<!-- ════════════════════════════════════════════════════════════
+     SCREEN 1 — ENTRY (above the fold, default view on load)
+     ════════════════════════════════════════════════════════════ -->
+<section id="entry" class="scan-entry">
+  <!-- entry nav -->
+  <div class="nav">
+    <div class="nav-logo">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24"/></svg>
       </div>
-      <button type="submit" class="btn-primary scan-submit">Scan my site</button>
-    </form>
+      <span class="nav-logo-text">AEO <span class="gradient-text">Scanner</span></span>
+    </div>
+    <span class="nav-right">by <span class="gradient-text">Lean Labs</span></span>
+  </div>
 
-    <!-- Optional pre-run category / audience inputs (collapsible) -->
-    <div class="hero-context">
-      <button type="button" class="hero-context-toggle" id="ctxToggle" aria-expanded="false" aria-controls="ctxPanel">
-        <span class="ctx-toggle-sign">+</span> Add your industry &amp; audience (optional)
-      </button>
-      <div class="hero-context-panel" id="ctxPanel" hidden>
+  <!-- full-viewport hero -->
+  <div class="scan-hero">
+    <div class="input-glow-bg"></div>
+    <div class="scan-hero-inner">
+      <h1 class="scan-hero-title">How <span class="gradient-text">AI engines</span> see your site</h1>
+      <p class="scan-hero-sub">Scan any site to see whether ChatGPT, Claude, Perplexity &amp; Gemini can read, trust, and recommend you.</p>
+
+      <form id="scanForm" class="scan-form" autocomplete="off">
+        <div class="scan-input-wrap">
+          <svg class="scan-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="scanUrl" class="scan-input" type="url" value="https://lean-labs.com" placeholder="https://yourcompany.com" required>
+        </div>
+        <button type="submit" class="btn-primary scan-submit">Scan my site</button>
+      </form>
+
+      <!-- Optional pre-run inputs — ALWAYS visible (no collapse) -->
+      <div class="hero-context" id="ctxFields">
         <div class="ctx-fields">
           <label class="ctx-field">Industry / category
             <input type="text" id="inputCategory" class="ctx-input" placeholder="e.g. HubSpot growth marketing agency">
@@ -51,78 +52,84 @@
             <input type="text" id="inputIcp" class="ctx-input" placeholder="e.g. B2B SaaS companies">
           </label>
         </div>
-        <p class="ctx-help">Helps us test the right buyer prompts. Skip it and we'll detect it for you.</p>
+        <p class="ctx-help">Optional — helps us test the right buyer prompts. Skip it and we'll detect it.</p>
       </div>
-    </div>
 
-    <p class="scan-hero-foot">Free · no signup to see your score · ~30 seconds</p>
+      <p class="scan-hero-foot">Free · ~30s</p>
+    </div>
   </div>
 </section>
 
-<!-- STATE CONTAINER (error / empty states) -->
-<section id="scanState" class="scan-state" hidden></section>
+<!-- ════════════════════════════════════════════════════════════
+     SCREEN 2 — RESULTS (revealed after Scan; compact header + report)
+     ════════════════════════════════════════════════════════════ -->
+<div id="results" class="results-screen" hidden>
 
-<!-- RESULTS SHELL -->
-<main id="results" class="results">
+  <!-- compact header: small logo + scanned URL + scan-another link -->
+  <div class="nav compact-header">
+    <div class="nav-logo">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24"/></svg>
+      </div>
+      <span class="nav-logo-text">AEO <span class="gradient-text">Scanner</span></span>
+    </div>
+    <div class="compact-header-right">
+      <span class="compact-url" id="compactUrl"></span>
+      <button type="button" class="link-btn" id="scanAnotherBtn">scan another</button>
+    </div>
+  </div>
 
-  <!-- Score header: eyebrow + gauge + level + brand context -->
-  <section class="results-head">
-    <div class="score-eyebrow">Overall score</div>
-    <div id="gauge" class="gauge"></div>
-    <div id="levelLabel" class="level-label"></div>
-    <div id="brandContext" class="brand-context"></div>
-  </section>
+  <!-- STATE CONTAINER (error / empty states render here) -->
+  <section id="scanState" class="scan-state" hidden></section>
 
-  <!-- 5 category summary tiles (clickable → expand detail below) -->
-  <section class="results-block">
-    <h2 class="block-title">Your five AEO scores</h2>
-    <p class="block-sub">Tap any category to see every check, the goal, the result or issue, and the exact fix.</p>
-    <div id="categories" class="categories"></div>
-  </section>
+  <!-- RESULTS SHELL -->
+  <main id="report" class="results">
 
-  <!-- Single consolidated CTA, moved up near the summaries -->
-  <section class="results-block primary-cta-block">
-    <a class="book-btn primary-book-btn" href="#book">Book a meeting to fix these
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
-    </a>
-  </section>
+    <!-- BIG Overall Score section -->
+    <section class="results-head score-section">
+      <h2 class="score-heading">Overall Score</h2>
+      <div id="gauge" class="gauge"></div>
+      <div id="levelLabel" class="level-label"></div>
+      <div id="brandContext" class="brand-context"></div>
+    </section>
 
-  <!-- Per-category detail region (collapsed by default, gated/blurred) -->
-  <section class="results-block">
-    <h2 class="block-title">What we found</h2>
-    <div class="checks-region">
+    <!-- 5 category summary tiles (clickable → expand detail below) -->
+    <section class="results-block">
+      <h2 class="block-title">Your five AEO scores</h2>
+      <p class="block-sub">Tap any category to jump to every check, the goal, the result or issue, and the exact fix.</p>
+      <div id="categories" class="categories"></div>
+    </section>
+
+    <!-- CTA band — its own section between tiles and the detail -->
+    <section class="cta-band">
+      <div class="cta-band-inner">
+        <h2 class="cta-band-title">Want these fixed?</h2>
+        <p class="cta-band-sub">Book a 30-minute call and we'll walk through your AEO plan, step by step.</p>
+        <a class="book-btn cta-band-btn" href="#book">Book a meeting
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- Per-category detail region — ALL cards OPEN & UNBLURRED -->
+    <section class="results-block">
+      <h2 class="block-title">What we found</h2>
       <div id="checks" class="checks"></div>
+    </section>
 
-      <!-- Email gate over the blurred region -->
-      <div id="gateBanner" class="gate-banner" hidden>
-        <div class="gate-banner-inner">
-          <div class="gate-lock">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          </div>
-          <h3 class="gate-title">Unlock your full AEO breakdown</h3>
-          <p class="gate-sub">Enter your email — we'll unlock every check here and send you the complete report.</p>
-          <form id="gateForm" class="gate-form" autocomplete="off">
-            <input type="email" id="gateEmail" class="gate-email" placeholder="you@company.com" required>
-            <button type="submit" class="btn-primary gate-submit">Unlock &amp; email me</button>
-          </form>
-          <div id="gateConfirm" class="gate-confirm" hidden></div>
+    <!-- Footer CTA (second instance at the very bottom) -->
+    <section class="results-block footer-cta">
+      <div class="footer-cta-inner">
+        <div class="footer-cta-copy">
+          <strong class="footer-cta-title">Want these fixed for you?</strong>
+          <span class="footer-cta-sub">Book a 30-minute call and we'll walk through your fix plan.</span>
         </div>
+        <a class="book-btn footer-book-btn" href="#book">Book a meeting</a>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Global footer CTA (mirror of the primary, kept at bottom) -->
-  <section class="results-block footer-cta">
-    <div class="footer-cta-inner">
-      <div class="footer-cta-copy">
-        <strong class="footer-cta-title">Want these fixed for you?</strong>
-        <span class="footer-cta-sub">Book a 30-minute call and we'll walk through your fix plan.</span>
-      </div>
-      <a class="book-btn footer-book-btn" href="#book">Book a meeting to fix these</a>
-    </div>
-  </section>
-
-</main>
+  </main>
+</div>
 
 <script src="scan-mock-data.js"></script>
 <script src="scan.js"></script>

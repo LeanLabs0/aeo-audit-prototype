@@ -10,7 +10,7 @@
  *    The ONLY gated thing is the deepest AI-citation layer — the prompt table
  *    keeps its red callout + verbatim + first 2 rows visible; the remaining
  *    rows are blurred behind ONE small inline email gate. On submit (visual)
- *    the rows unblur, the gate hides, and a "✓ Sent to {email}" line shows.
+ *    the rows unblur, the gate hides, and a "✓ Sent — check your inbox." line shows.
  *  - BIG "Overall Score" heading; CTA band is its own section between the
  *    summary tiles and "What we found".
  *  - ?state=unreadable|unreachable|citation-capacity still works, rendered in
@@ -197,11 +197,11 @@
         <div class="cite-gate-lock" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
-        <h4 class="cite-gate-title">See the full prompt-by-prompt breakdown</h4>
-        <p class="cite-gate-sub">Enter your email — we'll unlock every prompt and send you the complete report.</p>
+        <h4 class="cite-gate-title">Which buyer questions is AI hiding you from?</h4>
+        <p class="cite-gate-sub">Unlock all 10 prompts across ChatGPT, Claude, Perplexity &amp; Gemini — and get your full report by email.</p>
         <form id="citeGateForm" class="cite-gate-form" autocomplete="off">
           <input type="email" id="citeGateEmail" class="cite-gate-email" placeholder="you@company.com" required>
-          <button type="submit" class="btn-primary cite-gate-submit">Unlock &amp; email me</button>
+          <button type="submit" class="btn-primary cite-gate-submit">Email me the full report</button>
         </form>
       </div>
       <div id="citeGateConfirm" class="cite-gate-confirm" hidden></div>`;
@@ -251,7 +251,8 @@
       </div>`;
   }
 
-  // Every card renders OPEN and UNBLURRED. The full diagnosis is visible.
+  // Every card renders COLLAPSED by default — only the header row shows. The
+  // body (Goal/Result/Issue/How-to/Resources) is revealed when clicked.
   function cardHtml(sub) {
     const pass = sub.status === "pass";
 
@@ -282,8 +283,8 @@
     body += resourcesHtml(sub.resources);
 
     return `
-      <div class="scan-card scan-card--${pass ? "pass" : "fail"} open" data-card>
-        <button type="button" class="scan-card-head" aria-expanded="true">
+      <div class="scan-card scan-card--${pass ? "pass" : "fail"}" data-card>
+        <button type="button" class="scan-card-head" aria-expanded="false">
           <span class="card-status ${pass ? "status-pass" : "status-fail"}" aria-hidden="true">${iconSvg(pass)}</span>
           <span class="card-name">${esc(sub.name)}</span>
           <span class="card-badge ${pass ? "badge-pass" : "badge-fail"}">${pass ? "Pass" : "Fail"}</span>
@@ -373,12 +374,12 @@
       const email = ($("#citeGateEmail").value || "").trim() || "you@company.com";
       // Unblur the remaining prompt-table rows.
       document.querySelectorAll("tr.locked").forEach((el) => el.classList.remove("locked"));
-      // Hide the gate, show the "Sent to {email}" confirmation in its place.
+      // Hide the gate, show the "Sent — check your inbox." confirmation in its place.
       const gate = $("#citeGate");
       if (gate) gate.setAttribute("hidden", "");
       const confirm = $("#citeGateConfirm");
       if (confirm) {
-        confirm.innerHTML = `<span class="gate-check">✓</span> Sent to <b>${esc(email)}</b>`;
+        confirm.innerHTML = `<span class="gate-check">✓</span> Sent — check your inbox.`;
         confirm.removeAttribute("hidden");
       }
     });

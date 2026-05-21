@@ -1,22 +1,22 @@
-"""Throwaway proof-shot script for the reworked static AEO scanner mockup (v4).
+"""Throwaway proof-shot script for the reworked static AEO scanner mockup (v5).
 
-Jonathan v4: TWO screens (entry above the fold → results), always-on optional
-inputs, hybrid gating (all category cards open/unblurred; only the deep extra
-prompt-table rows gated behind one inline AI-citation email gate), BIG "Overall
-Score" heading, CTA band as its own section.
+v5 changes captured here:
+  - Every sub-check card now starts COLLAPSED (header row only). Clicking a card
+    toggles its body open.
+  - Sharpened CTA copy: the "Book my call" band + the inline AI-citation gate
+    ("Which buyer questions is AI hiding you from?" / "Email me the full report").
 
 Captures console errors; there must be NONE.
 
 Run server first (background):
-  python -m http.server 8774 --bind 127.0.0.1 --directory "C:/Users/Sistemas/aeo-audit-prototype"
+  python -m http.server 8775 --bind 127.0.0.1 --directory "C:/Users/Sistemas/aeo-audit-prototype"
 """
 from playwright.sync_api import sync_playwright
 
-BASE = "http://127.0.0.1:8774"
+BASE = "http://127.0.0.1:8775"
 OUT = "C:/Users/Sistemas/aeo-audit-prototype"
 
 DESKTOP = {"width": 1280, "height": 900}
-MOBILE = {"width": 390, "height": 844}
 
 written = []
 all_console = []
@@ -37,52 +37,32 @@ def main():
             pg.on("pageerror", lambda e: all_console.append(f"[PAGEERROR] {e}"))
             return pg
 
-        # 1. ENTRY screen — desktop, VIEWPORT (not full page) to prove it sits
-        #    above the fold: headline + URL input + always-on optional inputs.
-        pg = new(DESKTOP)
-        pg.goto(f"{BASE}/scan.html", wait_until="networkidle")
-        pg.wait_for_timeout(700)
-        grab(pg, f"{OUT}/_scan_v4_entry_desktop.png", full_page=False)
-        pg.close()
-
-        # 2. ENTRY screen — mobile, VIEWPORT
-        pg = new(MOBILE)
-        pg.goto(f"{BASE}/scan.html", wait_until="networkidle")
-        pg.wait_for_timeout(700)
-        grab(pg, f"{OUT}/_scan_v4_entry_mobile.png", full_page=False)
-        pg.close()
-
-        # 3. RESULTS screen — desktop, FULL PAGE (after clicking "Scan my site").
-        #    Compact header + big Overall Score + tiles + CTA band + all cards
-        #    open + AI-citation table with first 2 rows visible, rest gated.
+        # 1. RESULTS — desktop, FULL PAGE. After "Scan my site", every sub-check
+        #    card must be COLLAPSED (header row only).
         pg = new(DESKTOP)
         pg.goto(f"{BASE}/scan.html", wait_until="networkidle")
         pg.wait_for_timeout(500)
         pg.locator("#scanForm button[type=submit]").click()
         pg.wait_for_timeout(1300)
-        grab(pg, f"{OUT}/_scan_v4_results_desktop.png", full_page=True)
-        pg.close()
+        # Sanity: assert no card carries the .open class on initial render.
+        open_cards = pg.locator(".scan-card.open").count()
+        assert open_cards == 0, f"Expected 0 open cards, found {open_cards}"
+        grab(pg, f"{OUT}/_scan_v5_results.png", full_page=True)
 
-        # 4. RESULTS screen — mobile, FULL PAGE
-        pg = new(MOBILE)
-        pg.goto(f"{BASE}/scan.html", wait_until="networkidle")
-        pg.wait_for_timeout(500)
-        pg.locator("#scanForm button[type=submit]").click()
-        pg.wait_for_timeout(1300)
-        grab(pg, f"{OUT}/_scan_v4_results_mobile.png", full_page=True)
-        pg.close()
+        # 2. Click ONE card open, screenshot the VIEWPORT.
+        first_card_head = pg.locator(".scan-card-head").first
+        first_card_head.scroll_into_view_if_needed()
+        first_card_head.click()
+        pg.wait_for_timeout(400)
+        first_card_head.scroll_into_view_if_needed()
+        pg.wait_for_timeout(300)
+        grab(pg, f"{OUT}/_scan_v5_card_open.png", full_page=False)
 
-        # 5. After submitting the inline AI-citation gate (remaining rows unblur,
-        #    gate hidden, "Sent to {email}" shown) — desktop full page.
-        pg = new(DESKTOP)
-        pg.goto(f"{BASE}/scan.html", wait_until="networkidle")
-        pg.wait_for_timeout(500)
-        pg.locator("#scanForm button[type=submit]").click()
-        pg.wait_for_timeout(1000)
-        pg.locator("#citeGateEmail").fill("ralph@lean-labs.com")
-        pg.locator("#citeGateForm button[type=submit]").click()
-        pg.wait_for_timeout(600)
-        grab(pg, f"{OUT}/_scan_v4_unlocked.png", full_page=True)
+        # 3. Screenshot the CTA band region (viewport around it).
+        cta = pg.locator(".cta-band").first
+        cta.scroll_into_view_if_needed()
+        pg.wait_for_timeout(400)
+        grab(pg, f"{OUT}/_scan_v5_cta.png", full_page=False)
         pg.close()
 
         browser.close()

@@ -430,7 +430,17 @@
     // compact header URL
     const urlEl = $("#compactUrl");
     const urlInput = $("#scanUrl");
-    if (urlEl) urlEl.textContent = (urlInput && urlInput.value) ? urlInput.value : "https://lean-labs.com";
+    const rawUrl = (urlInput && urlInput.value) ? urlInput.value : "https://lean-labs.com";
+    if (urlEl) urlEl.textContent = rawUrl;
+
+    // "Results for [domain]" subtitle under the score heading
+    let domain = rawUrl;
+    try {
+      domain = new URL(/^https?:\/\//.test(rawUrl) ? rawUrl : "https://" + rawUrl)
+        .hostname.replace(/^www\./, "");
+    } catch (_) { /* keep rawUrl */ }
+    const subEl = $("#scoreSubtitle");
+    if (subEl) subEl.textContent = "Results for " + domain;
 
     const report = data.report;
 

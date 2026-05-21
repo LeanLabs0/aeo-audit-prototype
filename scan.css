@@ -225,8 +225,13 @@
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ll-heading);
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-xs);
   line-height: 1.1;
+}
+.score-subtitle {
+  font-size: var(--text-base, 1rem);
+  color: var(--ll-muted, #6b7280);
+  margin-bottom: var(--space-md);
 }
 .gauge { display: flex; justify-content: center; }
 .gauge-wrap {

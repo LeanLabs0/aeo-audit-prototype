@@ -729,8 +729,8 @@
     if (isSingle) {
       const checks = (solutions[0] && solutions[0].checks) || [];
       if (tilesSection) tilesSection.removeAttribute("hidden");
-      if (titleEl) titleEl.textContent = "Your AEO scores";
-      if (subEl2) subEl2.textContent = "Tap a category to see every check and how to fix it.";
+      if (titleEl) titleEl.textContent = "Your four AEO scores";
+      if (subEl2) subEl2.textContent = "Tap a card to see every check and how to fix it.";
       renderCategoryTiles(checks);
       if (detailsSection) {
         if (checks.length) detailsSection.removeAttribute("hidden");

@@ -1,92 +1,234 @@
-// scan-mock-data.js — FAKE Lean Labs data shaped EXACTLY like the live AEO
-// scanner API will return. Static mockup only — no network, no backend.
-window.AEO_SCAN_MOCK = {
-  brand_context: { brand: "Lean Labs", category: "HubSpot growth marketing agency", icp: "B2B SaaS companies" },
-  pages_fetched: 8,
-  readable: true,
-  report: { composite_score: 58, grade: "C+" },
-  // 5 categories, each: {key, name, score (0-100 = % subchecks passing), subchecks:[...]}
-  // subcheck: {key, name, status:"pass"|"fail", goal, result?, issue?, how_to_implement?, resources:[{label,url}]}
-  checks: [
-    { key:"ai_citations", name:"AI Citations", score:50, subchecks:[
-      { key:"cited_chatgpt", name:"Cited by ChatGPT", status:"fail",
-        goal:"Get named when buyers ask ChatGPT for recommendations in your category.",
-        issue:"Never surfaced on ChatGPT across 30 buyer prompts.",
-        how_to_implement:"Citation lift lags fixes — improve the signals ChatGPT weighs (schema, extractability, entity authority), then re-test in ~30 days.",
-        resources:[{label:"What is AEO",url:"https://www.lean-labs.com/"}] },
-      { key:"cited_claude", name:"Cited by Claude", status:"pass",
-        goal:"Get named when buyers ask Claude for recommendations in your category.",
-        result:"Mentioned in 40% of buyer prompts on Claude (12 of 30).",
-        resources:[{label:"What is AEO",url:"https://www.lean-labs.com/"}] },
-      { key:"cited_perplexity", name:"Cited by Perplexity", status:"pass",
-        goal:"Get named when buyers ask Perplexity for recommendations in your category.",
-        result:"Mentioned in 30% of buyer prompts on Perplexity (9 of 30).",
-        resources:[{label:"What is AEO",url:"https://www.lean-labs.com/"}] },
-      { key:"cited_gemini", name:"Cited by Gemini", status:"fail",
-        goal:"Get named when buyers ask Gemini for recommendations in your category.",
-        issue:"Never surfaced on Gemini across 30 buyer prompts.",
-        how_to_implement:"Citation lift lags fixes — improve the signals Gemini weighs, then re-test in ~30 days.",
-        resources:[{label:"What is AEO",url:"https://www.lean-labs.com/"}] },
-    ]},
-    { key:"content", name:"Content & Answers", score:25, subchecks:[
-      { key:"answer_first", name:"Answer-first opening", status:"fail",
-        goal:"Open each page with a direct, quotable answer in the first ~500 tokens.",
-        issue:"Pages bury the answer (density 18%) — engines grab brand narrative, not your answer.",
-        how_to_implement:"Rewrite the first 500 tokens of key pages (pricing, solutions) to lead with the answer, then context.",
-        resources:[{label:"Featured snippet best practices",url:"https://developers.google.com/search/docs/appearance/featured-snippets"}] },
-      { key:"atomic_paragraphs", name:"Atomic, quotable paragraphs", status:"fail",
-        goal:"Keep paragraphs short (1-3 sentences) so engines can quote them cleanly.",
-        issue:"Paragraphs too long to quote (~5.2 sentences each).",
-        how_to_implement:"Break long paragraphs into 1-2 sentence chunks; one idea per block.",
-        resources:[] },
-      { key:"question_headings", name:"Question-style headings", status:"pass",
-        goal:"Use question-shaped headings (How/What/Why) matching how buyers ask.",
-        result:"Question-style headings present (ratio 0.42).", resources:[] },
-      { key:"faq_schema", name:"FAQ Q&A blocks", status:"fail",
-        goal:"Wrap Q&A in FAQPage schema so engines extract them directly.",
-        issue:"No FAQPage schema (found 6 question-style headings not wrapped in schema).",
-        how_to_implement:"Add FAQPage JSON-LD to pricing + solutions pages wrapping existing Q&A.",
-        resources:[{label:"FAQPage schema",url:"https://schema.org/FAQPage"},{label:"Google FAQ docs",url:"https://developers.google.com/search/docs/appearance/structured-data/faqpage"}] },
-    ]},
-    { key:"structured_data", name:"Structured Data", score:75, subchecks:[
-      { key:"organization_schema", name:"Organization schema", status:"pass",
-        goal:"Publish Organization JSON-LD so engines know who you are.",
-        result:"Organization schema present.", resources:[{label:"schema.org/Organization",url:"https://schema.org/Organization"}] },
-      { key:"page_schema", name:"WebSite / WebPage schema", status:"pass",
-        goal:"Mark up pages with WebSite/WebPage schema.",
-        result:"Page-level schema present (WebSite, WebPage).", resources:[] },
-      { key:"jsonld_coverage", name:"Valid JSON-LD coverage", status:"pass",
-        goal:"Carry valid JSON-LD on most pages.",
-        result:"8 pages carry valid JSON-LD (80% coverage).", resources:[] },
-      { key:"freshness", name:"Freshness (recent dates)", status:"fail",
-        goal:"Show recent dateModified so engines trust content is current.",
-        issue:"Content looks stale (avg age ~520 days).",
-        how_to_implement:"Add dateModified to Article/WebPage schema; keep key pages updated.", resources:[] },
-    ]},
-    { key:"crawler_access", name:"AI Crawler Access", score:86, subchecks:[
-      { key:"bot_gptbot", name:"GPTBot can reach you", status:"pass", goal:"Let GPTBot fetch your pages.", result:"GPTBot reaches your site (HTTP 200).", resources:[{label:"GPTBot docs",url:"https://platform.openai.com/docs/gptbot"}] },
-      { key:"bot_claudebot", name:"ClaudeBot can reach you", status:"pass", goal:"Let ClaudeBot fetch your pages.", result:"ClaudeBot reaches your site (HTTP 200).", resources:[] },
-      { key:"bot_perplexitybot", name:"PerplexityBot can reach you", status:"pass", goal:"Let PerplexityBot fetch your pages.", result:"PerplexityBot reaches your site (HTTP 200).", resources:[] },
-      { key:"bot_google_extended", name:"Google-Extended can reach you", status:"pass", goal:"Let Google-Extended fetch your pages.", result:"Google-Extended reaches your site (HTTP 200).", resources:[] },
-      { key:"robots_ai", name:"robots.txt allows AI", status:"pass", goal:"Allow AI crawlers in robots.txt.", result:"robots.txt allows AI crawlers.", resources:[] },
-      { key:"ssr", name:"Server-side rendering", status:"pass", goal:"Serve content without requiring JavaScript.", result:"Pages are server-rendered (content in initial HTML).", resources:[] },
-      { key:"llms_txt", name:"llms.txt published", status:"fail", goal:"Publish /llms.txt summarizing key pages for AI agents.", issue:"No llms.txt found.", how_to_implement:"Add /llms.txt with an H1 and links to your key pages.", resources:[{label:"llmstxt.org",url:"https://llmstxt.org"}] },
-    ]},
-    { key:"entity", name:"Entity & Authority", score:33, subchecks:[
-      { key:"wikidata", name:"Wikidata entity (Q-ID)", status:"fail", goal:"Have a canonical Wikidata Q-ID for your brand.", issue:"No Wikidata entity — engines fall back to fuzzy name matching.", how_to_implement:"File a Wikidata entry for your brand.", resources:[{label:"Wikidata",url:"https://www.wikidata.org"}] },
-      { key:"sameas", name:"sameAs — LinkedIn/Crunchbase/G2", status:"fail", goal:"Bind your brand to canonical profiles via sameAs.", issue:"Only 1 of 3 canonical profiles linked (LinkedIn, Crunchbase, G2).", how_to_implement:"Add sameAs links (LinkedIn, Crunchbase, G2) to Organization schema.", resources:[] },
-      { key:"authors", name:"Named authors / bylines", status:"pass", goal:"Attribute content to named authors.", result:"Named authors on 6 of 8 pages.", resources:[] },
-    ]},
-  ],
-  // Jonathan prompt-tracking table + verbatim, shown inside the AI Citations category
-  citation_extra: {
-    prompt_tracking: [
-      { prompt:"What are the best HubSpot growth marketing agency options for B2B SaaS?", intent:"Comparative", chatgpt:{status:"Omitted",rank:null}, claude:{status:"Cited",rank:null}, perplexity:{status:"Omitted",rank:null}, gemini:{status:"Cited",rank:7} },
-      { prompt:"Top 5 HubSpot growth marketing agency companies serving B2B SaaS", intent:"Comparative", chatgpt:{status:"Omitted",rank:null}, claude:{status:"Cited",rank:null}, perplexity:{status:"Cited",rank:2}, gemini:{status:"Omitted",rank:null} },
-      { prompt:"Which HubSpot growth marketing agency should I hire for B2B SaaS?", intent:"Comparative", chatgpt:{status:"Omitted",rank:null}, claude:{status:"Omitted",rank:null}, perplexity:{status:"Cited",rank:null}, gemini:{status:"Cited",rank:7} },
-      { prompt:"How to choose a HubSpot growth marketing agency for B2B SaaS", intent:"Evaluative", chatgpt:{status:"Omitted",rank:null}, claude:{status:"Omitted",rank:null}, perplexity:{status:"Omitted",rank:null}, gemini:{status:"Omitted",rank:null} },
-      { prompt:"Tell me about Lean Labs", intent:"Branded", chatgpt:{status:"Cited",rank:3}, claude:{status:"Cited",rank:1}, perplexity:{status:"Cited",rank:1}, gemini:{status:"Cited",rank:null} },
-    ],
-    verbatim_omitted: { engine:"ChatGPT", prompt:"What are the best HubSpot growth marketing agency options for B2B SaaS?", text:"Here are strong options for B2B SaaS growth on HubSpot: 1) New Breed, 2) SmartBug Media, 3) Six & Flow, 4) Kalungi, 5) Refine Labs. Each has documented HubSpot expertise and SaaS case studies." }
+// scan-mock-data.js — HAND-DERIVED mirror of the live
+// POST /api/v1/{brand-slug}/public-scanner/aeo-visibility-scan response.
+//
+// Shape matches the v4 endpoint exactly:
+//   { url, brand_context, pages_fetched, readable, overall_score, duration_ms,
+//     solutions: [{ url, title, score, competitors,
+//                   evidence: { overall_mention_rate, by_engine, prompts, runs },
+//                   prompt_tracking, verbatim_omitted }] }
+//
+// `prompt_tracking` (8 rows × 4 engines) + `verbatim_omitted` per solution are
+// derived from `evidence.prompts` and `evidence.runs` so the UI can render
+// without an extra trip through `runs`. Helper kept inline below in case future
+// mock edits want to regenerate them.
+
+function _derivePromptTracking(prompts, runs) {
+  const rows = [];
+  for (const p of prompts) {
+    const row = { prompt: p.prompt, intent: p.intent };
+    for (const eng of ["chatgpt", "claude", "perplexity", "gemini"]) {
+      const hit = (runs || []).find(
+        (r) => r.prompt_id === p.id && r.engine === eng && r.mentioned
+      );
+      row[eng] = hit
+        ? { status: "Cited", rank: hit.rank || null }
+        : { status: "Omitted", rank: null };
+    }
+    rows.push(row);
   }
+  return rows;
+}
+
+// Tiny helper for stable verbatim selection (longest raw_response from a
+// `mentioned: false` run on the first engine that returned text).
+function _pickVerbatimOmitted(runs) {
+  const fails = (runs || []).filter((r) => r.mentioned === false && r.raw_response);
+  if (!fails.length) return null;
+  fails.sort((a, b) => (b.raw_response || "").length - (a.raw_response || "").length);
+  const top = fails[0];
+  return {
+    engine: top.engine === "chatgpt" ? "ChatGPT"
+          : top.engine === "claude" ? "Claude"
+          : top.engine === "perplexity" ? "Perplexity"
+          : top.engine === "gemini" ? "Gemini"
+          : top.engine,
+    prompt_id: top.prompt_id,
+    text: (top.raw_response || "").slice(0, 700),
+  };
+}
+
+// Shared 4-engine by_engine block. 8 prompts × 2 runs = 16 calls per engine.
+const _BY_ENG_ZERO = {
+  chatgpt:    { mentions: 0, total: 16, mention_rate: 0.0 },
+  claude:     { mentions: 0, total: 16, mention_rate: 0.0 },
+  gemini:     { mentions: 0, total: 16, mention_rate: 0.0 },
+  perplexity: { mentions: 0, total: 16, mention_rate: 0.0 },
+};
+
+// Shared prompt slate (Lean Labs ICP — A through H) so all 3 solutions look
+// real. The titles match the live scan; the per-solution prompts are tuned to
+// the solution category.
+const _AEO_AGENCY_PROMPTS = [
+  { id: "A", intent: "Comparative", prompt: "Best answer engine optimization agency for Series A startup CMOs" },
+  { id: "B", intent: "Comparative", prompt: "Top AEO agencies for B2B SaaS scaling beyond Series A" },
+  { id: "C", intent: "Comparative", prompt: "Best AEO agency for HubSpot-native B2B SaaS teams in the US" },
+  { id: "D", intent: "Evaluative",  prompt: "Best alternatives to traditional SEO agencies for early-stage startups" },
+  { id: "E", intent: "Comparative", prompt: "Top answer engine optimization firms for B2B marketing leaders" },
+  { id: "F", intent: "Comparative", prompt: "AEO agency comparison for marketing operations managers at growth-stage startups" },
+  { id: "G", intent: "Question",    prompt: "Who is the best answer engine optimization agency for Series B startups?" },
+  { id: "H", intent: "Question",    prompt: "What AEO agency has the best track record for scaling startups?" },
+];
+
+const _FACTOR8_PROMPTS = [
+  { id: "A", intent: "Comparative", prompt: "Best AI marketing automation platform for Series A startup CMOs" },
+  { id: "B", intent: "Comparative", prompt: "Best AI marketing automation with pre-built agentic workflow automation for growth-stage companies" },
+  { id: "C", intent: "Comparative", prompt: "Top HubSpot-native AI marketing automation platforms in the United States" },
+  { id: "D", intent: "Evaluative",  prompt: "Best alternatives to traditional marketing automation for early-stage startups scaling fast" },
+  { id: "E", intent: "Comparative", prompt: "Best with 45 pre-built agents AI-powered marketing automation for startups for CMO" },
+  { id: "F", intent: "Comparative", prompt: "AI-powered marketing automation platforms comparison for marketing operations managers at growth-stage startups" },
+  { id: "G", intent: "Question",    prompt: "Who is the best AI marketing automation provider for Series B startup founders?" },
+  { id: "H", intent: "Question",    prompt: "What AI-driven marketing operations platform has the best track record for scaling startups?" },
+];
+
+const _LOOP_PROMPTS = [
+  { id: "A", intent: "Comparative", prompt: "Best loop marketing platform for Series A startup CMOs" },
+  { id: "B", intent: "Comparative", prompt: "Top loop marketing methodologies for B2B SaaS growth teams" },
+  { id: "C", intent: "Comparative", prompt: "Best HubSpot-native compounding marketing systems for growth-stage startups" },
+  { id: "D", intent: "Evaluative",  prompt: "Best alternatives to traditional demand-gen for early-stage startups" },
+  { id: "E", intent: "Comparative", prompt: "Top compounding marketing engines for B2B SaaS marketing leaders" },
+  { id: "F", intent: "Comparative", prompt: "Loop marketing vs traditional growth marketing for marketing ops managers" },
+  { id: "G", intent: "Question",    prompt: "Who pioneered loop marketing for Series B B2B SaaS startups?" },
+  { id: "H", intent: "Question",    prompt: "What compounding marketing approach has the best track record for scaling startups?" },
+];
+
+// Synthetic runs — mostly omitted, sprinkle a few Cited hits so the table reads
+// like a real ~10-25% mention-rate scan and the donuts have something to render.
+function _buildRuns(prompts, citedHits) {
+  // citedHits = [{prompt_id, engine, rank?}, ...]
+  const runs = [];
+  for (const p of prompts) {
+    for (const eng of ["chatgpt", "claude", "gemini", "perplexity"]) {
+      const hit = citedHits.find((h) => h.prompt_id === p.id && h.engine === eng);
+      runs.push({
+        engine: eng,
+        prompt_id: p.id,
+        run_index: 0,
+        mentioned: !!hit,
+        rank: hit ? (hit.rank || null) : null,
+        sentiment: hit ? "positive" : "unknown",
+        raw_response: hit
+          ? `One strong option is Lean Labs — they specialize in this area for B2B SaaS.`
+          : `Several agencies and platforms come up here, including WebFX, Ignite Visibility, Moz, and Single Grain. Lean Labs does not appear in the top results for this query. Buyers in this category typically evaluate based on case studies, pricing, integrations, and proven ROI in their vertical.`,
+        sources: [],
+        duration_ms: 1200,
+      });
+    }
+  }
+  return runs;
+}
+
+// Build a verbatim_omitted that calls out the brand by name — the long-form
+// red-callout copy in the report.
+function _verbatim(category, engine) {
+  return {
+    engine,
+    prompt_id: "A",
+    text: `Several agencies and platforms come up here, including WebFX, Ignite Visibility, Moz, and Single Grain. Lean Labs does not appear in the top results for ${category}. Buyers in this category typically evaluate based on case studies, pricing, integrations, and proven ROI in their vertical.`,
+  };
+}
+
+// ── Build the three solutions ────────────────────────────────────────────────
+const _aeoRuns = _buildRuns(_AEO_AGENCY_PROMPTS, [
+  { prompt_id: "B", engine: "claude" },
+  { prompt_id: "E", engine: "perplexity", rank: 4 },
+  { prompt_id: "H", engine: "claude" },
+]);
+const _factor8Runs = _buildRuns(_FACTOR8_PROMPTS, [
+  { prompt_id: "E", engine: "claude" },
+  { prompt_id: "G", engine: "perplexity", rank: 5 },
+]);
+const _loopRuns = _buildRuns(_LOOP_PROMPTS, [
+  { prompt_id: "A", engine: "claude" },
+  { prompt_id: "G", engine: "chatgpt", rank: 3 },
+  { prompt_id: "G", engine: "claude" },
+  { prompt_id: "H", engine: "perplexity", rank: 2 },
+]);
+
+function _byEngFromRuns(runs) {
+  const out = {
+    chatgpt:    { mentions: 0, total: 0, mention_rate: 0.0 },
+    claude:     { mentions: 0, total: 0, mention_rate: 0.0 },
+    gemini:     { mentions: 0, total: 0, mention_rate: 0.0 },
+    perplexity: { mentions: 0, total: 0, mention_rate: 0.0 },
+  };
+  for (const r of runs) {
+    const e = out[r.engine];
+    if (!e) continue;
+    e.total += 1;
+    if (r.mentioned) e.mentions += 1;
+  }
+  for (const k of Object.keys(out)) {
+    const e = out[k];
+    e.mention_rate = e.total ? e.mentions / e.total : 0.0;
+  }
+  return out;
+}
+
+function _scoreFromRuns(runs) {
+  // simple synthetic score: % of runs cited * 100 (0..100, rounded).
+  const total = runs.length;
+  if (!total) return 0;
+  const hits = runs.filter((r) => r.mentioned).length;
+  return Math.round((hits / total) * 100);
+}
+
+const _sol1 = {
+  url: "https://lean-labs.com/solutions/answer-engine-optimization-agency",
+  title: "Answer Engine Optimization Agency",
+  score: _scoreFromRuns(_aeoRuns),
+  competitors: ["WebFX", "Ignite Visibility", "Moz", "Single Grain", "Best for"],
+  evidence: {
+    overall_mention_rate: _aeoRuns.filter((r) => r.mentioned).length / _aeoRuns.length,
+    by_engine: _byEngFromRuns(_aeoRuns),
+    prompts: _AEO_AGENCY_PROMPTS,
+    runs: _aeoRuns,
+  },
+};
+_sol1.prompt_tracking = _derivePromptTracking(_sol1.evidence.prompts, _sol1.evidence.runs);
+_sol1.verbatim_omitted = _verbatim("answer engine optimization agencies", "ChatGPT");
+
+const _sol2 = {
+  url: "https://lean-labs.com/solutions/loop-marketing/factor8",
+  title: "Factor8 AI Context Engine + 45 agents to scale Loop Marketing",
+  score: _scoreFromRuns(_factor8Runs),
+  competitors: ["HubSpot", "ActiveCampaign", "Mailchimp", "Budget", "Zapier"],
+  evidence: {
+    overall_mention_rate: _factor8Runs.filter((r) => r.mentioned).length / _factor8Runs.length,
+    by_engine: _byEngFromRuns(_factor8Runs),
+    prompts: _FACTOR8_PROMPTS,
+    runs: _factor8Runs,
+  },
+};
+_sol2.prompt_tracking = _derivePromptTracking(_sol2.evidence.prompts, _sol2.evidence.runs);
+_sol2.verbatim_omitted = _verbatim("AI marketing automation platforms", "ChatGPT");
+
+const _sol3 = {
+  url: "https://lean-labs.com/solutions/loop-marketing",
+  title: "Loop marketing",
+  score: _scoreFromRuns(_loopRuns),
+  competitors: ["HubSpot", "ActiveCampaign", "Scalability", "Drift", "Budget"],
+  evidence: {
+    overall_mention_rate: _loopRuns.filter((r) => r.mentioned).length / _loopRuns.length,
+    by_engine: _byEngFromRuns(_loopRuns),
+    prompts: _LOOP_PROMPTS,
+    runs: _loopRuns,
+  },
+};
+_sol3.prompt_tracking = _derivePromptTracking(_sol3.evidence.prompts, _sol3.evidence.runs);
+_sol3.verbatim_omitted = _verbatim("loop marketing platforms", "Claude");
+
+window.AEO_SCAN_MOCK = {
+  url: "https://lean-labs.com",
+  brand_context: {
+    brand: "Lean Labs",
+    category: "AI-driven marketing solutions",
+    icp: "startups and scaleups",
+  },
+  pages_fetched: 1,
+  readable: true,
+  // Average of the three solution scores, rounded — keeps the gauge meaningful
+  // even when real backend returns 0/100.
+  overall_score: Math.round((_sol1.score + _sol2.score + _sol3.score) / 3),
+  duration_ms: 228451,
+  solutions: [_sol1, _sol2, _sol3],
 };

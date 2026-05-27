@@ -142,6 +142,146 @@
     return n;
   }
 
+  // ── CATEGORY TILES (one tile per AEO pillar) ─────────────────────────────
+  function _countPasses(subs) {
+    const total = (subs || []).length;
+    const pass = (subs || []).filter((s) => s && s.status === "pass").length;
+    return { pass, total };
+  }
+
+  function renderCategoryTiles(checks) {
+    const host = $("#categories");
+    if (!host) return;
+    if (!checks || !checks.length) {
+      host.innerHTML = `<div class="no-solutions">No category checks available for this scan.</div>`;
+      return;
+    }
+    host.innerHTML = checks.map((cat) => {
+      const score = Number.isFinite(cat.score) ? cat.score : 0;
+      const { pass, total } = _countPasses(cat.subchecks);
+      const targetId = `cat-${slugify(cat.key || cat.name)}`;
+      return `
+        <button type="button" class="cat-card cat-tile" data-cat-tile data-target="${esc(targetId)}" aria-expanded="false" title="${esc(cat.name || "")}">
+          <div class="cat-donut">${donutSvg(score)}</div>
+          <div class="cat-label">${esc(cat.name || cat.key || "Category")}</div>
+          <span class="cat-score-chip ${tintClass(score)}">${score}</span>
+          <span class="cat-summary">${pass} of ${total} checks passing</span>
+        </button>`;
+    }).join("");
+
+    host.querySelectorAll("[data-cat-tile]").forEach((tile) => {
+      tile.addEventListener("click", () => {
+        const target = tile.getAttribute("data-target");
+        const group = document.getElementById(target);
+        if (!group) return;
+        openGroup(group);
+        host.querySelectorAll("[data-cat-tile]").forEach((t) =>
+          t.setAttribute("aria-expanded", t === tile ? "true" : "false"));
+        group.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  }
+
+  // ── CATEGORY DETAIL SECTIONS (one collapsible group per category) ────────
+  function _subcheckCard(sub) {
+    const isPass = sub.status === "pass";
+    const statusIcon = isPass
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
+    const badge = isPass
+      ? `<span class="card-badge badge-pass">Pass</span>`
+      : `<span class="card-badge badge-fail">Fix</span>`;
+    const goalBlock = sub.goal
+      ? `<div class="card-section">
+           <div class="card-label">Goal</div>
+           <div class="card-text">${esc(sub.goal)}</div>
+         </div>` : "";
+    let bodyBlocks = "";
+    if (isPass) {
+      if (sub.result) {
+        bodyBlocks += `
+          <div class="card-section">
+            <div class="card-label">Result</div>
+            <div class="result-text">${esc(sub.result)}</div>
+          </div>`;
+      }
+    } else {
+      if (sub.issue) {
+        bodyBlocks += `
+          <div class="card-section">
+            <div class="card-label">Issue</div>
+            <div class="issue-text">${esc(sub.issue)}</div>
+          </div>`;
+      }
+      if (sub.how_to_implement) {
+        bodyBlocks += `
+          <div class="card-section">
+            <div class="card-label">How to implement</div>
+            <div class="card-text">${esc(sub.how_to_implement)}</div>
+          </div>`;
+      }
+    }
+    const resources = Array.isArray(sub.resources) ? sub.resources : [];
+    let resourceBlock = "";
+    if (resources.length) {
+      const chips = resources.map((r) =>
+        `<a class="resource-chip" href="${esc(r.url)}" target="_blank" rel="noopener">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1 1"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1-1"/></svg>
+           ${esc(r.label)}
+         </a>`).join("");
+      resourceBlock = `
+        <div class="card-section">
+          <div class="card-label">Resources</div>
+          <div class="resource-chips">${chips}</div>
+        </div>`;
+    }
+    return `
+      <div class="scan-card ${isPass ? "" : "scan-card--fail"}">
+        <div class="scan-card-head" role="presentation">
+          <span class="card-status ${isPass ? "status-pass" : "status-fail"}" aria-hidden="true">${statusIcon}</span>
+          <span class="card-name">${esc(sub.name || sub.key || "Check")}</span>
+          ${badge}
+        </div>
+        <div class="scan-card-body subcheck-body-open">
+          ${goalBlock}
+          ${bodyBlocks}
+          ${resourceBlock}
+        </div>
+      </div>`;
+  }
+
+  function renderCategoryDetails(checks) {
+    const host = $("#categoryDetails");
+    if (!host) return;
+    if (!checks || !checks.length) {
+      host.innerHTML = "";
+      return;
+    }
+    host.innerHTML = checks.map((cat, i) => {
+      const score = Number.isFinite(cat.score) ? cat.score : 0;
+      const { pass, total } = _countPasses(cat.subchecks);
+      const targetId = `cat-${slugify(cat.key || cat.name)}`;
+      const isFirst = i === 0; // AI Citations open by default
+      const cards = (cat.subchecks || []).map(_subcheckCard).join("");
+      return `
+        <div class="check-group cat-group ${isFirst ? "open" : ""}" id="${esc(targetId)}">
+          <button type="button" class="check-group-head" aria-expanded="${isFirst ? "true" : "false"}">
+            <span class="check-group-name">${esc(cat.name || cat.key || "Category")}</span>
+            <span class="check-group-meta">
+              <span class="check-group-passing">${pass} of ${total} passing</span>
+              <span class="check-group-score ${tintClass(score)}">${score}/100</span>
+              <svg class="group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+          </button>
+          <div class="check-group-body">
+            <div class="card-stack">${cards}</div>
+          </div>
+        </div>`;
+    }).join("");
+
+    wireGroups();
+  }
+
   function renderSolutionTiles(solutions) {
     const host = $("#categories");
     if (!solutions || !solutions.length) {
@@ -578,14 +718,33 @@
     $("#levelLabel").textContent = levelText(score);
     renderBrandContext(data.brand_context);
 
-    // Toggle the solution-tiles block. Single-solution → no need to choose.
-    const tilesBlock = document.getElementById("categories");
-    const tilesSection = tilesBlock ? tilesBlock.closest(".results-block") : null;
-    if (tilesSection) {
-      if (isSingle) tilesSection.setAttribute("hidden", "");
-      else tilesSection.removeAttribute("hidden");
+    // Tiles row. Single-solution → 4 AEO category tiles from solutions[0].checks.
+    // Multi-solution (rare) → one tile per solution.
+    const tilesSection = document.getElementById("categoriesSection");
+    const detailsSection = document.getElementById("categoryDetailsSection");
+    const titleEl = document.getElementById("categoriesTitle");
+    const subEl2 = document.getElementById("categoriesSub");
+    const detailsHost = document.getElementById("categoryDetails");
+
+    if (isSingle) {
+      const checks = (solutions[0] && solutions[0].checks) || [];
+      if (tilesSection) tilesSection.removeAttribute("hidden");
+      if (titleEl) titleEl.textContent = "Your AEO scores";
+      if (subEl2) subEl2.textContent = "Tap a category to see every check and how to fix it.";
+      renderCategoryTiles(checks);
+      if (detailsSection) {
+        if (checks.length) detailsSection.removeAttribute("hidden");
+        else detailsSection.setAttribute("hidden", "");
+      }
+      renderCategoryDetails(checks);
+    } else {
+      if (tilesSection) tilesSection.removeAttribute("hidden");
+      if (titleEl) titleEl.textContent = "Your solutions in AI search";
+      if (subEl2) subEl2.textContent = "Tap a solution to see the prompts, the verbatim AI response, and who got cited instead of you.";
+      renderSolutionTiles(solutions);
+      if (detailsSection) detailsSection.setAttribute("hidden", "");
+      if (detailsHost) detailsHost.innerHTML = "";
     }
-    if (!isSingle) renderSolutionTiles(solutions);
 
     renderSolutionSections(data);
     renderScanAnotherCta(isSingle);

@@ -350,6 +350,23 @@
   overflow: hidden;
 }
 
+/* AEO category tiles — same shell as sol-card, 4-up on desktop via auto-fit. */
+.cat-tile { min-height: 168px; }
+.cat-tile .cat-label {
+  min-height: 2.4em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* Category groups (collapsible detail sections) — normal-case names. */
+.cat-group .check-group-name {
+  text-transform: none;
+  letter-spacing: -0.005em;
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+
 .no-solutions {
   grid-column: 1 / -1;
   padding: var(--space-md);
@@ -955,6 +972,35 @@ tr.locked {
   letter-spacing: -0.005em;
   font-size: var(--text-base);
   font-weight: 700;
+}
+
+/* ── CATEGORY DETAIL TWEAKS ───────────────────────────────── */
+/* Category group headers (AI Citations, Structured Data, etc) — readable
+   title-case label, slightly stronger than solution headers. */
+.cat-group .check-group-name {
+  text-transform: none;
+  letter-spacing: -0.005em;
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+
+/* Sub-check cards inside category detail groups are always expanded —
+   no per-card collapse, just a clean stack of pass/fix evidence. */
+.check-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+.cat-group .scan-card-body.subcheck-body-open {
+  display: block;
+  padding: 0 var(--space-sm) var(--space-sm);
+  animation: bodyIn 0.25s ease;
+}
+.cat-group .scan-card-head {
+  cursor: default;
+}
+.cat-group .scan-card-head:hover {
+  background: none;
 }
 
 /* "Surfaced by AI" competitor chip row */

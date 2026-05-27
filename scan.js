@@ -251,7 +251,47 @@
       </div>`;
   }
 
-  function renderCategoryDetails(checks) {
+  // Build the "Prompts we asked" panel from solutions[0].evidence (prompts + runs).
+  // Renders an ordered list of every prompt with per-engine ✓/✗ pills.
+  function renderPromptsPanel(sol) {
+    const ev = (sol && sol.evidence) || {};
+    const prompts = ev.prompts || [];
+    const runs = ev.runs || [];
+    if (!prompts.length) return "";
+    // Index (prompt_id, engine) → mentioned (true if any run for that pair hit).
+    const cited = new Set();
+    for (const r of runs) {
+      if (r && r.mentioned) cited.add(`${r.prompt_id}|${r.engine}`);
+    }
+    const engines = ["chatgpt", "claude", "gemini"];
+    const ENG_LABEL = { chatgpt: "ChatGPT", claude: "Claude", gemini: "Gemini" };
+    const rows = prompts.map((p) => {
+      const pills = engines.map((e) => {
+        const hit = cited.has(`${p.id}|${e}`);
+        const mark = hit ? "✓" : "✗";
+        return `<span class="prompt-eng ${hit ? "hit" : "miss"}">${ENG_LABEL[e]} ${mark}</span>`;
+      }).join("");
+      return `
+        <li class="prompt-row">
+          <div class="prompt-row-head">
+            <span class="prompt-slot">[${esc(p.id)}]</span>
+            <span class="prompt-intent">${esc(p.intent || "")}</span>
+          </div>
+          <div class="prompt-text">${esc(p.prompt)}</div>
+          <div class="prompt-engines">${pills}</div>
+        </li>`;
+    }).join("");
+    return `
+      <div class="prompts-panel">
+        <div class="prompts-panel-head">
+          <h4>Prompts we asked across ChatGPT, Claude &amp; Gemini</h4>
+          <p>${prompts.length} buyer-intent prompts &times; ${engines.length} engines = ${prompts.length * engines.length} real AI queries. <span class="prompts-legend-hit">&check;</span> = your brand was named.</p>
+        </div>
+        <ol class="prompts-list">${rows}</ol>
+      </div>`;
+  }
+
+  function renderCategoryDetails(checks, primarySolution) {
     const host = $("#categoryDetails");
     if (!host) return;
     if (!checks || !checks.length) {
@@ -264,6 +304,10 @@
       const targetId = `cat-${slugify(cat.key || cat.name)}`;
       const isFirst = i === 0; // AI Citations open by default
       const cards = (cat.subchecks || []).map(_subcheckCard).join("");
+      // Prepend the Prompts panel to the AI Citations group only.
+      const isAiCitations = (cat.key === "ai_citations")
+        || /ai\s*citations/i.test(cat.name || "");
+      const promptsPanelHtml = isAiCitations ? renderPromptsPanel(primarySolution) : "";
       return `
         <div class="check-group cat-group ${isFirst ? "open" : ""}" id="${esc(targetId)}">
           <button type="button" class="check-group-head" aria-expanded="${isFirst ? "true" : "false"}">
@@ -275,6 +319,7 @@
             </span>
           </button>
           <div class="check-group-body">
+            ${promptsPanelHtml}
             <div class="card-stack">${cards}</div>
           </div>
         </div>`;
@@ -724,7 +769,7 @@
         if (checks.length) detailsSection.removeAttribute("hidden");
         else detailsSection.setAttribute("hidden", "");
       }
-      renderCategoryDetails(checks);
+      renderCategoryDetails(checks, solutions[0]);
     } else {
       if (tilesSection) tilesSection.removeAttribute("hidden");
       if (titleEl) titleEl.textContent = "Your solutions in AI search";

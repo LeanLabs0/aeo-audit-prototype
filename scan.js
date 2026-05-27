@@ -251,25 +251,150 @@
       </div>`;
   }
 
+  // Pull candidate brand names out of a raw AI response. Mirrors the
+  // server-side regex extractor: numbered lists (1. X, 1) X, - X, • X) and
+  // bolded markdown (**X**). Filters out the user's own brand and common
+  // generic terms ("Best", "Pricing", etc.).
+  function extractBrandsFromText(text, brand, maxN = 4) {
+    if (!text) return [];
+    const brandL = (brand || "").toLowerCase();
+    const candidates = new Set();
+    const order = [];
+    const addCand = (raw, opts) => {
+      let c = String(raw || "").trim();
+      // Drop trailing colons / punctuation / dashes (e.g. "Brand Voice:").
+      const hadTrailingColon = /:\s*$/.test(c);
+      c = c.replace(/[*_:.,\-—\s]+$/, "").trim();
+      if (!c) return;
+      // Reject obvious section labels — phrases that end with ":" OR start
+      // with weak intros ("Why", "Key", "Best", "Top") followed by anything.
+      if (hadTrailingColon && (opts && opts.fromBold)) return;
+      if (/^(Why|Key|Best|Top|How|What|When|Where|For|Considerations?|Pros|Cons|Use Cases?|Overview|Summary|Features?|Pricing|Limitations?)\b/i.test(c)) return;
+      // Strip leading "X. " / "X) " from numbered items (regex doesn't always
+      // consume them when the trigger char is a colon).
+      c = c.replace(/^\d+[\.\)]\s+/, "");
+      // Pull a clean brand head if there's a " - " / " — " / " (" suffix:
+      // "Jasper (formerly Jarvis.ai) - Best for Content" -> "Jasper".
+      const head = c.split(/\s[-–—]\s|\s\(/)[0].trim();
+      if (head && head.length >= 2 && head.length <= 60) c = head;
+      if (!c) return;
+      if (!candidates.has(c)) {
+        candidates.add(c);
+        order.push(c);
+      }
+    };
+    // Numbered / bulleted list items: 1) X, 1. X, 1: X, - X, • X, * X
+    const numbered = /(?:^|[\s,;:])(?:\d+[\.\):]\s+|[-•*]\s+)([A-Z0-9][^\n,.;:!?\(\)]{1,60})/gm;
+    let m;
+    while ((m = numbered.exec(text)) !== null) addCand(m[1], { fromBold: false });
+    // Bolded markdown headers — **Brand Name**
+    const bold = /\*\*([A-Z][^\*\n]{1,60})\*\*/g;
+    while ((m = bold.exec(text)) !== null) addCand(m[1], { fromBold: true });
+
+    const STOP = new Set([
+      "best for", "best overall", "best", "top", "budget", "pricing", "price",
+      "scalability", "performance", "quality", "integration", "integrations",
+      "security", "ease of use", "customer support", "support", "reliability",
+      "speed", "cost", "value", "considerations", "factors", "criteria",
+      "options", "alternatives", "tools", "platforms", "providers", "solutions",
+      "services", "agencies", "vendors", "companies", "strengths", "weaknesses",
+      "ai-powered", "ai-driven", "automation", "knowledge graph", "context engine",
+      "continuous learning", "agentic", "features", "pros", "cons", "overview",
+      "summary", "conclusion", "recommendation", "recommendations",
+      // Common Gemini/Claude bold-section noise:
+      "brand voice consistency", "rapid content creation", "free tier",
+      "user-friendly interface", "templates & recipes", "seo optimization",
+      "key use cases", "brainstorming power", "wide range of tools",
+      "integrated platform", "ai capabilities", "robust crm", "email marketing",
+      "marketing hub", "key features", "main features",
+    ]);
+    const out = [];
+    for (const c of order) {
+      if (c.length < 2 || c.length > 60) continue;
+      const cl = c.toLowerCase();
+      if (cl === brandL) continue;
+      if (STOP.has(cl)) continue;
+      // Reject if it looks like a sentence/section label, not a brand.
+      const words = c.split(/\s+/);
+      if (words.length > 4) continue;
+      // Brand-shape detector: every word should either start with an
+      // uppercase letter, be a short connector ("&", "/", "+"), or contain
+      // a digit/non-letter (e.g. "GPT-4", "Copy.ai"). Sentences and feature
+      // labels mix Title-case first words with lowercase prose later.
+      let looksLikeBrand = true;
+      for (let i = 0; i < words.length; i++) {
+        const w = words[i];
+        if (!w) continue;
+        if (/^[&/+\-]$/.test(w)) continue;          // connector
+        if (/[0-9.\/+]/.test(w)) continue;          // contains digit / punct
+        if (/^[A-Z]/.test(w)) continue;             // Title-case word
+        // First-word lowercase ("iPhone"-style) is fine if mixed-case overall
+        if (i === 0 && /[A-Z]/.test(w)) continue;
+        looksLikeBrand = false;
+        break;
+      }
+      if (!looksLikeBrand) continue;
+      out.push(c);
+      if (out.length >= maxN) break;
+    }
+    return out;
+  }
+
   // Build the "Prompts we asked" panel from solutions[0].evidence (prompts + runs).
-  // Renders an ordered list of every prompt with per-engine ✓/✗ pills.
-  function renderPromptsPanel(sol) {
+  // Renders an ordered list of every prompt. Per prompt, shows a 3-column
+  // engine-breakdown table with the brand names each engine named in its
+  // response. If the user's brand was cited, the top cell of that engine's
+  // column is highlighted green.
+  function renderPromptsPanel(sol, brand) {
     const ev = (sol && sol.evidence) || {};
     const prompts = ev.prompts || [];
     const runs = ev.runs || [];
     if (!prompts.length) return "";
-    // Index (prompt_id, engine) → mentioned (true if any run for that pair hit).
-    const cited = new Set();
-    for (const r of runs) {
-      if (r && r.mentioned) cited.add(`${r.prompt_id}|${r.engine}`);
-    }
     const engines = ["chatgpt", "claude", "gemini"];
     const ENG_LABEL = { chatgpt: "ChatGPT", claude: "Claude", gemini: "Gemini" };
+
+    // Index (prompt_id, engine) → mentioned (true if any run for that pair hit).
+    const cited = new Set();
+    // Index (prompt_id, engine) → array of competitor brand names.
+    const brandsByCell = new Map();
+    for (const r of runs) {
+      if (!r) continue;
+      if (r.mentioned) cited.add(`${r.prompt_id}|${r.engine}`);
+      const key = `${r.prompt_id}|${r.engine}`;
+      // If multiple runs per pair, merge brand lists (preserve order, dedupe).
+      const existing = brandsByCell.get(key) || [];
+      const next = extractBrandsFromText(r.raw_response, brand, 4);
+      const seen = new Set(existing.map((s) => s.toLowerCase()));
+      for (const n of next) {
+        if (!seen.has(n.toLowerCase())) {
+          existing.push(n);
+          seen.add(n.toLowerCase());
+        }
+        if (existing.length >= 4) break;
+      }
+      brandsByCell.set(key, existing);
+    }
+
     const rows = prompts.map((p) => {
-      const pills = engines.map((e) => {
-        const hit = cited.has(`${p.id}|${e}`);
-        const mark = hit ? "✓" : "✗";
-        return `<span class="prompt-eng ${hit ? "hit" : "miss"}">${ENG_LABEL[e]} ${mark}</span>`;
+      const cols = engines.map((e) => {
+        const key = `${p.id}|${e}`;
+        const brands = brandsByCell.get(key) || [];
+        const hit = cited.has(key);
+        const items = [];
+        if (hit) {
+          items.push(`<div class="prompt-eng-brand you">&#10003; ${esc(brand)}</div>`);
+        }
+        for (const b of brands) {
+          items.push(`<div class="prompt-eng-brand">${esc(b)}</div>`);
+        }
+        if (!items.length) {
+          items.push(`<div class="prompt-eng-empty">&mdash;</div>`);
+        }
+        return `
+          <div class="prompt-eng-col">
+            <div class="prompt-eng-col-head">${ENG_LABEL[e]}</div>
+            ${items.join("")}
+          </div>`;
       }).join("");
       return `
         <li class="prompt-row">
@@ -278,20 +403,20 @@
             <span class="prompt-intent">${esc(p.intent || "")}</span>
           </div>
           <div class="prompt-text">${esc(p.prompt)}</div>
-          <div class="prompt-engines">${pills}</div>
+          <div class="prompt-engines-table">${cols}</div>
         </li>`;
     }).join("");
     return `
       <div class="prompts-panel">
         <div class="prompts-panel-head">
           <h4>Prompts we asked across ChatGPT, Claude &amp; Gemini</h4>
-          <p>${prompts.length} buyer-intent prompts &times; ${engines.length} engines = ${prompts.length * engines.length} real AI queries. <span class="prompts-legend-hit">&check;</span> = your brand was named.</p>
+          <p>${prompts.length} buyer-intent prompts &times; ${engines.length} engines = ${prompts.length * engines.length} real AI queries. Each cell shows the brands that engine named for that prompt. <span class="prompts-legend-hit">&check; ${esc(brand)}</span> = your brand was named.</p>
         </div>
         <ol class="prompts-list">${rows}</ol>
       </div>`;
   }
 
-  function renderCategoryDetails(checks, primarySolution) {
+  function renderCategoryDetails(checks, primarySolution, brand) {
     const host = $("#categoryDetails");
     if (!host) return;
     if (!checks || !checks.length) {
@@ -307,7 +432,7 @@
       // Prepend the Prompts panel to the AI Citations group only.
       const isAiCitations = (cat.key === "ai_citations")
         || /ai\s*citations/i.test(cat.name || "");
-      const promptsPanelHtml = isAiCitations ? renderPromptsPanel(primarySolution) : "";
+      const promptsPanelHtml = isAiCitations ? renderPromptsPanel(primarySolution, brand) : "";
       return `
         <div class="check-group cat-group ${isFirst ? "open" : ""}" id="${esc(targetId)}">
           <button type="button" class="check-group-head" aria-expanded="${isFirst ? "true" : "false"}">
@@ -761,6 +886,7 @@
 
     if (isSingle) {
       const checks = (solutions[0] && solutions[0].checks) || [];
+      const brand = (data.brand_context && data.brand_context.brand) || "Your brand";
       if (tilesSection) tilesSection.removeAttribute("hidden");
       if (titleEl) titleEl.textContent = "Your four AEO scores";
       if (subEl2) subEl2.textContent = "Tap a card to see every check and how to fix it.";
@@ -769,7 +895,7 @@
         if (checks.length) detailsSection.removeAttribute("hidden");
         else detailsSection.setAttribute("hidden", "");
       }
-      renderCategoryDetails(checks, solutions[0]);
+      renderCategoryDetails(checks, solutions[0], brand);
     } else {
       if (tilesSection) tilesSection.removeAttribute("hidden");
       if (titleEl) titleEl.textContent = "Your solutions in AI search";

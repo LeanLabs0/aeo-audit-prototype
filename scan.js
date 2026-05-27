@@ -20,7 +20,8 @@
   const ENGINE_ORDER = ["chatgpt", "claude", "perplexity", "gemini"];
 
   // How many prompt-table rows stay visible before the gate.
-  const VISIBLE_PROMPT_ROWS = 2;
+  // Show all 8 prompts for now — email gate will move elsewhere later.
+  const VISIBLE_PROMPT_ROWS = 10;
 
   // Live API config.
   const API = {
@@ -402,22 +403,9 @@
   }
 
   function gateHtml(sol, idx) {
-    const total = (sol.evidence && sol.evidence.prompts || []).length || 8;
-    const hidden = Math.max(0, total - VISIBLE_PROMPT_ROWS);
-    if (hidden === 0) return "";
-    return `
-      <div class="cite-gate" data-cite-gate="${idx}">
-        <div class="cite-gate-lock" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        </div>
-        <h4 class="cite-gate-title">Which buyer questions is AI hiding you from?</h4>
-        <p class="cite-gate-sub">Unlock all ${total} prompts across ChatGPT, Claude, Perplexity &amp; Gemini — and get your full report by email.</p>
-        <form class="cite-gate-form" data-cite-gate-form="${idx}" autocomplete="off">
-          <input type="email" class="cite-gate-email" placeholder="you@company.com" required>
-          <button type="submit" class="btn-primary cite-gate-submit">Email me the full report</button>
-        </form>
-      </div>
-      <div class="cite-gate-confirm" data-cite-gate-confirm="${idx}" hidden></div>`;
+    // Email gate hidden for now — Ralph wants to gate later, not inline beneath
+    // the prompts table. Keeping the function so callers don't need to change.
+    return "";
   }
 
   function renderSolutionSections(data) {

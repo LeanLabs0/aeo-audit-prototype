@@ -19,10 +19,6 @@
   const ENGINE_LABELS = { chatgpt: "ChatGPT", claude: "Claude", perplexity: "Perplexity", gemini: "Gemini" };
   const ENGINE_ORDER = ["chatgpt", "claude", "perplexity", "gemini"];
 
-  // How many prompt-table rows stay visible before the gate.
-  // Show all 8 prompts for now — email gate will move elsewhere later.
-  const VISIBLE_PROMPT_ROWS = 10;
-
   // Live API config.
   const API = {
     url: "https://factor8-agent-sdk.fly.dev/api/v1/brand-slug/public-scanner/aeo-visibility-scan",
@@ -173,6 +169,17 @@
     host.querySelectorAll("[data-cat-tile]").forEach((tile) => {
       tile.addEventListener("click", () => {
         const target = tile.getAttribute("data-target");
+        // AI Citations tile scrolls to the bottom "What we found" table —
+        // the drill-down panel for it is no longer rendered (data lives below).
+        if (/^cat-ai-citations\b/.test(target || "")) {
+          const checks = document.getElementById("checks");
+          const firstSol = checks && checks.querySelector(".sol-group");
+          const dest = firstSol || checks;
+          if (dest) dest.scrollIntoView({ behavior: "smooth", block: "start" });
+          host.querySelectorAll("[data-cat-tile]").forEach((t) =>
+            t.setAttribute("aria-expanded", t === tile ? "true" : "false"));
+          return;
+        }
         const group = document.getElementById(target);
         if (!group) return;
         openGroup(group);
@@ -340,82 +347,6 @@
     return out;
   }
 
-  // Build the "Prompts we asked" panel from solutions[0].evidence (prompts + runs).
-  // Renders an ordered list of every prompt. Per prompt, shows a 3-column
-  // engine-breakdown table with the brand names each engine named in its
-  // response. If the user's brand was cited, the top cell of that engine's
-  // column is highlighted green.
-  function renderPromptsPanel(sol, brand) {
-    const ev = (sol && sol.evidence) || {};
-    const prompts = ev.prompts || [];
-    const runs = ev.runs || [];
-    if (!prompts.length) return "";
-    const engines = ["chatgpt", "claude", "gemini"];
-    const ENG_LABEL = { chatgpt: "ChatGPT", claude: "Claude", gemini: "Gemini" };
-
-    // Index (prompt_id, engine) → mentioned (true if any run for that pair hit).
-    const cited = new Set();
-    // Index (prompt_id, engine) → array of competitor brand names.
-    const brandsByCell = new Map();
-    for (const r of runs) {
-      if (!r) continue;
-      if (r.mentioned) cited.add(`${r.prompt_id}|${r.engine}`);
-      const key = `${r.prompt_id}|${r.engine}`;
-      // If multiple runs per pair, merge brand lists (preserve order, dedupe).
-      const existing = brandsByCell.get(key) || [];
-      const next = extractBrandsFromText(r.raw_response, brand, 4);
-      const seen = new Set(existing.map((s) => s.toLowerCase()));
-      for (const n of next) {
-        if (!seen.has(n.toLowerCase())) {
-          existing.push(n);
-          seen.add(n.toLowerCase());
-        }
-        if (existing.length >= 4) break;
-      }
-      brandsByCell.set(key, existing);
-    }
-
-    const rows = prompts.map((p) => {
-      const cols = engines.map((e) => {
-        const key = `${p.id}|${e}`;
-        const brands = brandsByCell.get(key) || [];
-        const hit = cited.has(key);
-        const items = [];
-        if (hit) {
-          items.push(`<div class="prompt-eng-brand you">&#10003; ${esc(brand)}</div>`);
-        }
-        for (const b of brands) {
-          items.push(`<div class="prompt-eng-brand">${esc(b)}</div>`);
-        }
-        if (!items.length) {
-          items.push(`<div class="prompt-eng-empty">&mdash;</div>`);
-        }
-        return `
-          <div class="prompt-eng-col">
-            <div class="prompt-eng-col-head">${ENG_LABEL[e]}</div>
-            ${items.join("")}
-          </div>`;
-      }).join("");
-      return `
-        <li class="prompt-row">
-          <div class="prompt-row-head">
-            <span class="prompt-slot">[${esc(p.id)}]</span>
-            <span class="prompt-intent">${esc(p.intent || "")}</span>
-          </div>
-          <div class="prompt-text">${esc(p.prompt)}</div>
-          <div class="prompt-engines-table">${cols}</div>
-        </li>`;
-    }).join("");
-    return `
-      <div class="prompts-panel">
-        <div class="prompts-panel-head">
-          <h4>Prompts we asked across ChatGPT, Claude &amp; Gemini</h4>
-          <p>${prompts.length} buyer-intent prompts &times; ${engines.length} engines = ${prompts.length * engines.length} real AI queries. Each cell shows the brands that engine named for that prompt. <span class="prompts-legend-hit">&check; ${esc(brand)}</span> = your brand was named.</p>
-        </div>
-        <ol class="prompts-list">${rows}</ol>
-      </div>`;
-  }
-
   function renderCategoryDetails(checks, primarySolution, brand) {
     const host = $("#categoryDetails");
     if (!host) return;
@@ -423,16 +354,20 @@
       host.innerHTML = "";
       return;
     }
-    host.innerHTML = checks.map((cat, i) => {
+    // AI Citations data lives in the bottom "What we found" table — skip its
+    // drill-down here so the page has a single citation view.
+    const drillChecks = checks.filter((cat) => {
+      const isAi = (cat.key === "ai_citations")
+        || /ai\s*citations/i.test(cat.name || "");
+      return !isAi;
+    });
+
+    host.innerHTML = drillChecks.map((cat, i) => {
       const score = Number.isFinite(cat.score) ? cat.score : 0;
       const { pass, total } = _countPasses(cat.subchecks);
       const targetId = `cat-${slugify(cat.key || cat.name)}`;
-      const isFirst = i === 0; // AI Citations open by default
+      const isFirst = i === 0;
       const cards = (cat.subchecks || []).map(_subcheckCard).join("");
-      // Prepend the Prompts panel to the AI Citations group only.
-      const isAiCitations = (cat.key === "ai_citations")
-        || /ai\s*citations/i.test(cat.name || "");
-      const promptsPanelHtml = isAiCitations ? renderPromptsPanel(primarySolution, brand) : "";
       return `
         <div class="check-group cat-group ${isFirst ? "open" : ""}" id="${esc(targetId)}">
           <button type="button" class="check-group-head" aria-expanded="${isFirst ? "true" : "false"}">
@@ -444,7 +379,6 @@
             </span>
           </button>
           <div class="check-group-body">
-            ${promptsPanelHtml}
             <div class="card-stack">${cards}</div>
           </div>
         </div>`;
@@ -486,23 +420,6 @@
     });
   }
 
-  // ── PROMPT TRACKING (derived from runs at render time) ───────────────────
-  function buildPromptTracking(sol) {
-    if (sol.prompt_tracking && sol.prompt_tracking.length) return sol.prompt_tracking;
-    const prompts = (sol.evidence && sol.evidence.prompts) || [];
-    const runs = (sol.evidence && sol.evidence.runs) || [];
-    return prompts.map((p) => {
-      const row = { prompt: p.prompt, intent: p.intent };
-      for (const eng of ENGINE_ORDER) {
-        const hit = runs.find((r) => r.prompt_id === p.id && r.engine === eng && r.mentioned);
-        row[eng] = hit
-          ? { status: "Cited", rank: hit.rank || null }
-          : { status: "Omitted", rank: null };
-      }
-      return row;
-    });
-  }
-
   // verbatim_omitted = longest raw_response from a mentioned:false run, or null.
   function buildVerbatim(sol) {
     if (sol.verbatim_omitted) return sol.verbatim_omitted;
@@ -541,33 +458,55 @@
       </div>`;
   }
 
-  function promptTableHtml(sol) {
-    const rows = buildPromptTracking(sol);
-    if (!rows.length) return "";
-    const cell = (e) => {
-      const s = e && e.status ? e.status : "Omitted";
-      const klass = s === "Cited" ? "pt-cited" : "pt-omitted";
-      const rank = e && e.rank ? ` <span class="pt-rank">#${e.rank}</span>` : "";
-      return `<td><span class="${klass}">${esc(s)}</span>${rank}</td>`;
-    };
-    const trs = rows.map((r, i) => `
-      <tr class="${i >= VISIBLE_PROMPT_ROWS ? "locked" : ""}">
-        <td class="col-prompt">"${esc(r.prompt)}"</td>
-        <td class="col-intent"><span class="pt-intent">${esc(r.intent)}</span></td>
-        ${cell(r.chatgpt)}${cell(r.claude)}${cell(r.perplexity)}${cell(r.gemini)}
-      </tr>`).join("");
-
+  function promptTableHtml(sol, brandName) {
+    const ev = (sol && sol.evidence) || {};
+    const prompts = ev.prompts || [];
+    const runs = ev.runs || [];
+    if (!prompts.length) return "";
+    // Index brand mentions + per-prompt competitor list.
+    const citedByPrompt = new Set();
+    const brandsByPrompt = new Map(); // prompt_id -> Map(brand -> count)
+    for (const r of runs) {
+      if (!r) continue;
+      if (r.mentioned) citedByPrompt.add(r.prompt_id);
+      const brands = extractBrandsFromText(r.raw_response, brandName, 6);
+      if (!brandsByPrompt.has(r.prompt_id)) brandsByPrompt.set(r.prompt_id, new Map());
+      const map = brandsByPrompt.get(r.prompt_id);
+      for (const b of brands) map.set(b, (map.get(b) || 0) + 1);
+    }
+    function topBrands(pid, n = 4) {
+      const map = brandsByPrompt.get(pid) || new Map();
+      return [...map.entries()]
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([name]) => name)
+        .slice(0, n);
+    }
+    const brandLabel = brandName || "You";
+    const headerCited = `${esc(brandLabel)} Cited`;
     return `
-      <div class="cite-table-wrap">
-        <table class="prompt-table">
+      <div class="prompts-table-wrap">
+        <table class="prompts-table">
           <thead>
             <tr>
-              <th class="th-prompt">Prompt</th>
-              <th class="th-intent">Intent</th>
-              <th>ChatGPT</th><th>Claude</th><th>Perplexity</th><th>Gemini</th>
+              <th class="col-num">#</th>
+              <th class="col-q">Question</th>
+              <th class="col-comp">Likely Competitors Mentioned</th>
+              <th class="col-cited">${headerCited}</th>
             </tr>
           </thead>
-          <tbody>${trs}</tbody>
+          <tbody>
+            ${prompts.map((p, i) => {
+              const comps = topBrands(p.id, 4);
+              const cited = citedByPrompt.has(p.id);
+              return `
+                <tr>
+                  <td class="col-num">${i + 1}</td>
+                  <td class="col-q">${esc(p.prompt)}</td>
+                  <td class="col-comp">${comps.length ? comps.map(esc).join(", ") : "<span class='muted'>—</span>"}</td>
+                  <td class="col-cited ${cited ? "yes" : "no"}">${cited ? "Yes" : "No"}</td>
+                </tr>`;
+            }).join("")}
+          </tbody>
         </table>
       </div>`;
   }
@@ -601,7 +540,7 @@
       const inner = `
         ${competitorsHtml(sol)}
         ${calloutHtml(sol, brand)}
-        ${promptTableHtml(sol)}
+        ${promptTableHtml(sol, brand)}
         ${gateHtml(sol, i)}
       `;
 

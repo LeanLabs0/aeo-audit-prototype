@@ -110,6 +110,46 @@
 }
 .scan-submit { height: 52px; }
 
+/* Inline validation error under the URL field */
+.form-error {
+  max-width: 560px;
+  margin: 10px auto 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--bad);
+  text-align: left;
+  animation: formErrorIn 0.2s ease;
+}
+.form-error[hidden] { display: none; }
+@keyframes formErrorIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Secondary "Scan another solution" button under the CTA */
+.cta-band-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 18px;
+  margin-top: 12px;
+  background: transparent;
+  color: var(--ll-purple);
+  font-family: var(--font-family);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border: 1px solid var(--ll-purple-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition);
+}
+.cta-band-secondary:hover {
+  background: var(--ll-purple-tint);
+  color: var(--ll-purple);
+}
+
 /* Pre-run optional category / audience inputs — always visible */
 .hero-context {
   max-width: 560px;

@@ -69,28 +69,6 @@ const _AEO_AGENCY_PROMPTS = [
   { id: "H", intent: "Question",    prompt: "What AEO agency has the best track record for scaling startups?" },
 ];
 
-const _FACTOR8_PROMPTS = [
-  { id: "A", intent: "Comparative", prompt: "Best AI marketing automation platform for Series A startup CMOs" },
-  { id: "B", intent: "Comparative", prompt: "Best AI marketing automation with pre-built agentic workflow automation for growth-stage companies" },
-  { id: "C", intent: "Comparative", prompt: "Top HubSpot-native AI marketing automation platforms in the United States" },
-  { id: "D", intent: "Evaluative",  prompt: "Best alternatives to traditional marketing automation for early-stage startups scaling fast" },
-  { id: "E", intent: "Comparative", prompt: "Best with 45 pre-built agents AI-powered marketing automation for startups for CMO" },
-  { id: "F", intent: "Comparative", prompt: "AI-powered marketing automation platforms comparison for marketing operations managers at growth-stage startups" },
-  { id: "G", intent: "Question",    prompt: "Who is the best AI marketing automation provider for Series B startup founders?" },
-  { id: "H", intent: "Question",    prompt: "What AI-driven marketing operations platform has the best track record for scaling startups?" },
-];
-
-const _LOOP_PROMPTS = [
-  { id: "A", intent: "Comparative", prompt: "Best loop marketing platform for Series A startup CMOs" },
-  { id: "B", intent: "Comparative", prompt: "Top loop marketing methodologies for B2B SaaS growth teams" },
-  { id: "C", intent: "Comparative", prompt: "Best HubSpot-native compounding marketing systems for growth-stage startups" },
-  { id: "D", intent: "Evaluative",  prompt: "Best alternatives to traditional demand-gen for early-stage startups" },
-  { id: "E", intent: "Comparative", prompt: "Top compounding marketing engines for B2B SaaS marketing leaders" },
-  { id: "F", intent: "Comparative", prompt: "Loop marketing vs traditional growth marketing for marketing ops managers" },
-  { id: "G", intent: "Question",    prompt: "Who pioneered loop marketing for Series B B2B SaaS startups?" },
-  { id: "H", intent: "Question",    prompt: "What compounding marketing approach has the best track record for scaling startups?" },
-];
-
 // Synthetic runs — mostly omitted, sprinkle a few Cited hits so the table reads
 // like a real ~10-25% mention-rate scan and the donuts have something to render.
 function _buildRuns(prompts, citedHits) {
@@ -127,21 +105,11 @@ function _verbatim(category, engine) {
   };
 }
 
-// ── Build the three solutions ────────────────────────────────────────────────
+// ── Build the single solution (AEO Agency demo) ─────────────────────────────
 const _aeoRuns = _buildRuns(_AEO_AGENCY_PROMPTS, [
   { prompt_id: "B", engine: "claude" },
   { prompt_id: "E", engine: "perplexity", rank: 4 },
   { prompt_id: "H", engine: "claude" },
-]);
-const _factor8Runs = _buildRuns(_FACTOR8_PROMPTS, [
-  { prompt_id: "E", engine: "claude" },
-  { prompt_id: "G", engine: "perplexity", rank: 5 },
-]);
-const _loopRuns = _buildRuns(_LOOP_PROMPTS, [
-  { prompt_id: "A", engine: "claude" },
-  { prompt_id: "G", engine: "chatgpt", rank: 3 },
-  { prompt_id: "G", engine: "claude" },
-  { prompt_id: "H", engine: "perplexity", rank: 2 },
 ]);
 
 function _byEngFromRuns(runs) {
@@ -187,36 +155,6 @@ const _sol1 = {
 _sol1.prompt_tracking = _derivePromptTracking(_sol1.evidence.prompts, _sol1.evidence.runs);
 _sol1.verbatim_omitted = _verbatim("answer engine optimization agencies", "ChatGPT");
 
-const _sol2 = {
-  url: "https://lean-labs.com/solutions/loop-marketing/factor8",
-  title: "Factor8 AI Context Engine + 45 agents to scale Loop Marketing",
-  score: _scoreFromRuns(_factor8Runs),
-  competitors: ["HubSpot", "ActiveCampaign", "Mailchimp", "Budget", "Zapier"],
-  evidence: {
-    overall_mention_rate: _factor8Runs.filter((r) => r.mentioned).length / _factor8Runs.length,
-    by_engine: _byEngFromRuns(_factor8Runs),
-    prompts: _FACTOR8_PROMPTS,
-    runs: _factor8Runs,
-  },
-};
-_sol2.prompt_tracking = _derivePromptTracking(_sol2.evidence.prompts, _sol2.evidence.runs);
-_sol2.verbatim_omitted = _verbatim("AI marketing automation platforms", "ChatGPT");
-
-const _sol3 = {
-  url: "https://lean-labs.com/solutions/loop-marketing",
-  title: "Loop marketing",
-  score: _scoreFromRuns(_loopRuns),
-  competitors: ["HubSpot", "ActiveCampaign", "Scalability", "Drift", "Budget"],
-  evidence: {
-    overall_mention_rate: _loopRuns.filter((r) => r.mentioned).length / _loopRuns.length,
-    by_engine: _byEngFromRuns(_loopRuns),
-    prompts: _LOOP_PROMPTS,
-    runs: _loopRuns,
-  },
-};
-_sol3.prompt_tracking = _derivePromptTracking(_sol3.evidence.prompts, _sol3.evidence.runs);
-_sol3.verbatim_omitted = _verbatim("loop marketing platforms", "Claude");
-
 window.AEO_SCAN_MOCK = {
   url: "https://lean-labs.com",
   brand_context: {
@@ -226,9 +164,8 @@ window.AEO_SCAN_MOCK = {
   },
   pages_fetched: 1,
   readable: true,
-  // Average of the three solution scores, rounded — keeps the gauge meaningful
-  // even when real backend returns 0/100.
-  overall_score: Math.round((_sol1.score + _sol2.score + _sol3.score) / 3),
-  duration_ms: 228451,
-  solutions: [_sol1, _sol2, _sol3],
+  // Single-solution mode: overall = the one solution's score.
+  overall_score: _sol1.score,
+  duration_ms: 38421,
+  solutions: [_sol1],
 };

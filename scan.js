@@ -457,15 +457,25 @@
   }
 
   // ── LIVE FETCH ────────────────────────────────────────────────────────────
-  async function runLiveScan(targetUrl) {
+  // Single-solution payload — homepage drives brand inference, solutions=[ONE
+  // deep URL] forces a one-solution scan. Optional category/icp overrides.
+  async function runLiveScan(parsed) {
     const ctl = new AbortController();
-    const t = setTimeout(() => ctl.abort(), 270000); // 270s — cold first scans take ~4 min
+    const t = setTimeout(() => ctl.abort(), 120000); // 120s — single-solution is fast
+    const catInput = ($("#inputCategory") && $("#inputCategory").value || "").trim();
+    const icpInput = ($("#inputIcp") && $("#inputIcp").value || "").trim();
+    const body = {
+      url: parsed.homepage,
+      solutions: [parsed.solution_url],
+    };
+    if (catInput) body.category = catInput;
+    if (icpInput) body.icp = icpInput;
     try {
       const r = await fetch(API.url, {
         method: "POST",
         signal: ctl.signal,
         headers: { "Content-Type": "application/json", "X-API-Key": API.key },
-        body: JSON.stringify({ url: targetUrl }),
+        body: JSON.stringify(body),
       });
       if (r.status === 429) throw new Error("RATE_LIMIT");
       if (r.status === 502) throw new Error("UNREACHABLE");
@@ -495,6 +505,45 @@
     }
   }
 
+  // ── INPUT VALIDATION ─────────────────────────────────────────────────────
+  // A solution URL must be a full http(s) URL with a path beyond the homepage.
+  function parseScanInput(rawUrl) {
+    let u;
+    try {
+      u = new URL(rawUrl);
+    } catch {
+      return { ok: false, error: "Enter a full URL starting with https://" };
+    }
+    if (!/^https?:$/.test(u.protocol)) {
+      return { ok: false, error: "URL must start with http:// or https://" };
+    }
+    const path = (u.pathname || "/").replace(/\/+$/, "");
+    if (path === "" || path === "/" || /^\/(home|index\.?html?)$/i.test(path)) {
+      return {
+        ok: false,
+        error: "Paste a specific solution page URL, not the homepage. Example: https://yoursite.com/solutions/your-product",
+      };
+    }
+    return {
+      ok: true,
+      solution_url: rawUrl,
+      homepage: `${u.protocol}//${u.host}`,
+    };
+  }
+
+  function showInputError(msg) {
+    const el = $("#scanUrlError");
+    if (!el) return;
+    el.textContent = msg;
+    el.removeAttribute("hidden");
+  }
+  function clearInputError() {
+    const el = $("#scanUrlError");
+    if (!el) return;
+    el.textContent = "";
+    el.setAttribute("hidden", "");
+  }
+
   // ── MAIN RENDER ──────────────────────────────────────────────────────────
   function renderFull(data) {
     stopLoading();
@@ -502,22 +551,72 @@
     $("#scanState").setAttribute("hidden", "");
     $("#report").removeAttribute("hidden");
 
-    // Compact header URL
+    const solutions = data.solutions || [];
+    const isSingle = solutions.length === 1;
+
+    // Compact header URL — show the deep solution URL when single-solution.
     const urlEl = $("#compactUrl");
-    const scannedUrl = data.url || ($("#scanUrl") && $("#scanUrl").value) || "https://lean-labs.com";
+    const fallbackUrl = ($("#scanUrl") && $("#scanUrl").value) || "https://lean-labs.com";
+    const scannedUrl = isSingle
+      ? (solutions[0].url || data.url || fallbackUrl)
+      : (data.url || fallbackUrl);
     if (urlEl) urlEl.textContent = scannedUrl;
 
-    // "Results for [domain]" subtitle
+    // Subtitle — single-solution shows solution title; multi shows host.
     const subEl = $("#scoreSubtitle");
-    if (subEl) subEl.textContent = "Results for " + hostOf(scannedUrl);
+    if (subEl) {
+      if (isSingle) {
+        const title = truncate(solutions[0].title || solutions[0].url || "your solution", 60);
+        subEl.textContent = "Results for " + title;
+      } else {
+        subEl.textContent = "Results for " + hostOf(scannedUrl);
+      }
+    }
 
     const score = Number.isFinite(data.overall_score) ? data.overall_score : 0;
     renderGauge(score);
     $("#levelLabel").textContent = levelText(score);
     renderBrandContext(data.brand_context);
 
-    renderSolutionTiles(data.solutions || []);
+    // Toggle the solution-tiles block. Single-solution → no need to choose.
+    const tilesBlock = document.getElementById("categories");
+    const tilesSection = tilesBlock ? tilesBlock.closest(".results-block") : null;
+    if (tilesSection) {
+      if (isSingle) tilesSection.setAttribute("hidden", "");
+      else tilesSection.removeAttribute("hidden");
+    }
+    if (!isSingle) renderSolutionTiles(solutions);
+
     renderSolutionSections(data);
+    renderScanAnotherCta(isSingle);
+  }
+
+  // Render the secondary "Scan another solution" button in the CTA band when
+  // single-solution. Removes it when not.
+  function renderScanAnotherCta(isSingle) {
+    const ctaInner = document.querySelector(".cta-band-inner");
+    if (!ctaInner) return;
+    let btn = document.getElementById("scanAnotherSolutionBtn");
+    if (!isSingle) {
+      if (btn) btn.remove();
+      return;
+    }
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.id = "scanAnotherSolutionBtn";
+      btn.type = "button";
+      btn.className = "cta-band-secondary";
+      btn.textContent = "Scan another solution →";
+      ctaInner.appendChild(btn);
+    }
+    btn.onclick = () => {
+      const input = document.getElementById("scanUrl");
+      if (input) input.value = "";
+      clearInputError();
+      showEntry();
+      window.scrollTo({ top: 0 });
+      if (input) input.focus();
+    };
   }
 
   // ── BOOT ─────────────────────────────────────────────────────────────────
@@ -527,19 +626,26 @@
     const url = (input && input.value || "").trim();
     if (!url) return;
 
-    showLoading(hostOf(url));
+    const parsed = parseScanInput(url);
+    if (!parsed.ok) {
+      showInputError(parsed.error);
+      return;
+    }
+    clearInputError();
+
+    showLoading(hostOf(parsed.solution_url));
 
     try {
-      const data = await runLiveScan(url);
+      const data = await runLiveScan(parsed);
       renderFull(data);
     } catch (err) {
       stopLoading();
       const m = String(err && err.message || err);
       console.warn("scan failed:", m);
       if (m === "NO_SOLUTIONS") {
-        renderUnreadable(hostOf(url));
+        renderUnreadable(hostOf(parsed.solution_url));
       } else if (m === "UNREACHABLE" || err.name === "AbortError") {
-        renderUnreachable(hostOf(url));
+        renderUnreachable(hostOf(parsed.solution_url));
       } else if (m === "RATE_LIMIT") {
         // Re-show entry under a toast so they can adjust + retry.
         showEntry();

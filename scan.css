@@ -523,7 +523,7 @@
   padding: var(--space-sm);
 }
 
-/* ── SUB-CHECK CARD ───────────────────────────────────────── */
+/* ── SCAN CARD (compact, click-to-toggle) ──────────────────── */
 .scan-card {
   border: 1px solid var(--ll-border-light);
   border-radius: var(--radius-md);
@@ -531,15 +531,15 @@
   overflow: hidden;
   transition: border-color var(--transition), box-shadow var(--transition);
 }
-.scan-card--fail { border-color: #f3d4d4; }
 .scan-card:hover { box-shadow: var(--shadow-sm); }
+.scan-card--fail { border-color: #f3d4d4; }
 
 .scan-card-head {
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 14px var(--space-sm);
+  padding: 12px var(--space-sm);
   background: none;
   border: none;
   cursor: pointer;
@@ -549,47 +549,35 @@
 }
 .scan-card-head:hover { background: var(--ll-off-white); }
 .card-status {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
   display: inline-flex;
 }
-.card-status svg { width: 22px; height: 22px; }
+.card-status svg { width: 20px; height: 20px; }
 .status-pass { color: var(--ok); }
 .status-fail { color: var(--bad); }
 .card-name {
   flex: 1;
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--ll-heading);
 }
-.card-badge {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 3px 9px;
-  border-radius: 999px;
-  flex-shrink: 0;
-}
-.badge-pass { color: var(--ok);  background: var(--ok-bg); }
-.badge-fail { color: var(--bad); background: var(--bad-bg); }
 .card-chevron {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   color: var(--ll-muted);
   flex-shrink: 0;
   transition: transform var(--transition);
 }
 .scan-card.open .card-chevron { transform: rotate(180deg); }
 
-/* card body */
 .scan-card-body {
   display: none;
-  padding: 0 var(--space-sm) var(--space-sm);
+  padding: 4px var(--space-sm) var(--space-sm);
   border-top: 1px solid var(--ll-border-light);
 }
-.scan-card.open .scan-card-body { display: block; animation: bodyIn 0.25s ease; }
+.scan-card.open .scan-card-body { display: block; animation: bodyIn 0.2s ease; }
 @keyframes bodyIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
 .card-section { margin-top: var(--space-sm); }
@@ -625,8 +613,8 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 11px;
-  background: var(--ll-purple-tint);
+  padding: 4px 10px;
+  background: transparent;
   border: 1px solid var(--ll-purple-border);
   border-radius: 999px;
   font-size: var(--text-xs);
@@ -635,8 +623,8 @@
   text-decoration: none;
   transition: all var(--transition);
 }
-.resource-chip:hover { background: var(--ll-light-purple); }
-.resource-chip svg { width: 12px; height: 12px; }
+.resource-chip:hover { background: var(--ll-purple-tint); }
+.resource-chip svg { width: 11px; height: 11px; }
 
 /* ── INLINE PROMPT-ROW GATE (deepest AI-citation layer only) ─ */
 /* Only the extra prompt-table rows are blurred — nothing else. */
@@ -984,23 +972,11 @@ tr.locked {
   font-weight: 700;
 }
 
-/* Sub-check cards inside category detail groups are always expanded —
-   no per-card collapse, just a clean stack of pass/fix evidence. */
+/* Detail stack inside category groups — clean column of scan cards. */
 .check-details {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
-}
-.cat-group .scan-card-body.subcheck-body-open {
-  display: block;
-  padding: 0 var(--space-sm) var(--space-sm);
-  animation: bodyIn 0.25s ease;
-}
-.cat-group .scan-card-head {
-  cursor: default;
-}
-.cat-group .scan-card-head:hover {
-  background: none;
 }
 
 /* "Surfaced by AI" competitor chip row */

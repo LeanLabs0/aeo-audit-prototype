@@ -198,16 +198,15 @@
   function _subcheckCard(sub) {
     const isPass = sub.status === "pass";
     const statusIcon = isPass
-      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>`
-      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
-    const badge = isPass
-      ? `<span class="card-badge badge-pass">Pass</span>`
-      : `<span class="card-badge badge-fail">Fix</span>`;
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
+
     const goalBlock = sub.goal
       ? `<div class="card-section">
            <div class="card-label">Goal</div>
            <div class="card-text">${esc(sub.goal)}</div>
          </div>` : "";
+
     let bodyBlocks = "";
     if (isPass) {
       if (sub.result) {
@@ -233,13 +232,14 @@
           </div>`;
       }
     }
+
     const resources = Array.isArray(sub.resources) ? sub.resources : [];
     let resourceBlock = "";
     if (resources.length) {
       const chips = resources.map((r) =>
         `<a class="resource-chip" href="${esc(r.url)}" target="_blank" rel="noopener">
-           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1 1"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1-1"/></svg>
-           ${esc(r.label)}
+           <span>${esc(r.label)}</span>
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
          </a>`).join("");
       resourceBlock = `
         <div class="card-section">
@@ -247,14 +247,15 @@
           <div class="resource-chips">${chips}</div>
         </div>`;
     }
+
     return `
       <div class="scan-card ${isPass ? "" : "scan-card--fail"}">
-        <div class="scan-card-head" role="presentation">
+        <button type="button" class="scan-card-head" data-card-toggle aria-expanded="false">
           <span class="card-status ${isPass ? "status-pass" : "status-fail"}" aria-hidden="true">${statusIcon}</span>
           <span class="card-name">${esc(sub.name || sub.key || "Check")}</span>
-          ${badge}
-        </div>
-        <div class="scan-card-body subcheck-body-open">
+          <svg class="card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="scan-card-body">
           ${goalBlock}
           ${bodyBlocks}
           ${resourceBlock}
@@ -432,6 +433,7 @@
     }).join("");
 
     wireGroups($("#categoryDetails"));
+    wireCards($("#categoryDetails"));
   }
 
   function renderSolutionTiles(solutions) {
@@ -536,6 +538,19 @@
       head.addEventListener("click", () => {
         const group = head.closest(".check-group");
         const open = group.classList.toggle("open");
+        head.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    });
+  }
+
+  function wireCards(root) {
+    const scope = root || document;
+    scope.querySelectorAll("[data-card-toggle]").forEach((head) => {
+      if (head.dataset.wired === "1") return;
+      head.dataset.wired = "1";
+      head.addEventListener("click", () => {
+        const card = head.closest(".scan-card");
+        const open = card.classList.toggle("open");
         head.setAttribute("aria-expanded", open ? "true" : "false");
       });
     });

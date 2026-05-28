@@ -146,6 +146,21 @@
     return { pass, total };
   }
 
+  // AI Citations data lives in the bottom "What we found" table — the
+  // drill-down panel is suppressed entirely. This helper catches every
+  // shape the backend (or older mocks) may emit.
+  function isAiCitationsCat(cat) {
+    if (!cat) return false;
+    const key = (cat.key || "").toLowerCase();
+    const name = (cat.name || "").toLowerCase();
+    if (key === "ai_citations" || key === "ai-citations" || key === "aicitations") return true;
+    if (key.startsWith("ai_") && /citation/.test(key)) return true;
+    if (/ai[\s\-_]*citations?/.test(name)) return true;
+    // Also: if any subcheck key starts with "cited_" it's the citations category.
+    if (Array.isArray(cat.subchecks) && cat.subchecks.some((s) => /^cited_/.test((s && s.key) || ""))) return true;
+    return false;
+  }
+
   function renderCategoryTiles(checks) {
     const host = $("#categories");
     if (!host) return;
@@ -356,11 +371,7 @@
     }
     // AI Citations data lives in the bottom "What we found" table — skip its
     // drill-down here so the page has a single citation view.
-    const drillChecks = checks.filter((cat) => {
-      const isAi = (cat.key === "ai_citations")
-        || /ai\s*citations/i.test(cat.name || "");
-      return !isAi;
-    });
+    const drillChecks = checks.filter((cat) => !isAiCitationsCat(cat));
 
     host.innerHTML = drillChecks.map((cat, i) => {
       const score = Number.isFinite(cat.score) ? cat.score : 0;

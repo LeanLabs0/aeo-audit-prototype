@@ -588,53 +588,66 @@
       </div>`);
   }
 
-  // ── LOADING SCREEN (cycles messages every 4s) ────────────────────────────
-  const LOADING_MESSAGES = [
-    "Detecting your solutions…",
-    "Asking ChatGPT, Claude, Perplexity & Gemini…",
-    "Counting mentions across runs…",
-    "Compiling your scan…",
+  // ── LOADING SCREEN (stepped progress driven by SSE phase events) ─────────
+  const STEPS = [
+    { key: "fetching",  label: "Fetching your solution page" },
+    { key: "profiling", label: "Detecting your category & buyer" },
+    { key: "prompts",   label: "Generating buyer prompts" },
+    { key: "querying",  label: "Querying ChatGPT, Claude & Gemini" },
+    { key: "compiling", label: "Compiling your AEO report" },
   ];
 
-  let _loadingTimer = null;
+  let _loadingState = { currentPhase: null, pct: 0, message: "" };
 
   function showLoading(url) {
     showResults();
     $("#report").setAttribute("hidden", "");
     const sec = $("#scanState");
     sec.removeAttribute("hidden");
-    let idx = 0;
+    _loadingState = { currentPhase: null, pct: 0, message: "" };
     sec.innerHTML = `
       <div class="state-card state-card--loading">
-        <div class="loader-pulse" aria-hidden="true">
-          <svg viewBox="0 0 60 60" class="loader-svg">
-            <circle cx="30" cy="30" r="22" fill="none" stroke="url(#llGradLoad)" stroke-width="4" stroke-linecap="round" stroke-dasharray="60 200">
-              <animateTransform attributeName="transform" type="rotate" from="0 30 30" to="360 30 30" dur="1.2s" repeatCount="indefinite"/>
-            </circle>
-            <defs>
-              <linearGradient id="llGradLoad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#7612fa"/><stop offset="0.5" stop-color="#c109af"/><stop offset="1" stop-color="#ff6221"/>
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
         <h2 class="state-title">Scanning <b>${esc(url)}</b></h2>
-        <p class="state-text loader-msg" id="loaderMsg">${esc(LOADING_MESSAGES[0])}</p>
-        <p class="state-foot">This usually takes 30s–4 min. We're running real prompts against real AI engines.</p>
+        <p class="state-text loader-msg" id="loaderMsg">Connecting…</p>
+        <div class="scan-progress-bar"><div class="scan-progress-fill" id="scanProgressFill" style="width: 2%"></div></div>
+        <ul class="scan-steps" id="scanSteps">
+          ${STEPS.map((s) => `
+            <li class="scan-step" data-step="${s.key}">
+              <span class="scan-step-icon"><span class="scan-step-dot"></span></span>
+              <span class="scan-step-label">${esc(s.label)}</span>
+            </li>`).join("")}
+        </ul>
+        <p class="state-foot">Real prompts against real AI engines. Usually 60–90s.</p>
       </div>`;
-    if (_loadingTimer) clearInterval(_loadingTimer);
-    _loadingTimer = setInterval(() => {
-      idx = (idx + 1) % LOADING_MESSAGES.length;
-      const el = document.getElementById("loaderMsg");
-      if (el) el.textContent = LOADING_MESSAGES[idx];
-    }, 4000);
+  }
+
+  function updateLoadingProgress(evt) {
+    const sec = $("#scanState");
+    if (!sec || sec.hasAttribute("hidden")) return;
+    _loadingState.pct = Math.max(_loadingState.pct, evt.pct || 0);
+    if (evt.message) _loadingState.message = evt.message;
+    if (evt.phase) _loadingState.currentPhase = evt.phase;
+
+    const msgEl = document.getElementById("loaderMsg");
+    if (msgEl && _loadingState.message) msgEl.textContent = _loadingState.message;
+
+    const fillEl = document.getElementById("scanProgressFill");
+    if (fillEl) fillEl.style.width = `${Math.min(100, _loadingState.pct)}%`;
+
+    // Mark steps as done / active based on the current phase.
+    const stepsList = document.getElementById("scanSteps");
+    if (!stepsList) return;
+    const currentIdx = STEPS.findIndex((s) => s.key === _loadingState.currentPhase);
+    stepsList.querySelectorAll(".scan-step").forEach((li, i) => {
+      li.classList.remove("done", "active");
+      if (currentIdx === -1) return;
+      if (i < currentIdx) li.classList.add("done");
+      else if (i === currentIdx) li.classList.add("active");
+    });
   }
 
   function stopLoading() {
-    if (_loadingTimer) {
-      clearInterval(_loadingTimer);
-      _loadingTimer = null;
-    }
+    // No interval to clear — old cycling-message loop is gone.
   }
 
   // ── LIVE FETCH ────────────────────────────────────────────────────────────

@@ -1178,3 +1178,92 @@ table.prompts-table {
   .score-heading { font-size: var(--text-2xl); }
 }
 
+/* ── STEPPED PROGRESS LOADER ─────────────────────────────── */
+.scan-progress-bar {
+  width: 100%;
+  max-width: 420px;
+  height: 6px;
+  margin: var(--space-md) auto var(--space-sm);
+  background: var(--ll-border-light);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.scan-progress-fill {
+  height: 100%;
+  background: var(--ll-gradient);
+  width: 2%;
+  transition: width 0.4s ease-out;
+  border-radius: 999px;
+}
+.scan-steps {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-md) auto 0;
+  max-width: 420px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.scan-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--text-sm);
+  color: var(--ll-muted);
+  transition: color 0.2s ease;
+}
+.scan-step-icon {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--ll-border-light);
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+  position: relative;
+}
+.scan-step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ll-muted);
+  transition: background 0.2s ease;
+}
+.scan-step.active {
+  color: var(--ll-heading);
+  font-weight: 600;
+}
+.scan-step.active .scan-step-icon {
+  background: var(--ll-purple-tint);
+}
+.scan-step.active .scan-step-dot {
+  background: var(--ll-purple);
+  animation: stepPulse 1.2s ease-in-out infinite;
+}
+@keyframes stepPulse {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%      { transform: scale(1.4); opacity: 0.6; }
+}
+.scan-step.done {
+  color: var(--ll-body);
+}
+.scan-step.done .scan-step-icon {
+  background: var(--ok-bg);
+}
+.scan-step.done .scan-step-dot {
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f9d55' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12l5 5L20 7'/></svg>");
+  background-size: 14px 14px;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: none;
+}
+@media (max-width: 720px) {
+  .scan-progress-bar, .scan-steps { max-width: 100%; }
+}
+

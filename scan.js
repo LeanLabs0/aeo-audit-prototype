@@ -926,6 +926,9 @@
 
     const score = Number.isFinite(data.overall_score) ? data.overall_score : 0;
     renderGauge(score);
+    const ts = new Date().toLocaleString("en-GB", { dateStyle: "short", timeStyle: "medium" });
+    const tsEl = document.getElementById("scoreTimestamp");
+    if (tsEl) tsEl.textContent = `Last scanned ${ts}`;
     const lvl = levelText(score);
     $("#levelLabel").innerHTML = `
       <span class="level-pill level-pill-${lvl.n}">LEVEL ${lvl.n}</span>
@@ -966,35 +969,18 @@
       if (ctaMount) ctaMount.innerHTML = "";
     }
 
-    renderScanAnotherCta(isSingle);
-  }
-
-  // Render the secondary "Scan another solution" button in the CTA band when
-  // single-solution. Removes it when not.
-  function renderScanAnotherCta(isSingle) {
-    const ctaInner = document.querySelector(".cta-band-inner");
-    if (!ctaInner) return;
-    let btn = document.getElementById("scanAnotherSolutionBtn");
-    if (!isSingle) {
-      if (btn) btn.remove();
-      return;
+    const scanAnotherBottom = document.getElementById("scanAnotherBottomBtn");
+    if (scanAnotherBottom && !scanAnotherBottom.dataset.wired) {
+      scanAnotherBottom.dataset.wired = "1";
+      scanAnotherBottom.addEventListener("click", () => {
+        const input = document.getElementById("scanUrl");
+        if (input) input.value = "";
+        clearInputError();
+        showEntry();
+        window.scrollTo({ top: 0 });
+        if (input) input.focus();
+      });
     }
-    if (!btn) {
-      btn = document.createElement("button");
-      btn.id = "scanAnotherSolutionBtn";
-      btn.type = "button";
-      btn.className = "cta-band-secondary";
-      btn.textContent = "Scan another solution →";
-      ctaInner.appendChild(btn);
-    }
-    btn.onclick = () => {
-      const input = document.getElementById("scanUrl");
-      if (input) input.value = "";
-      clearInputError();
-      showEntry();
-      window.scrollTo({ top: 0 });
-      if (input) input.focus();
-    };
   }
 
   // ── BOOT ─────────────────────────────────────────────────────────────────

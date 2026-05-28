@@ -410,16 +410,24 @@
       host.innerHTML = "";
       return;
     }
-    // AI Citations data lives in the bottom "What we found" table — skip its
-    // drill-down here so the page has a single citation view.
-    const drillChecks = checks.filter((cat) => !isAiCitationsCat(cat));
 
-    host.innerHTML = drillChecks.map((cat, i) => {
+    // AI Citations is the first category (backend ships it first). Its body is
+    // the per-prompt table — the user-facing "what we found" detail. Other
+    // categories keep the standard sub-check card render.
+    host.innerHTML = checks.map((cat, i) => {
       const score = Number.isFinite(cat.score) ? cat.score : 0;
       const { pass, total } = _countPasses(cat.subchecks);
       const targetId = `cat-${slugify(cat.key || cat.name)}`;
       const isFirst = i === 0;
-      const cards = (cat.subchecks || []).map(_subcheckCard).join("");
+
+      let body;
+      if (isAiCitationsCat(cat)) {
+        body = primarySolution ? promptTableHtml(primarySolution, brand) : "";
+      } else {
+        const cards = (cat.subchecks || []).map(_subcheckCard).join("");
+        body = `<div class="card-stack">${cards}</div>`;
+      }
+
       return `
         <div class="check-group cat-group ${isFirst ? "open" : ""}" id="${esc(targetId)}">
           <button type="button" class="check-group-head" aria-expanded="${isFirst ? "true" : "false"}">
@@ -430,13 +438,11 @@
               <svg class="group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </span>
           </button>
-          <div class="check-group-body">
-            <div class="card-stack">${cards}</div>
-          </div>
+          <div class="check-group-body">${body}</div>
         </div>`;
     }).join("");
 
-    wireGroups(document.getElementById("categoryDetails"));
+    wireGroups($("#categoryDetails"));
   }
 
   function renderSolutionTiles(solutions) {

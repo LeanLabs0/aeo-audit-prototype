@@ -362,6 +362,14 @@
     return out;
   }
 
+  function renderHeroCallout(solution, brand) {
+    const host = $("#heroCallout");
+    if (!host) return;
+    const html = solution ? calloutHtml(solution, brand) : "";
+    host.innerHTML = html;
+    host.style.display = html ? "" : "none";
+  }
+
   function renderCategoryDetails(checks, primarySolution, brand) {
     const host = $("#categoryDetails");
     if (!host) return;
@@ -550,7 +558,6 @@
 
       const inner = `
         ${competitorsHtml(sol)}
-        ${calloutHtml(sol, brand)}
         ${promptTableHtml(sol, brand)}
         ${gateHtml(sol, i)}
       `;
@@ -829,6 +836,10 @@
     renderGauge(score);
     $("#levelLabel").textContent = levelText(score);
     renderBrandContext(data.brand_context);
+
+    const heroBrand = (data.brand_context && data.brand_context.brand) || "Your brand";
+    const heroSol = solutions[0];
+    renderHeroCallout(heroSol, heroBrand);
 
     // Tiles row. Single-solution → 4 AEO category tiles from solutions[0].checks.
     // Multi-solution (rare) → one tile per solution.

@@ -1279,3 +1279,51 @@ table.prompts-table {
   .scan-progress-bar, .scan-steps { max-width: 100%; }
 }
 
+/* ── "Improve the score N" CTA (fail-count pill, CF parity) ───────────── */
+.improve-cta-mount {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-md);
+}
+.improve-cta-mount:empty { display: none; }
+.improve-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px 0 16px;
+  background: var(--ll-gradient);
+  color: var(--ll-white);
+  font-family: var(--font-family);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: 0 2px 12px rgba(118, 18, 250, 0.25);
+}
+.improve-cta:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px rgba(118, 18, 250, 0.35);
+}
+.improve-cta:focus { outline: none; }
+.improve-cta:focus-visible {
+  outline: 2px solid var(--ll-purple);
+  outline-offset: 2px;
+}
+.improve-cta svg { width: 16px; height: 16px; }
+.improve-cta-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+

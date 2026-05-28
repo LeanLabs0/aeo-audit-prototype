@@ -396,6 +396,40 @@
     return out;
   }
 
+  // ── IMPROVE-THE-SCORE CTA (fail-count pill, between score and tiles) ─────
+  function countFailSubchecks(checks) {
+    let n = 0;
+    for (const cat of (checks || [])) {
+      for (const s of (cat.subchecks || [])) {
+        if (s && s.status === "fail") n += 1;
+      }
+    }
+    return n;
+  }
+
+  function renderImproveCta(checks) {
+    const host = $("#improveCtaMount");
+    if (!host) return;
+    const n = countFailSubchecks(checks);
+    if (n === 0) {
+      host.innerHTML = "";
+      return;
+    }
+    host.innerHTML = `
+      <button type="button" class="improve-cta" id="improveCtaBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        <span>Improve the score</span>
+        <span class="improve-cta-count">${n}</span>
+      </button>`;
+    const btn = $("#improveCtaBtn");
+    if (btn) {
+      btn.addEventListener("click", () => {
+        const groups = document.getElementById("categoryDetails");
+        if (groups) groups.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }
+
   function renderCategoryDetails(checks, primarySolution, brand) {
     const host = $("#categoryDetails");
     if (!host) return;
@@ -858,6 +892,7 @@
         else detailsSection.setAttribute("hidden", "");
       }
       renderCategoryDetails(checks, solutions[0], brand);
+      renderImproveCta(checks);
     } else {
       if (tilesSection) tilesSection.removeAttribute("hidden");
       if (titleEl) titleEl.textContent = "Your solutions in AI search";
@@ -865,6 +900,9 @@
       renderSolutionTiles(solutions);
       if (detailsSection) detailsSection.setAttribute("hidden", "");
       if (detailsHost) detailsHost.innerHTML = "";
+      // Multi-solution branch has no flat checks list — hide the CTA mount.
+      const ctaMount = document.getElementById("improveCtaMount");
+      if (ctaMount) ctaMount.innerHTML = "";
     }
 
     renderScanAnotherCta(isSingle);

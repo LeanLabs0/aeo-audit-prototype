@@ -1327,3 +1327,61 @@ table.prompts-table {
   font-weight: 700;
 }
 
+/* ── PER-CARD ACTION ROW (Copy prompt / Audit details) ─────── */
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: var(--space-sm);
+}
+.card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  background: transparent;
+  color: var(--ll-purple);
+  font-family: var(--font-family);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  border: 1px solid var(--ll-purple-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.card-action-btn:hover {
+  background: var(--ll-purple-tint);
+}
+.card-action-btn:focus { outline: none; }
+.card-action-btn:focus-visible {
+  outline: 2px solid var(--ll-purple);
+  outline-offset: 2px;
+}
+.card-action-btn svg { width: 12px; height: 12px; }
+.card-action-btn--primary {
+  background: var(--ll-gradient);
+  color: var(--ll-white);
+  border-color: transparent;
+}
+.card-action-btn--primary:hover {
+  filter: brightness(1.08);
+  background: var(--ll-gradient);
+}
+.card-audit-payload {
+  margin-top: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--ll-off-white);
+  border: 1px solid var(--ll-border-light);
+  border-radius: var(--radius-sm);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--ll-body);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow: auto;
+}
+

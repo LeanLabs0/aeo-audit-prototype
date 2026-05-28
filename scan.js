@@ -198,6 +198,17 @@
   }
 
   // ── CATEGORY DETAIL SECTIONS (one collapsible group per category) ────────
+  function _buildFixPrompt(sub) {
+    const parts = [];
+    parts.push(`I'm fixing an AI Engine Optimization (AEO) check on my website.`);
+    if (sub.name) parts.push(`Check: ${sub.name}`);
+    if (sub.goal) parts.push(`Goal: ${sub.goal}`);
+    if (sub.issue) parts.push(`Issue: ${sub.issue}`);
+    if (sub.how_to_implement) parts.push(`Suggested fix: ${sub.how_to_implement}`);
+    parts.push(`Please walk me through implementing this on a typical SaaS marketing site (HubSpot CMS or similar). Include code/markup samples.`);
+    return parts.join("\n\n");
+  }
+
   function _subcheckCard(sub) {
     const isPass = sub.status === "pass";
     const statusIcon = isPass
@@ -251,6 +262,26 @@
         </div>`;
     }
 
+    const promptText = _buildFixPrompt(sub);
+    const copyBtn = !isPass
+      ? `<button type="button" class="card-action-btn card-action-btn--primary" data-copy-prompt="${esc(encodeURIComponent(promptText))}">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+           Copy prompt
+         </button>` : "";
+
+    const detailsBtn = `
+      <button type="button" class="card-action-btn" data-audit-details>
+        Audit details
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>`;
+
+    const actionRow = `
+      <div class="card-actions">
+        ${copyBtn}
+        ${detailsBtn}
+      </div>
+      <pre class="card-audit-payload" hidden>${esc(JSON.stringify(sub, null, 2))}</pre>`;
+
     return `
       <div class="scan-card ${isPass ? "" : "scan-card--fail"}">
         <button type="button" class="scan-card-head" data-card-toggle aria-expanded="false">
@@ -262,6 +293,7 @@
           ${goalBlock}
           ${bodyBlocks}
           ${resourceBlock}
+          ${actionRow}
         </div>
       </div>`;
   }
@@ -470,6 +502,7 @@
 
     wireGroups($("#categoryDetails"));
     wireCards($("#categoryDetails"));
+    wireCardActions($("#categoryDetails"));
   }
 
   function renderSolutionTiles(solutions) {
@@ -588,6 +621,34 @@
         const card = head.closest(".scan-card");
         const open = card.classList.toggle("open");
         head.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    });
+  }
+
+  function wireCardActions(root) {
+    const scope = root || document;
+    scope.querySelectorAll("[data-copy-prompt]").forEach((btn) => {
+      if (btn.dataset.wired === "1") return;
+      btn.dataset.wired = "1";
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const text = decodeURIComponent(btn.getAttribute("data-copy-prompt") || "");
+        try {
+          await navigator.clipboard.writeText(text);
+          toast("Prompt copied — paste into ChatGPT, Claude, or your LLM of choice.");
+        } catch (_) {
+          toast("Couldn't copy to clipboard — try selecting manually.");
+        }
+      });
+    });
+    scope.querySelectorAll("[data-audit-details]").forEach((btn) => {
+      if (btn.dataset.wired === "1") return;
+      btn.dataset.wired = "1";
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const card = btn.closest(".scan-card");
+        const pre = card && card.querySelector(".card-audit-payload");
+        if (pre) pre.toggleAttribute("hidden");
       });
     });
   }

@@ -264,7 +264,7 @@
 
     const promptText = _buildFixPrompt(sub);
     const copyBtn = !isPass
-      ? `<button type="button" class="card-action-btn card-action-btn--primary" data-copy-prompt="${esc(encodeURIComponent(promptText))}">
+      ? `<button type="button" class="card-action-btn card-action-btn--primary" data-copy-prompt="${esc(promptText)}">
            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
            Copy prompt
          </button>` : "";
@@ -632,7 +632,7 @@
       btn.dataset.wired = "1";
       btn.addEventListener("click", async (e) => {
         e.stopPropagation();
-        const text = decodeURIComponent(btn.getAttribute("data-copy-prompt") || "");
+        const text = btn.getAttribute("data-copy-prompt") || "";
         try {
           await navigator.clipboard.writeText(text);
           toast("Prompt copied — paste into ChatGPT, Claude, or your LLM of choice.");

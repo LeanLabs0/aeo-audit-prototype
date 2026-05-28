@@ -548,6 +548,11 @@
   transition: background var(--transition);
 }
 .scan-card-head:hover { background: var(--ll-off-white); }
+.scan-card-head:focus { outline: none; }
+.scan-card-head:focus-visible {
+  outline: 2px solid var(--ll-purple-border);
+  outline-offset: -2px;
+}
 .card-status {
   width: 20px;
   height: 20px;

@@ -19,6 +19,13 @@
   const ENGINE_LABELS = { chatgpt: "ChatGPT", claude: "Claude", perplexity: "Perplexity", gemini: "Gemini" };
   const ENGINE_ORDER = ["chatgpt", "claude", "perplexity", "gemini"];
 
+  // Per-LLM prompt-table sections rendered inside the AI Citations group body.
+  const ENGINE_LIST = [
+    { key: "chatgpt", label: "ChatGPT" },
+    { key: "claude",  label: "Claude"  },
+    { key: "gemini",  label: "Gemini"  },
+  ];
+
   // Live API config.
   const API = {
     url: "https://factor8-agent-sdk.fly.dev/api/v1/brand-slug/public-scanner/aeo-visibility-scan",
@@ -543,52 +550,65 @@
     const prompts = ev.prompts || [];
     const runs = ev.runs || [];
     if (!prompts.length) return "";
-    // Index brand mentions + per-prompt competitor list.
-    const citedByPrompt = new Set();
-    const brandsByPrompt = new Map(); // prompt_id -> Map(brand -> count)
-    for (const r of runs) {
-      if (!r) continue;
-      if (r.mentioned) citedByPrompt.add(r.prompt_id);
-      const brands = extractBrandsFromText(r.raw_response, brandName, 6);
-      if (!brandsByPrompt.has(r.prompt_id)) brandsByPrompt.set(r.prompt_id, new Map());
-      const map = brandsByPrompt.get(r.prompt_id);
-      for (const b of brands) map.set(b, (map.get(b) || 0) + 1);
-    }
-    function topBrands(pid, n = 4) {
-      const map = brandsByPrompt.get(pid) || new Map();
-      return [...map.entries()]
-        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-        .map(([name]) => name)
-        .slice(0, n);
-    }
+
     const brandLabel = brandName || "You";
     const headerCited = `${esc(brandLabel)} Cited`;
-    return `
-      <div class="prompts-table-wrap">
-        <table class="prompts-table">
-          <thead>
-            <tr>
-              <th class="col-num">#</th>
-              <th class="col-q">Question</th>
-              <th class="col-comp">Competitors Mentioned</th>
-              <th class="col-cited">${headerCited}</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${prompts.map((p, i) => {
-              const comps = topBrands(p.id, 4);
-              const cited = citedByPrompt.has(p.id);
-              return `
+
+    // Build one labeled table per engine.
+    const tables = ENGINE_LIST.map(({ key, label }) => {
+      const engineRuns = runs.filter((r) => r && (r.engine === key));
+      if (!engineRuns.length) return "";
+
+      // Per-prompt: brand mentions + competitor map for THIS engine only.
+      const citedByPrompt = new Set();
+      const brandsByPrompt = new Map();
+      for (const r of engineRuns) {
+        if (r.mentioned) citedByPrompt.add(r.prompt_id);
+        const brands = extractBrandsFromText(r.raw_response, brandName, 6);
+        if (!brandsByPrompt.has(r.prompt_id)) brandsByPrompt.set(r.prompt_id, new Map());
+        const map = brandsByPrompt.get(r.prompt_id);
+        for (const b of brands) map.set(b, (map.get(b) || 0) + 1);
+      }
+      function topBrands(pid, n = 4) {
+        const m = brandsByPrompt.get(pid) || new Map();
+        return [...m.entries()]
+          .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+          .map(([name]) => name)
+          .slice(0, n);
+      }
+
+      const rows = prompts.map((p, i) => {
+        const comps = topBrands(p.id, 4);
+        const cited = citedByPrompt.has(p.id);
+        return `
+          <tr>
+            <td class="col-num">${i + 1}</td>
+            <td class="col-q">${esc(p.prompt)}</td>
+            <td class="col-comp">${comps.length ? comps.map(esc).join(", ") : "<span class='muted'>—</span>"}</td>
+            <td class="col-cited ${cited ? "yes" : "no"}">${cited ? "Yes" : "No"}</td>
+          </tr>`;
+      }).join("");
+
+      return `
+        <div class="engine-table-block">
+          <h3 class="engine-table-title">${esc(label)}</h3>
+          <div class="prompts-table-wrap">
+            <table class="prompts-table">
+              <thead>
                 <tr>
-                  <td class="col-num">${i + 1}</td>
-                  <td class="col-q">${esc(p.prompt)}</td>
-                  <td class="col-comp">${comps.length ? comps.map(esc).join(", ") : "<span class='muted'>—</span>"}</td>
-                  <td class="col-cited ${cited ? "yes" : "no"}">${cited ? "Yes" : "No"}</td>
-                </tr>`;
-            }).join("")}
-          </tbody>
-        </table>
-      </div>`;
+                  <th class="col-num">#</th>
+                  <th class="col-q">Question</th>
+                  <th class="col-comp">Competitors Mentioned</th>
+                  <th class="col-cited">${headerCited}</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>`;
+    }).join("");
+
+    return tables;
   }
 
   // ── WIRING ───────────────────────────────────────────────────────────────
@@ -967,19 +987,6 @@
       // Multi-solution branch has no flat checks list — hide the CTA mount.
       const ctaMount = document.getElementById("improveCtaMount");
       if (ctaMount) ctaMount.innerHTML = "";
-    }
-
-    const scanAnotherBottom = document.getElementById("scanAnotherBottomBtn");
-    if (scanAnotherBottom && !scanAnotherBottom.dataset.wired) {
-      scanAnotherBottom.dataset.wired = "1";
-      scanAnotherBottom.addEventListener("click", () => {
-        const input = document.getElementById("scanUrl");
-        if (input) input.value = "";
-        clearInputError();
-        showEntry();
-        window.scrollTo({ top: 0 });
-        if (input) input.focus();
-      });
     }
   }
 

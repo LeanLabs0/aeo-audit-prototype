@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="scan.css?v=20260530">
+<link rel="stylesheet" href="scan.css?v=20260531">
 </head>
 <body class="scan-body">
 
@@ -121,28 +121,32 @@
       <div id="categoryDetails" class="check-details"></div>
     </section>
 
-    <section class="results-footer">
-      <div class="results-footer-cta">
-        <button type="button" class="ghost-btn" id="scanAnotherBottomBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          Scan another site
-        </button>
+    <!-- CTA band — its own section between tiles and the detail -->
+    <section class="cta-band">
+      <div class="cta-band-inner">
+        <h2 class="cta-band-title">Want AI to start recommending you?</h2>
+        <p class="cta-band-sub">Book a free 30-minute call — we'll turn this report into a prioritized fix plan, with the lift to expect.</p>
+        <a class="book-btn cta-band-btn" href="#book">Book my call
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+        </a>
       </div>
-      <p class="footer-disclaimer">
-        These are AI-generated recommendations. AI can make mistakes. Please use your professional judgment when implementing these tips, as they are provided "as-is" and Lean Labs assumes no liability for any actions taken or outcomes based on this automated content.
-      </p>
-      <div class="footer-meta">
-        <span>© 2026 Lean Labs.</span>
-        <a href="https://www.lean-labs.com/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>
-        <a href="https://www.lean-labs.com/terms" target="_blank" rel="noopener">Terms of Use</a>
-        <a href="https://www.lean-labs.com/" target="_blank" rel="noopener">Docs</a>
+    </section>
+
+    <!-- Footer CTA (second instance at the very bottom) -->
+    <section class="results-block footer-cta">
+      <div class="footer-cta-inner">
+        <div class="footer-cta-copy">
+          <strong class="footer-cta-title">Want AI to start recommending you?</strong>
+          <span class="footer-cta-sub">Book a free 30-minute call — we'll turn this report into a prioritized fix plan, with the lift to expect.</span>
+        </div>
+        <a class="book-btn footer-book-btn" href="#book">Book my call →</a>
       </div>
     </section>
 
   </main>
 </div>
 
-<script src="scan-mock-data.js?v=20260530"></script>
-<script src="scan.js?v=20260530"></script>
+<script src="scan-mock-data.js?v=20260531"></script>
+<script src="scan.js?v=20260531"></script>
 </body>
 </html>

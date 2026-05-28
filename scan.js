@@ -184,17 +184,6 @@
     host.querySelectorAll("[data-cat-tile]").forEach((tile) => {
       tile.addEventListener("click", () => {
         const target = tile.getAttribute("data-target");
-        // AI Citations tile scrolls to the bottom "What we found" table —
-        // the drill-down panel for it is no longer rendered (data lives below).
-        if (/^cat-ai-citations\b/.test(target || "")) {
-          const checks = document.getElementById("checks");
-          const firstSol = checks && checks.querySelector(".sol-group");
-          const dest = firstSol || checks;
-          if (dest) dest.scrollIntoView({ behavior: "smooth", block: "start" });
-          host.querySelectorAll("[data-cat-tile]").forEach((t) =>
-            t.setAttribute("aria-expanded", t === tile ? "true" : "false"));
-          return;
-        }
         const group = document.getElementById(target);
         if (!group) return;
         openGroup(group);
@@ -478,44 +467,6 @@
     });
   }
 
-  // verbatim_omitted = longest raw_response from a mentioned:false run, or null.
-  function buildVerbatim(sol) {
-    if (sol.verbatim_omitted) return sol.verbatim_omitted;
-    const runs = (sol.evidence && sol.evidence.runs) || [];
-    const fails = runs.filter((r) => r.mentioned === false && r.raw_response);
-    if (!fails.length) return null;
-    fails.sort((a, b) => (b.raw_response || "").length - (a.raw_response || "").length);
-    const top = fails[0];
-    return {
-      engine: ENGINE_LABELS[top.engine] || top.engine,
-      text: (top.raw_response || "").slice(0, 700),
-    };
-  }
-
-  // ── PER-SOLUTION SECTION (collapsible) ───────────────────────────────────
-  function competitorsHtml(sol) {
-    const list = (sol.competitors || []).filter(Boolean);
-    if (!list.length) return "";
-    const chips = list.map((c) => `<span class="competitor-chip">${esc(c)}</span>`).join("");
-    return `
-      <div class="sol-competitors">
-        <span class="sol-competitors-label">Surfaced by AI:</span>
-        <span class="competitor-chips">${chips}</span>
-      </div>`;
-  }
-
-  function calloutHtml(sol, brand) {
-    const v = buildVerbatim(sol);
-    if (!v) return "";
-    const buyerCategory = truncate(sol.title || "this solution", 60);
-    return `
-      <div class="cite-callout">
-        <div class="cite-callout-head">When buyers ask AI about <b>${esc(buyerCategory)}</b>, here's what they see —</div>
-        <div class="cite-verbatim"><span class="cite-engine">${esc(v.engine)}</span>${esc(v.text)}</div>
-        <div class="cite-omitted-line">${esc(brand)} was not mentioned. Your competitors were.</div>
-      </div>`;
-  }
-
   function promptTableHtml(sol, brandName) {
     const ev = (sol && sol.evidence) || {};
     const prompts = ev.prompts || [];
@@ -569,56 +520,6 @@
       </div>`;
   }
 
-  function gateHtml(sol, idx) {
-    // Email gate hidden for now — Ralph wants to gate later, not inline beneath
-    // the prompts table. Keeping the function so callers don't need to change.
-    return "";
-  }
-
-  function renderSolutionSections(data) {
-    const host = $("#checks");
-    const solutions = data.solutions || [];
-    const brand = (data.brand_context && data.brand_context.brand) || "Your brand";
-
-    if (!solutions.length) {
-      host.innerHTML = `
-        <div class="state-card state-card--bad inline-empty">
-          <h2 class="state-title">No solution pages detected</h2>
-          <p class="state-text">We couldn't pull solution pages from this homepage. Try a more specific URL — for example, a /solutions or /products page.</p>
-        </div>`;
-      return;
-    }
-
-    host.innerHTML = solutions.map((sol, i) => {
-      const score = Number.isFinite(sol.score) ? sol.score : 0;
-      const targetId = `sol-${i}-${slugify(sol.title || "solution").slice(0, 32)}`;
-      const isFirst = i === 0;
-      const title = truncate(sol.title || sol.url || `Solution ${i + 1}`, 80);
-
-      const inner = `
-        ${competitorsHtml(sol)}
-        ${promptTableHtml(sol, brand)}
-        ${gateHtml(sol, i)}
-      `;
-
-      return `
-        <div class="check-group sol-group ${isFirst ? "open" : ""}" id="${esc(targetId)}">
-          <button type="button" class="check-group-head" aria-expanded="${isFirst ? "true" : "false"}">
-            <span class="check-group-name">${esc(title)}</span>
-            <span class="check-group-meta">
-              <span class="check-group-passing">Cited by ${enginesCited(sol)} of 4 engines</span>
-              <span class="check-group-score ${tintClass(score)}">${score}/100</span>
-              <svg class="group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-            </span>
-          </button>
-          <div class="check-group-body">${inner}</div>
-        </div>`;
-    }).join("");
-
-    wireGroups(document.getElementById("checks"));
-    wireCiteGates();
-  }
-
   // ── WIRING ───────────────────────────────────────────────────────────────
   function openGroup(group) {
     group.classList.add("open");
@@ -636,24 +537,6 @@
         const group = head.closest(".check-group");
         const open = group.classList.toggle("open");
         head.setAttribute("aria-expanded", open ? "true" : "false");
-      });
-    });
-  }
-
-  function wireCiteGates() {
-    document.querySelectorAll("[data-cite-gate-form]").forEach((form) => {
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const idx = form.getAttribute("data-cite-gate-form");
-        const group = form.closest(".check-group");
-        if (group) group.querySelectorAll("tr.locked").forEach((tr) => tr.classList.remove("locked"));
-        const gate = document.querySelector(`[data-cite-gate="${idx}"]`);
-        if (gate) gate.setAttribute("hidden", "");
-        const conf = document.querySelector(`[data-cite-gate-confirm="${idx}"]`);
-        if (conf) {
-          conf.innerHTML = `<span class="gate-check">✓</span> Sent — check your inbox.`;
-          conf.removeAttribute("hidden");
-        }
       });
     });
   }
@@ -905,7 +788,6 @@
       if (detailsHost) detailsHost.innerHTML = "";
     }
 
-    renderSolutionSections(data);
     renderScanAnotherCta(isSingle);
   }
 

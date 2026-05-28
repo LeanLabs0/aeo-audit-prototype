@@ -640,32 +640,77 @@
   // ── LIVE FETCH ────────────────────────────────────────────────────────────
   // Single-solution payload — homepage drives brand inference, solutions=[ONE
   // deep URL] forces a one-solution scan. Optional category/icp overrides.
-  async function runLiveScan(parsed) {
+  async function runLiveScan(parsed, onProgress) {
     const ctl = new AbortController();
-    const t = setTimeout(() => ctl.abort(), 120000); // 120s — single-solution is fast
+    const t = setTimeout(() => ctl.abort(), 180000);  // 180s ceiling
     const catInput = ($("#inputCategory") && $("#inputCategory").value || "").trim();
     const icpInput = ($("#inputIcp") && $("#inputIcp").value || "").trim();
-    const body = {
-      url: parsed.homepage,
-      solutions: [parsed.solution_url],
-    };
+    const body = { url: parsed.homepage, solutions: [parsed.solution_url] };
     if (catInput) body.category = catInput;
     if (icpInput) body.icp = icpInput;
+
+    let r;
     try {
-      const r = await fetch(API.url, {
+      r = await fetch(API.url, {
         method: "POST",
         signal: ctl.signal,
-        headers: { "Content-Type": "application/json", "X-API-Key": API.key },
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "text/event-stream",
+          "X-API-Key": API.key,
+        },
         body: JSON.stringify(body),
       });
-      if (r.status === 429) throw new Error("RATE_LIMIT");
-      if (r.status === 502) throw new Error("UNREACHABLE");
-      if (r.status === 422) throw new Error("NO_SOLUTIONS");
-      if (!r.ok) throw new Error(`scan ${r.status}`);
+    } catch (err) {
+      clearTimeout(t);
+      throw err;
+    }
+
+    if (r.status === 429) { clearTimeout(t); throw new Error("RATE_LIMIT"); }
+    if (r.status === 502) { clearTimeout(t); throw new Error("UNREACHABLE"); }
+    if (r.status === 422) { clearTimeout(t); throw new Error("NO_SOLUTIONS"); }
+    if (!r.ok) { clearTimeout(t); throw new Error(`scan ${r.status}`); }
+
+    // If server fell back to JSON (Accept ignored), handle gracefully.
+    const ct = r.headers.get("content-type") || "";
+    if (!ct.startsWith("text/event-stream")) {
+      clearTimeout(t);
       return await r.json();
+    }
+
+    const reader = r.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let finalResult = null;
+
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const chunks = buffer.split("\n\n");
+        buffer = chunks.pop();  // keep last (possibly incomplete) chunk in buffer
+        for (const chunk of chunks) {
+          for (const line of chunk.split("\n")) {
+            if (!line.startsWith("data: ")) continue;
+            let evt;
+            try { evt = JSON.parse(line.slice(6)); } catch (_) { continue; }
+            if (evt.phase === "complete") {
+              finalResult = evt.result;
+            } else if (evt.phase === "error") {
+              throw new Error(`scan ${evt.status || 500}: ${evt.detail || "unknown"}`);
+            } else if (onProgress) {
+              onProgress(evt);
+            }
+          }
+        }
+      }
     } finally {
       clearTimeout(t);
     }
+
+    if (!finalResult) throw new Error("scan_no_result");
+    return finalResult;
   }
 
   function toast(msg) {
@@ -836,7 +881,9 @@
     showLoading(hostOf(parsed.solution_url));
 
     try {
-      const data = await runLiveScan(parsed);
+      const data = await runLiveScan(parsed, (evt) => {
+        if (typeof updateLoadingProgress === "function") updateLoadingProgress(evt);
+      });
       renderFull(data);
     } catch (err) {
       stopLoading();

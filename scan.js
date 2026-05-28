@@ -38,10 +38,12 @@
   }
 
   function levelText(score) {
-    if (score >= 80) return "Level 4 · AI-Optimized";
-    if (score >= 60) return "Level 3 · AI-Aware";
-    if (score >= 40) return "Level 2 · Basic Presence";
-    return "Level 1 · Invisible to AI";
+    let n, label;
+    if (score >= 80)      { n = 4; label = "AI-Optimized"; }
+    else if (score >= 60) { n = 3; label = "AI-Aware"; }
+    else if (score >= 40) { n = 2; label = "Basic Presence"; }
+    else                  { n = 1; label = "Invisible to AI"; }
+    return { n, label };
   }
 
   function truncate(s, n) {
@@ -76,6 +78,7 @@
   // ── GAUGE ──────────────────────────────────────────────────────────────
   function renderGauge(score) {
     const host = $("#gauge");
+    const tone = tintClass(score);
     host.innerHTML = `
       <div class="gauge-wrap">
         <svg viewBox="0 0 200 120" class="gauge-svg" aria-hidden="true">
@@ -86,7 +89,7 @@
           <path id="gaugeArc" d="M10,100 A90,90 0 0 1 190,100" fill="none" stroke="url(#llGrad)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
         </svg>
         <div class="gauge-center">
-          <div class="gauge-score">${score}<span class="gauge-of">/100</span></div>
+          <div class="gauge-score ${tone}">${score}<span class="gauge-of">/100</span></div>
         </div>
       </div>`;
     const arc = $("#gaugeArc");
@@ -423,8 +426,7 @@
           <button type="button" class="check-group-head" aria-expanded="${isFirst ? "true" : "false"}">
             <span class="check-group-name">${esc(cat.name || cat.key || "Category")}</span>
             <span class="check-group-meta">
-              <span class="check-group-passing">${pass} of ${total} passing</span>
-              <span class="check-group-score ${tintClass(score)}">${score}/100</span>
+              <span class="check-group-frac ${tintClass(score)}">${pass}/${total}</span>
               <svg class="group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </span>
           </button>
@@ -829,7 +831,11 @@
 
     const score = Number.isFinite(data.overall_score) ? data.overall_score : 0;
     renderGauge(score);
-    $("#levelLabel").textContent = levelText(score);
+    const lvl = levelText(score);
+    $("#levelLabel").innerHTML = `
+      <span class="level-pill level-pill-${lvl.n}">LEVEL ${lvl.n}</span>
+      <span class="level-name">${esc(lvl.label)}</span>
+    `;
     renderBrandContext(data.brand_context);
 
     // Tiles row. Single-solution → 4 AEO category tiles from solutions[0].checks.

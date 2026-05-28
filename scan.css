@@ -1178,9 +1178,3 @@ table.prompts-table {
   .score-heading { font-size: var(--text-2xl); }
 }
 
-.hero-callout-section {
-  /* sits between the score head and the 4 tiles — pull it tight to the score */
-  margin-top: var(--space-md);
-}
-.hero-callout-section:empty,
-.hero-callout-section[style*="display: none"] { display: none; }

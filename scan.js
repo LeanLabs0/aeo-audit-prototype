@@ -403,14 +403,6 @@
     return out;
   }
 
-  function renderHeroCallout(solution, brand) {
-    const host = $("#heroCallout");
-    if (!host) return;
-    const html = solution ? calloutHtml(solution, brand) : "";
-    host.innerHTML = html;
-    host.style.display = html ? "" : "none";
-  }
-
   function renderCategoryDetails(checks, primarySolution, brand) {
     const host = $("#categoryDetails");
     if (!host) return;
@@ -878,10 +870,6 @@
     $("#levelLabel").textContent = levelText(score);
     renderBrandContext(data.brand_context);
 
-    const heroBrand = (data.brand_context && data.brand_context.brand) || "Your brand";
-    const heroSol = solutions[0];
-    renderHeroCallout(heroSol, heroBrand);
-
     // Tiles row. Single-solution → 4 AEO category tiles from solutions[0].checks.
     // Multi-solution (rare) → one tile per solution.
     const tilesSection = document.getElementById("categoriesSection");
@@ -894,7 +882,7 @@
       const checks = (solutions[0] && solutions[0].checks) || [];
       const brand = (data.brand_context && data.brand_context.brand) || "Your brand";
       if (tilesSection) tilesSection.removeAttribute("hidden");
-      if (titleEl) titleEl.textContent = "Your four AEO scores";
+      if (titleEl) titleEl.textContent = "What we found";
       if (subEl2) subEl2.textContent = "Tap a card to see every check and how to fix it.";
       renderCategoryTiles(checks);
       if (detailsSection) {

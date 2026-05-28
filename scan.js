@@ -384,7 +384,7 @@
         </div>`;
     }).join("");
 
-    wireGroups();
+    wireGroups(document.getElementById("categoryDetails"));
   }
 
   function renderSolutionTiles(solutions) {
@@ -558,7 +558,7 @@
         </div>`;
     }).join("");
 
-    wireGroups();
+    wireGroups(document.getElementById("checks"));
     wireCiteGates();
   }
 
@@ -569,8 +569,12 @@
     if (head) head.setAttribute("aria-expanded", "true");
   }
 
-  function wireGroups() {
-    document.querySelectorAll(".check-group-head").forEach((head) => {
+  function wireGroups(root) {
+    const scope = root || document;
+    scope.querySelectorAll(".check-group-head").forEach((head) => {
+      // Guard against double-wiring: stamp the element and skip if already wired.
+      if (head.dataset.wired === "1") return;
+      head.dataset.wired = "1";
       head.addEventListener("click", () => {
         const group = head.closest(".check-group");
         const open = group.classList.toggle("open");

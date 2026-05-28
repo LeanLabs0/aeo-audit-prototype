@@ -311,8 +311,46 @@
     while ((m = numbered.exec(text)) !== null) addCand(m[1], { fromBold: false });
     // Bolded markdown headers — **Brand Name**
     const bold = /\*\*([A-Z][^\*\n]{1,60})\*\*/g;
-    while ((m = bold.exec(text)) !== null) addCand(m[1], { fromBold: true });
+    while ((m = bold.exec(text)) !== null) {
+      const raw = m[1].trim();
+      // Bold ending with ":" is a section header in disguise — skip.
+      if (raw.endsWith(":")) continue;
+      addCand(raw, { fromBold: true });
+    }
 
+    const SECTION_LABEL = new Set([
+      "hero section", "foundation", "clear value proposition", "contact/demo",
+      "core philosophy", "key use cases", "key use case",
+      "key features", "main features", "main feature",
+      "brand voice", "brand voice consistency", "ai features", "ai capabilities",
+      "data-driven marketing", "data-driven", "rapid content creation",
+      "free tier", "user-friendly interface", "templates & recipes", "templates and recipes",
+      "seo optimization", "brainstorming power", "wide range of tools",
+      "integrated platform", "robust crm", "email marketing", "marketing hub",
+      "knowledge graph", "context engine", "continuous learning", "agentic",
+      "action-oriented language", "clear call-to-actions", "clear call to actions",
+      "accessibility & inclusivity", "accessibility and inclusivity", "balanced risk/reward",
+      "content-first design", "design thinking",
+      "conversion rate optimization", "personalization", "a/b testing",
+      "content generation", "analytics integration", "responsive design",
+      "testing", "approach", "flexibility", "agile",
+      "sticky ctas", "mobile-first", "homepage elements",
+      "user-centric design", "understand your audience", "intuitive navigation",
+      "conversion-first structure", "minimum viable website", "primary cta",
+      "secondary ctas", "gdd",
+      "overview", "summary", "conclusion", "recommendation", "recommendations",
+      "pros", "cons", "considerations", "use cases", "use case",
+      "limitations", "pricing",
+    ]);
+    const BAD_FIRST = new Set([
+      "why","how","what","when","where","who","which",
+      "key","core","main",
+      "use","using","for","with","without","via",
+      "pros","cons","consider","considering",
+      "understand","understanding","build","building","create","creating",
+      "open","opening","end","ending","start","starting",
+      "improve","improving","optimize","optimizing",
+    ]);
     const STOP = new Set([
       "best for", "best overall", "best", "top", "budget", "pricing", "price",
       "scalability", "performance", "quality", "integration", "integrations",
@@ -339,6 +377,9 @@
       // Reject if it looks like a sentence/section label, not a brand.
       const words = c.split(/\s+/);
       if (words.length > 4) continue;
+      if (SECTION_LABEL.has(cl)) continue;
+      const firstWord = words[0] ? words[0].toLowerCase() : "";
+      if (BAD_FIRST.has(firstWord)) continue;
       // Brand-shape detector: every word should either start with an
       // uppercase letter, be a short connector ("&", "/", "+"), or contain
       // a digit/non-letter (e.g. "GPT-4", "Copy.ai"). Sentences and feature
@@ -509,7 +550,7 @@
             <tr>
               <th class="col-num">#</th>
               <th class="col-q">Question</th>
-              <th class="col-comp">Likely Competitors Mentioned</th>
+              <th class="col-comp">Competitors Mentioned</th>
               <th class="col-cited">${headerCited}</th>
             </tr>
           </thead>

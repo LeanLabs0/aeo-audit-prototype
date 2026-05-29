@@ -112,7 +112,7 @@
     const host = $("#brandContext");
     if (!ctx) { host.innerHTML = ""; return; }
     host.innerHTML = `
-      <div class="brand-line">Detected: <b>${esc(ctx.category || "—")}</b> for <b>${esc(ctx.icp || "—")}</b>
+      <div class="brand-line">Detected: <b>${esc(ctx.category || "your category")}</b> for <b>${esc(ctx.icp || "your buyers")}</b>
         · <button type="button" class="link-btn" id="refineBtn">refine</button></div>`;
     const btn = $("#refineBtn");
     if (btn) {
@@ -651,9 +651,9 @@
         const text = btn.getAttribute("data-copy-prompt") || "";
         try {
           await navigator.clipboard.writeText(text);
-          toast("Prompt copied — paste into ChatGPT, Claude, or your LLM of choice.");
+          toast("Prompt copied. Paste into ChatGPT, Claude, or your LLM of choice.");
         } catch (_) {
-          toast("Couldn't copy to clipboard — try selecting manually.");
+          toast("Couldn't copy to clipboard. Try selecting manually.");
         }
       });
     });
@@ -687,7 +687,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z"/><path d="m2 2 20 20"/></svg>
         </div>
         <h2 class="state-title">We couldn't detect solution pages on <b>${esc(host || "the homepage")}</b></h2>
-        <p class="state-text">Try a more specific URL — for example, a /solutions or /products page. If the homepage renders content with JavaScript, that's itself an AEO problem: AI engines see the same empty page.</p>
+        <p class="state-text">Try a more specific URL. For example, a /solutions or /products page. If the homepage renders content with JavaScript, that's itself an AEO problem: AI engines see the same empty page.</p>
         <button type="button" class="btn-primary" data-scan-again>Scan another site</button>
       </div>`);
   }
@@ -968,6 +968,7 @@
     const citedCells = prompts.reduce((n, p) =>
       n + ENGINES2.filter(([k]) => cited[k + "|" + p.id]).length, 0);
     const comps = (sol.competitors || []).filter(Boolean);
+    const compStats = (sol.competitor_stats || []).filter((s) => s && s.name);
     const checks = (sol.checks || []).filter((c) => c.key !== "ai_citations");
 
     _modalData = {};
@@ -988,11 +989,11 @@
     if (rate === 0)
       verdict = `AI engines <span class="hl">never recommend ${b}</span> when buyers search for ${c}. Your competitors get every spot.`;
     else if (rate < 0.25)
-      verdict = `AI engines <span class="hl">rarely recommend ${b}</span> for ${c} — competitors dominate the answers.`;
+      verdict = `AI engines <span class="hl">rarely recommend ${b}</span> for ${c}. Competitors dominate the answers.`;
     else if (rate < 0.50)
       verdict = `AI <span class="hl">sometimes recommends ${b}</span> for ${c}, but competitors still win most answers.`;
     else if (rate < 0.80)
-      verdict = `AI engines <span class="good">often recommend ${b}</span> for ${c} — you're a frequent pick, with room to lead.`;
+      verdict = `AI engines <span class="good">often recommend ${b}</span> for ${c}. You're a frequent pick, with room to lead.`;
     else
       verdict = `AI engines <span class="good">consistently recommend ${b}</span> for ${c}. You own this conversation.`;
 
@@ -1000,7 +1001,7 @@
     report.innerHTML =
       `<div class="aeo2">` +
         heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp) +
-        (comps.length ? compHtml(comps, brand) : "") +
+        (comps.length ? compHtml(comps, brand, compStats) : "") +
         engineHtml(engCount) +
         matrixHtml(prompts, cited, brand) +
         scorecardHtml(checks) +
@@ -1035,10 +1036,21 @@
       </div>
     </div>`;
   }
-  function compHtml(comps, brand) {
+  function compHtml(comps, brand, stats) {
+    const ranked = (stats && stats.length) ? stats : null;
+    const total = ranked && ranked[0] ? ranked[0].total : 0;
+    const chips = ranked
+      ? ranked.map((s) =>
+          `<span class="chip" title="Recommended in ${s.count} of ${s.total} AI answers">${esc(s.name)}<b class="cct">${s.count}</b></span>`
+        ).join("")
+      : comps.map((c) => `<span class="chip">${esc(c)}</span>`).join("");
+    const sub = total
+      ? `<p class="lead-sub">Number on each = how many of the ${total} AI answers recommended them, ranked most to least</p>`
+      : "";
     return `<div class="sec2"><div class="comp">
       <p class="lead">When your buyers ask AI, here is who it recommends</p>
-      <div class="chips">${comps.map((c) => `<span class="chip">${esc(c)}</span>`).join("")}</div>
+      ${sub}
+      <div class="chips">${chips}</div>
     </div></div>`;
   }
   function engineHtml(engCount) {
@@ -1202,9 +1214,12 @@
     .aeo2 .comp{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px 28px;box-shadow:var(--shs)}
     .aeo2 .comp .lead{font-size:20px;font-weight:800;margin:0 0 16px;letter-spacing:-.01em}
     .aeo2 .chips{display:flex;flex-wrap:wrap;gap:10px}
-    .aeo2 .chip{padding:9px 16px;border-radius:999px;background:#f3f0fb;border:1px solid #e4ddf7;font-weight:700;font-size:15px;transition:transform .15s}
+    .aeo2 .chip{display:inline-flex;align-items:center;gap:9px;padding:9px 12px 9px 16px;border-radius:999px;background:#f3f0fb;border:1px solid #e4ddf7;font-weight:700;font-size:15px;transition:transform .15s}
     .aeo2 .chip:hover{transform:translateY(-2px)}
     .aeo2 .chip:first-child{background:var(--grad);color:#fff;border:none;box-shadow:0 10px 22px -10px rgba(193,9,175,.6)}
+    .aeo2 .cct{display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;padding:0 6px;border-radius:999px;background:var(--grad);color:#fff;font-size:12.5px;font-weight:800;line-height:1}
+    .aeo2 .chip:first-child .cct{background:#fff;color:#c109af}
+    .aeo2 .lead-sub{margin:-6px 0 16px;color:#6b6478;font-size:13.5px}
     .aeo2 .engines{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
     .aeo2 .eng{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center;box-shadow:var(--shs);transition:transform .18s,box-shadow .18s}
     .aeo2 .eng:hover{transform:translateY(-3px);box-shadow:var(--sh)}
@@ -1312,7 +1327,7 @@
       } else if (m === "RATE_LIMIT") {
         // Re-show entry under a toast so they can adjust + retry.
         showEntry();
-        toast("Too many scans — give it a minute.");
+        toast("Too many scans. Give it a minute.");
       } else {
         renderGenericError("We hit an unexpected error running the scan. " + m);
       }

@@ -27,6 +27,8 @@
   ];
 
   // Live API config.
+  // PROD (2026-05-29): the AEO scanner is now merged to main and deployed on Fly.
+  // gpt-5.1-chat / Claude Sonnet 4.6 / Gemini 3.1-flash-lite, all web-search.
   const API = {
     url: "https://factor8-agent-sdk.fly.dev/api/v1/brand-slug/public-scanner/aeo-visibility-scan",
     key: "594aa935e360c9bf28f97437c1dddea9",
@@ -554,37 +556,32 @@
     const brandLabel = brandName || "You";
     const headerCited = `${esc(brandLabel)} Cited`;
 
-    // Build one labeled table per engine.
+    // ONE clean competitor list (server-side, LLM-extracted) instead of the old
+    // noisy per-row regex extraction that leaked section headers like
+    // "Value Proposition" / "HubSpot Partner".
+    const comps = (sol.competitors || []).filter(Boolean);
+    const compBlock = comps.length ? `
+      <div class="competitors-summary">
+        <span class="competitors-label">Surfaced by AI instead of ${esc(brandLabel)}:</span>
+        <span class="competitors-chips">${comps.map((c) => `<span class="competitor-chip">${esc(c)}</span>`).join("")}</span>
+      </div>` : "";
+
+    // One labeled table per engine — Question + whether you were cited.
     const tables = ENGINE_LIST.map(({ key, label }) => {
       const engineRuns = runs.filter((r) => r && (r.engine === key));
       if (!engineRuns.length) return "";
 
-      // Per-prompt: brand mentions + competitor map for THIS engine only.
       const citedByPrompt = new Set();
-      const brandsByPrompt = new Map();
       for (const r of engineRuns) {
         if (r.mentioned) citedByPrompt.add(r.prompt_id);
-        const brands = extractBrandsFromText(r.raw_response, brandName, 6);
-        if (!brandsByPrompt.has(r.prompt_id)) brandsByPrompt.set(r.prompt_id, new Map());
-        const map = brandsByPrompt.get(r.prompt_id);
-        for (const b of brands) map.set(b, (map.get(b) || 0) + 1);
-      }
-      function topBrands(pid, n = 4) {
-        const m = brandsByPrompt.get(pid) || new Map();
-        return [...m.entries()]
-          .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-          .map(([name]) => name)
-          .slice(0, n);
       }
 
       const rows = prompts.map((p, i) => {
-        const comps = topBrands(p.id, 4);
         const cited = citedByPrompt.has(p.id);
         return `
           <tr>
             <td class="col-num">${i + 1}</td>
             <td class="col-q">${esc(p.prompt)}</td>
-            <td class="col-comp">${comps.length ? comps.map(esc).join(", ") : "<span class='muted'>—</span>"}</td>
             <td class="col-cited ${cited ? "yes" : "no"}">${cited ? "Yes" : "No"}</td>
           </tr>`;
       }).join("");
@@ -598,7 +595,6 @@
                 <tr>
                   <th class="col-num">#</th>
                   <th class="col-q">Question</th>
-                  <th class="col-comp">Competitors Mentioned</th>
                   <th class="col-cited">${headerCited}</th>
                 </tr>
               </thead>
@@ -608,7 +604,7 @@
         </div>`;
     }).join("");
 
-    return tables;
+    return compBlock + tables;
   }
 
   // ── WIRING ───────────────────────────────────────────────────────────────
@@ -785,11 +781,14 @@
   // ── LIVE FETCH ────────────────────────────────────────────────────────────
   // Single-solution payload — homepage drives brand inference, solutions=[ONE
   // deep URL] forces a one-solution scan. Optional category/icp overrides.
-  async function runLiveScan(parsed, onProgress) {
+  async function runLiveScan(parsed, onProgress, overrides) {
     const ctl = new AbortController();
     const t = setTimeout(() => ctl.abort(), 180000);  // 180s ceiling
-    const catInput = ($("#inputCategory") && $("#inputCategory").value || "").trim();
-    const icpInput = ($("#inputIcp") && $("#inputIcp").value || "").trim();
+    overrides = overrides || {};
+    const catInput = (overrides.category != null ? overrides.category
+      : ($("#inputCategory") && $("#inputCategory").value || "")).trim();
+    const icpInput = (overrides.icp != null ? overrides.icp
+      : ($("#inputIcp") && $("#inputIcp").value || "")).trim();
     const body = { url: parsed.homepage, solutions: [parsed.solution_url] };
     if (catInput) body.category = catInput;
     if (icpInput) body.icp = icpInput;
@@ -915,79 +914,352 @@
     el.setAttribute("hidden", "");
   }
 
-  // ── MAIN RENDER ──────────────────────────────────────────────────────────
+  // ── MAIN RENDER (v6 redesign, scoped under .aeo2, built from live data) ────
+  const ENGINES2 = [["chatgpt", "ChatGPT"], ["claude", "Claude"], ["gemini", "Gemini"]];
+  const CAT_LABELS = {
+    crawler_access: ["Can AI read your site?", "Crawler access"],
+    structured_data: ["Structured data", "Schema markup"],
+    entity: ["Does AI know who you are?", "Entity and authority"],
+    content: ["Answer-ready content", "Extractability"],
+  };
+  let _modalData = {};   // qid -> {question, byEngine:{engine:{cited,text}}}
+
+  function _leadUrl() {
+    return API.url.replace(/\/api\/v1\/.*$/, "/api/v1/aeo-scan/lead");
+  }
+  function tone(score) { return score >= 70 ? "ok" : score >= 40 ? "warn" : "bad"; }
+  function engTone(cited, total) {
+    if (cited <= 0) return ["no", "✕", "Never mentions you"];
+    if (cited * 2 < total) return ["mid", "◑", "Rarely"];
+    if (cited < total) return ["mid", "◑", "Sometimes"];
+    return ["yes", "✓", "Recommends you"];
+  }
+
   function renderFull(data) {
     stopLoading();
     showResults();
     $("#scanState").setAttribute("hidden", "");
-    $("#report").removeAttribute("hidden");
+    const report = $("#report");
+    report.removeAttribute("hidden");
 
-    const solutions = data.solutions || [];
-    const isSingle = solutions.length === 1;
-
-    // Compact header URL — show the deep solution URL when single-solution.
-    const urlEl = $("#compactUrl");
-    const fallbackUrl = ($("#scanUrl") && $("#scanUrl").value) || "https://lean-labs.com";
-    const scannedUrl = isSingle
-      ? (solutions[0].url || data.url || fallbackUrl)
-      : (data.url || fallbackUrl);
-    if (urlEl) urlEl.textContent = scannedUrl;
-
-    // Subtitle — single-solution shows solution title; multi shows host.
-    const subEl = $("#scoreSubtitle");
-    if (subEl) {
-      if (isSingle) {
-        const title = truncate(solutions[0].title || solutions[0].url || "your solution", 60);
-        subEl.textContent = "Results for " + title;
-      } else {
-        subEl.textContent = "Results for " + hostOf(scannedUrl);
-      }
-    }
-
+    const sol = (data.solutions || [])[0] || {};
+    const ev = sol.evidence || {};
+    const bc = data.brand_context || {};
+    const brand = bc.brand || "your brand";
+    const category = sol.buyer_category || bc.category || "your category";
+    const icp = bc.icp || "B2B buyers";
     const score = Number.isFinite(data.overall_score) ? data.overall_score : 0;
-    renderGauge(score);
-    const ts = new Date().toLocaleString("en-GB", { dateStyle: "short", timeStyle: "medium" });
-    const tsEl = document.getElementById("scoreTimestamp");
-    if (tsEl) tsEl.textContent = `Last scanned ${ts}`;
     const lvl = levelText(score);
-    $("#levelLabel").innerHTML = `
-      <span class="level-pill level-pill-${lvl.n}">LEVEL ${lvl.n}</span>
-      <span class="level-name">${esc(lvl.label)}</span>
-    `;
-    renderBrandContext(data.brand_context);
+    const prompts = ev.prompts || [];
+    const runs = ev.runs || [];
 
-    // Tiles row. Single-solution → 4 AEO category tiles from solutions[0].checks.
-    // Multi-solution (rare) → one tile per solution.
-    const tilesSection = document.getElementById("categoriesSection");
-    const detailsSection = document.getElementById("categoryDetailsSection");
-    const titleEl = document.getElementById("categoriesTitle");
-    const subEl2 = document.getElementById("categoriesSub");
-    const detailsHost = document.getElementById("categoryDetails");
+    // Aggregate runs -> per (engine,prompt) cited + a representative response.
+    const cited = {}, resp = {};
+    runs.forEach((r) => {
+      const k = r.engine + "|" + r.prompt_id;
+      if (r.mentioned) cited[k] = true; else if (!(k in cited)) cited[k] = false;
+      if (!(k in resp) || r.mentioned) resp[k] = r.raw_response || "";
+    });
+    const engCount = {};
+    ENGINES2.forEach(([k]) => {
+      engCount[k] = { cited: prompts.filter((p) => cited[k + "|" + p.id]).length, total: prompts.length };
+    });
+    const totalCells = prompts.length * ENGINES2.length;
+    const citedCells = prompts.reduce((n, p) =>
+      n + ENGINES2.filter(([k]) => cited[k + "|" + p.id]).length, 0);
+    const comps = (sol.competitors || []).filter(Boolean);
+    const checks = (sol.checks || []).filter((c) => c.key !== "ai_citations");
 
-    if (isSingle) {
-      const checks = (solutions[0] && solutions[0].checks) || [];
-      const brand = (data.brand_context && data.brand_context.brand) || "Your brand";
-      if (tilesSection) tilesSection.removeAttribute("hidden");
-      if (titleEl) titleEl.textContent = "What we found";
-      if (subEl2) subEl2.textContent = "Tap a card to see every check and how to fix it.";
-      renderCategoryTiles(checks);
-      if (detailsSection) {
-        if (checks.length) detailsSection.removeAttribute("hidden");
-        else detailsSection.setAttribute("hidden", "");
-      }
-      renderCategoryDetails(checks, solutions[0], brand);
-      renderImproveCta(checks);
-    } else {
-      if (tilesSection) tilesSection.removeAttribute("hidden");
-      if (titleEl) titleEl.textContent = "Your solutions in AI search";
-      if (subEl2) subEl2.textContent = "Tap a solution to see the prompts, the verbatim AI response, and who got cited instead of you.";
-      renderSolutionTiles(solutions);
-      if (detailsSection) detailsSection.setAttribute("hidden", "");
-      if (detailsHost) detailsHost.innerHTML = "";
-      // Multi-solution branch has no flat checks list — hide the CTA mount.
-      const ctaMount = document.getElementById("improveCtaMount");
-      if (ctaMount) ctaMount.innerHTML = "";
+    _modalData = {};
+    prompts.forEach((p) => {
+      _modalData[p.id] = { question: p.prompt, byEngine: {} };
+      ENGINES2.forEach(([k]) => {
+        _modalData[p.id].byEngine[k] = { cited: !!cited[k + "|" + p.id], text: resp[k + "|" + p.id] || "" };
+      });
+    });
+
+    const scannedUrl = sol.url || data.url || "";
+    const verdict = citedCells === 0
+      ? `AI engines <span class="hl">never recommend ${esc(brand)}</span> when buyers search for ${esc(category)}.`
+      : `AI engines recommend your <span class="hl">competitors, not ${esc(brand)}</span>, when buyers search for ${esc(category)}.`;
+
+    injectAeoStyles();
+    report.innerHTML =
+      `<div class="aeo2">` +
+        heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp) +
+        (comps.length ? compHtml(comps, brand) : "") +
+        engineHtml(engCount) +
+        matrixHtml(prompts, cited, brand) +
+        scorecardHtml(checks) +
+        ctaHtml() +
+      `</div>`;
+    wireAeo(brand);
+  }
+
+  function heroHtml(score, lvl, verdict, citedCells, totalCells, url, category, icp) {
+    const off = 100 - Math.max(0, Math.min(100, score));
+    const pct = totalCells ? Math.round((citedCells / totalCells) * 100) : 0;
+    return `
+    <div class="hero">
+      <div class="eyebrow">Results for ${esc(url || "your solution")}</div>
+      <div class="gauge2">
+        <svg viewBox="0 0 200 120"><defs><linearGradient id="aeoG" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#7612fa"/><stop offset=".5" stop-color="#c109af"/><stop offset="1" stop-color="#ff6221"/>
+        </linearGradient></defs>
+        <path d="M10,100 A90,90 0 0 1 190,100" fill="none" stroke="#e8e8ef" stroke-width="16" stroke-linecap="round"/>
+        <path class="arc" d="M10,100 A90,90 0 0 1 190,100" fill="none" stroke="url(#aeoG)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="100" style="--off:${off}" stroke-dashoffset="${off}"/></svg>
+        <div class="num"><b>${score}</b><span class="of">/100</span></div>
+      </div>
+      <div class="level2">${esc(lvl.label)}, Level ${lvl.n} of 4</div>
+      <h1 class="verdict">${verdict}</h1>
+      <div class="appeared">You appeared in <b>${citedCells} of ${totalCells}</b> buyer searches across ChatGPT, Claude and Gemini <b>(${pct}%)</b>.</div>
+      <div class="detected">Detected: <b id="detCat">${esc(category)}</b> for <b id="detIcp">${esc(icp)}</b> &nbsp;&middot;&nbsp; <span class="link2" id="refineLink">Refine</span></div>
+      <div class="refine-form" id="refineForm">
+        <input id="catIn" value="${esc(category)}" placeholder="Category">
+        <input id="icpIn" value="${esc(icp)}" placeholder="Ideal customer (ICP)">
+        <button class="btn-sm" id="rescanBtn">Re-scan</button>
+      </div>
+    </div>`;
+  }
+  function compHtml(comps, brand) {
+    return `<div class="sec2"><div class="comp">
+      <p class="lead">When your buyers ask AI, here is who it recommends</p>
+      <div class="chips">${comps.map((c) => `<span class="chip">${esc(c)}</span>`).join("")}</div>
+    </div></div>`;
+  }
+  function engineHtml(engCount) {
+    const cards = ENGINES2.map(([k, label]) => {
+      const c = engCount[k], [cls, ic, v] = engTone(c.cited, c.total);
+      return `<div class="eng ${cls}"><div class="ename">${label}</div><div class="eic">${ic}</div>
+        <div class="ev2">${v}</div><div class="erate">${c.cited} of ${c.total} questions</div></div>`;
+    }).join("");
+    return `<div class="sec2"><h2>Are you recommended?</h2><div class="engines">${cards}</div></div>`;
+  }
+  function matrixRow(p, i, cited) {
+    const dots = ENGINES2.map(([k]) =>
+      `<td class="cell"><span class="cdot ${cited[k + "|" + p.id] ? "yes" : "no"}"></span></td>`).join("");
+    return `<tr><td class="q">${esc(p.prompt)}</td>${dots}<td class="cell"><span class="link2 viewresp" data-q="${esc(p.id)}">View response</span></td></tr>`;
+  }
+  function matrixHtml(prompts, cited, brand) {
+    const head = `<tr><th class="q">Question</th><th>ChatGPT</th><th>Claude</th><th>Gemini</th><th></th></tr>`;
+    const open = prompts.slice(0, 4).map((p, i) => matrixRow(p, i, cited)).join("");
+    const rest = prompts.slice(4).map((p, i) => matrixRow(p, i, cited)).join("");
+    const gate = rest ? `
+      <span class="moreBtn" id="moreBtn">See all ${prompts.length} questions buyers ask AI</span>
+      <tbody class="locked blur" id="locked2">${rest}</tbody>` : "";
+    // gate block lives after the table
+    return `<div class="sec2"><h2>The real questions your buyers ask AI</h2>
+      <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${open}</tbody>${rest ? `<tbody class="locked blur" id="locked2">${rest}</tbody>` : ""}</table>
+      <div class="legend"><span><i class="y"></i>Recommended you</span><span><i class="n"></i>Did not mention you</span></div>
+      ${rest ? `<span class="moreBtn" id="moreBtn">See all ${prompts.length} questions buyers ask AI</span>
+      <div class="gate" id="gate"><p>Enter your email to unlock all the questions and see exactly where you are missing</p>
+        <div class="grow"><input id="emailIn" type="email" placeholder="you@company.com"><button class="btn-sm" id="revealBtn">Reveal all questions</button></div></div>` : ""}
+      </div></div>`;
+  }
+  function subCard(s) {
+    const pass = s.status === "pass";
+    const body = pass
+      ? (s.result ? `<div class="lbl">Result</div><div>${esc(s.result)}</div>` : "")
+      : `${s.issue ? `<div class="lbl issue">Issue</div><div class="issue">${esc(s.issue)}</div>` : ""}${s.how_to_implement ? `<div class="lbl">How to fix</div><div>${esc(s.how_to_implement)}</div>` : ""}`;
+    const res = (s.resources || []).map((r) => `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.label)}</a>`).join("");
+    return `<div class="ccard"><div class="chead"><span class="cicon ${pass ? "ok" : "bad"}">${pass ? "✓" : "✕"}</span>
+      <span class="cname">${esc(s.name || s.key)}${s.goal ? `<small>${esc(s.goal)}</small>` : ""}</span><span class="chev">▾</span></div>
+      <div class="cbody">${body}${res ? `<div class="res">${res}</div>` : ""}</div></div>`;
+  }
+  function scorecardHtml(checks) {
+    if (!checks.length) return "";
+    const groups = checks.map((c) => {
+      const [name] = CAT_LABELS[c.key] || [c.name || c.key];
+      const subs = c.subchecks || [];
+      const pass = subs.filter((s) => s.status === "pass").length;
+      return `<div class="cgroup"><div class="cgh"><span class="cgn">${esc(name)}</span>
+        <span class="cgf ${tone(c.score)}">${pass}/${subs.length}</span></div>
+        <div class="cards2">${subs.map(subCard).join("")}</div></div>`;
+    }).join("");
+    return `<div class="sec2"><h2>Your AEO scorecard</h2>${groups}</div>`;
+  }
+  function ctaHtml() {
+    return `<div class="cta2"><h3>Get recommended by AI, not your competitors.</h3>
+      <p>Book a free 15 minute teardown. We will show you exactly how to get cited for the searches above.</p>
+      <a class="btn2" href="#">Book my teardown</a></div>`;
+  }
+
+  function wireAeo(brand) {
+    const $$ = (s) => document.querySelector(s);
+    const refine = $$("#refineLink");
+    if (refine) refine.addEventListener("click", () => $$("#refineForm").classList.toggle("open"));
+    const rescan = $$("#rescanBtn");
+    if (rescan) rescan.addEventListener("click", () => {
+      const cat = ($$("#catIn") && $$("#catIn").value || "").trim();
+      const ic = ($$("#icpIn") && $$("#icpIn").value || "").trim();
+      const input = $("#scanUrl");
+      const parsed = parseScanInput((input && input.value) || "");
+      if (!parsed.ok) { showInputError(parsed.error); return; }
+      showLoading(hostOf(parsed.solution_url));
+      runLiveScan(parsed, updateLoadingProgress, { category: cat, icp: ic })
+        .then(renderFull).catch((e) => renderGenericError(String(e && e.message || e)));
+    });
+    const more = $$("#moreBtn");
+    if (more) more.addEventListener("click", function () {
+      $$("#locked2").classList.add("open");
+      $$("#gate").classList.add("show");
+      this.style.display = "none";
+    });
+    const reveal = $$("#revealBtn");
+    if (reveal) reveal.addEventListener("click", () => {
+      const email = ($$("#emailIn").value || "").trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast("Enter a valid email"); return; }
+      try {
+        fetch(_leadUrl(), { method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": API.key },
+          body: JSON.stringify({ email: email, url: ($("#scanUrl") && $("#scanUrl").value) || "" }) }).catch(() => {});
+      } catch (_) {}
+      $$("#locked2").classList.remove("blur");
+      $$("#gate").classList.remove("show");
+      toast("Unlocked. Here is every question your buyers ask AI.");
+    });
+    document.querySelectorAll(".aeo2 .chead").forEach((h) =>
+      h.addEventListener("click", () => h.parentElement.classList.toggle("open")));
+    document.querySelectorAll(".aeo2 .viewresp").forEach((v) =>
+      v.addEventListener("click", () => openRespModal(v.getAttribute("data-q"), brand)));
+  }
+
+  function openRespModal(qid, brand) {
+    const d = _modalData[qid];
+    if (!d) return;
+    const blocks = ENGINES2.map(([k, label]) => {
+      const r = d.byEngine[k] || { cited: false, text: "" };
+      const txt = highlightResp(r.text || "(no response captured)", brand);
+      return `<div class="eblock"><div class="eh"><span class="en">${label}</span>
+        <span class="cited ${r.cited ? "yes" : "no"}">${r.cited ? "Mentioned you" : "Did not mention you"}</span></div>
+        ${r.cited ? "" : `<div class="miss">${esc(brand)} was not recommended in this answer</div>`}
+        <div class="resp">${txt}</div></div>`;
+    }).join("");
+    let ov = document.getElementById("aeoOverlay");
+    if (!ov) {
+      ov = document.createElement("div");
+      ov.id = "aeoOverlay"; ov.className = "aeo2 overlay";
+      document.body.appendChild(ov);
+      ov.addEventListener("click", (e) => { if (e.target === ov) ov.classList.remove("show"); });
     }
+    ov.innerHTML = `<div class="modal"><button class="x" id="aeoX">&times;</button>
+      <div class="meyebrow">What AI actually said</div><div class="mq">${esc(d.question)}</div>${blocks}</div>`;
+    ov.querySelector("#aeoX").addEventListener("click", () => ov.classList.remove("show"));
+    ov.classList.add("show");
+  }
+  function highlightResp(text, brand) {
+    let t = esc(text);
+    if (brand) t = t.replace(new RegExp(brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
+      `<mark class="brand">${esc(brand)}</mark>`);
+    return t;
+  }
+
+  function injectAeoStyles() {
+    if (document.getElementById("aeo2-style")) return;
+    const css = `
+    .aeo2{--ink:#1a1726;--muted:#76728a;--line:#efedf4;--card:#fff;--bad:#d6453d;--warn:#cf8a1e;--ok:#1f9d61;
+      --g1:#7612fa;--grad:linear-gradient(100deg,#7612fa,#c109af 52%,#ff6221);
+      --sh:0 1px 2px rgba(26,23,38,.04),0 16px 36px -20px rgba(26,23,38,.20);
+      --shs:0 1px 2px rgba(26,23,38,.05),0 8px 20px -14px rgba(26,23,38,.14);
+      color:var(--ink);max-width:900px;margin:0 auto;padding:8px 0 90px;letter-spacing:.002em}
+    .aeo2 *{box-sizing:border-box}
+    .aeo2 .hero{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:26px;padding:60px 40px 52px;margin-top:18px;text-align:center;box-shadow:var(--sh)}
+    .aeo2 .hero::before{content:"";position:absolute;left:0;right:0;top:-40%;height:90%;background:radial-gradient(50% 70% at 50% 50%,rgba(193,9,175,.08),transparent 65%);pointer-events:none}
+    .aeo2 .eyebrow{font-size:11.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600}
+    .aeo2 .gauge2{width:258px;margin:28px auto 0;position:relative}
+    .aeo2 .gauge2 svg{width:100%;display:block}
+    .aeo2 .gauge2 .arc{filter:drop-shadow(0 5px 12px rgba(193,9,175,.32));animation:aeoArc 1.15s cubic-bezier(.22,1,.36,1) .25s both}
+    @keyframes aeoArc{from{stroke-dashoffset:100}to{stroke-dashoffset:var(--off)}}
+    .aeo2 .gauge2 .num{position:absolute;left:0;right:0;top:52%;text-align:center}
+    .aeo2 .gauge2 .num b{font-size:58px;font-weight:800;letter-spacing:-.02em;color:var(--bad)}
+    .aeo2 .gauge2 .num .of{font-size:16px;color:var(--muted);font-weight:600}
+    .aeo2 .level2{font-weight:800;color:var(--bad);font-size:15px;margin-top:14px}
+    .aeo2 .verdict{font-size:26px;line-height:1.26;font-weight:800;letter-spacing:-.02em;margin:24px auto 0;max-width:660px}
+    .aeo2 .verdict .hl{color:var(--bad)}
+    .aeo2 .appeared{font-size:16px;margin-top:18px}.aeo2 .appeared b{font-weight:800}
+    .aeo2 .detected{margin-top:24px;font-size:14px;color:var(--muted)}.aeo2 .detected b{color:var(--ink)}
+    .aeo2 .link2{color:var(--g1);font-weight:700;cursor:pointer}
+    .aeo2 .refine-form{display:none;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .aeo2 .refine-form.open{display:flex}
+    .aeo2 .refine-form input{padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:14px;min-width:230px}
+    .aeo2 .btn-sm{background:var(--grad);color:#fff;border:none;border-radius:10px;padding:11px 20px;font-weight:700;cursor:pointer;transition:transform .15s,filter .15s}
+    .aeo2 .btn-sm:hover{transform:translateY(-1px);filter:brightness(1.05)}
+    .aeo2 .sec2{margin-top:40px}
+    .aeo2 .sec2 h2{font-size:24px;font-weight:800;letter-spacing:-.02em;margin:0 0 18px}
+    .aeo2 .comp{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px 28px;box-shadow:var(--shs)}
+    .aeo2 .comp .lead{font-size:20px;font-weight:800;margin:0 0 16px;letter-spacing:-.01em}
+    .aeo2 .chips{display:flex;flex-wrap:wrap;gap:10px}
+    .aeo2 .chip{padding:9px 16px;border-radius:999px;background:#f3f0fb;border:1px solid #e4ddf7;font-weight:700;font-size:15px;transition:transform .15s}
+    .aeo2 .chip:hover{transform:translateY(-2px)}
+    .aeo2 .chip:first-child{background:var(--grad);color:#fff;border:none;box-shadow:0 10px 22px -10px rgba(193,9,175,.6)}
+    .aeo2 .engines{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+    .aeo2 .eng{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center;box-shadow:var(--shs);transition:transform .18s,box-shadow .18s}
+    .aeo2 .eng:hover{transform:translateY(-3px);box-shadow:var(--sh)}
+    .aeo2 .ename{font-weight:800;font-size:15px}.aeo2 .eic{font-size:28px;line-height:1;margin:10px 0 5px}
+    .aeo2 .ev2{font-weight:700;font-size:14px}
+    .aeo2 .eng.no .ev2{color:var(--bad)}.aeo2 .eng.mid .ev2{color:var(--warn)}.aeo2 .eng.yes .ev2{color:var(--ok)}
+    .aeo2 .erate{color:var(--muted);font-size:13px;margin-top:3px}
+    .aeo2 .matrix{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:8px 24px 24px;box-shadow:var(--shs)}
+    .aeo2 table.mx{width:100%;border-collapse:collapse}
+    .aeo2 table.mx th{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:14px 6px;text-align:center}
+    .aeo2 table.mx th.q{text-align:left}
+    .aeo2 table.mx td{padding:13px 6px;border-top:1px solid var(--line);font-size:14.5px;vertical-align:middle}
+    .aeo2 table.mx td.q{padding-right:14px}.aeo2 table.mx td.cell{text-align:center;width:92px}
+    .aeo2 .cdot{display:inline-block;width:16px;height:16px;border-radius:50%}
+    .aeo2 .cdot.yes{background:var(--ok);box-shadow:0 0 0 4px rgba(31,157,97,.14)}
+    .aeo2 .cdot.no{background:#fff;border:2px solid #e0dde9}
+    .aeo2 .viewresp{font-weight:700;font-size:13px}
+    .aeo2 .legend{display:flex;gap:18px;justify-content:flex-end;font-size:12px;color:var(--muted);margin-top:12px}
+    .aeo2 .legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+    .aeo2 .legend .y{background:var(--ok)}.aeo2 .legend .n{background:#fff;border:2px solid #e0dde9}
+    .aeo2 .moreBtn{display:inline-block;margin-top:16px;color:var(--g1);font-weight:700;font-size:14px;cursor:pointer}
+    .aeo2 .locked{display:none}.aeo2 .locked.open{display:table-row-group}
+    .aeo2 .locked.open.blur td.q,.aeo2 .locked.open.blur td.cell{filter:blur(5px)}
+    .aeo2 .gate{display:none;margin-top:18px;background:#faf8ff;border:1px solid #e4ddf7;border-radius:14px;padding:22px;text-align:center}
+    .aeo2 .gate.show{display:block}.aeo2 .gate p{margin:0 0 14px;font-weight:700}
+    .aeo2 .gate .grow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+    .aeo2 .gate input{padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:14px;min-width:260px}
+    .aeo2 .cgroup{margin-bottom:22px}
+    .aeo2 .cgh{display:flex;justify-content:space-between;align-items:center;margin:0 4px 12px}
+    .aeo2 .cgn{font-weight:800;font-size:16px}
+    .aeo2 .cgf{font-weight:800;font-size:14px;padding:3px 10px;border-radius:8px}
+    .aeo2 .cgf.ok{color:var(--ok);background:#eafaf1}.aeo2 .cgf.warn{color:var(--warn);background:#fdf3e3}.aeo2 .cgf.bad{color:var(--bad);background:#fdeced}
+    .aeo2 .cards2{display:flex;flex-direction:column;gap:12px}
+    .aeo2 .ccard{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shs);transition:box-shadow .18s}
+    .aeo2 .ccard:hover{box-shadow:var(--sh)}
+    .aeo2 .chead{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer}
+    .aeo2 .cicon{width:28px;height:28px;flex:0 0 28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px}
+    .aeo2 .cicon.ok{background:var(--ok)}.aeo2 .cicon.bad{background:var(--bad)}
+    .aeo2 .cname{flex:1;font-weight:800;font-size:15.5px}
+    .aeo2 .cname small{display:block;font-weight:600;color:var(--muted);font-size:12.5px;margin-top:1px}
+    .aeo2 .chev{color:var(--muted);transition:transform .15s;font-size:13px}
+    .aeo2 .ccard.open .chev{transform:rotate(180deg)}
+    .aeo2 .cbody{display:none;padding:0 18px 18px 60px}.aeo2 .ccard.open .cbody{display:block}
+    .aeo2 .cbody .lbl{font-weight:700;margin-top:12px}.aeo2 .cbody .issue{color:var(--bad)}
+    .aeo2 .res{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .aeo2 .res a{font-size:13px;color:#ff6221;border:1px solid #f0d9cc;border-radius:8px;padding:5px 10px;text-decoration:none}
+    .aeo2 .cta2{margin-top:42px;background:var(--grad);border-radius:22px;padding:40px;text-align:center;color:#fff;box-shadow:0 26px 54px -22px rgba(193,9,175,.6)}
+    .aeo2 .cta2 h3{font-size:26px;margin:0 0 8px;font-weight:800;letter-spacing:-.01em}
+    .aeo2 .cta2 p{margin:0 0 20px;opacity:.92}
+    .aeo2 .btn2{display:inline-block;background:#fff;color:var(--g1);font-weight:800;padding:15px 30px;border-radius:12px;text-decoration:none;transition:transform .15s}
+    .aeo2 .btn2:hover{transform:translateY(-2px)}
+    .aeo2.overlay{display:none;position:fixed;inset:0;background:rgba(26,23,38,.55);z-index:9999;justify-content:center;padding:40px 16px;overflow:auto;max-width:none}
+    .aeo2.overlay.show{display:flex}
+    .aeo2 .modal{background:#fff;border-radius:18px;max-width:760px;width:100%;padding:24px 28px 28px;height:max-content;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+    .aeo2 .modal .x{float:right;cursor:pointer;color:var(--muted);font-size:24px;line-height:1;border:none;background:none}
+    .aeo2 .modal .meyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+    .aeo2 .modal .mq{font-size:19px;font-weight:800;margin:4px 30px 4px 0}
+    .aeo2 .eblock{margin-top:18px;border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+    .aeo2 .eblock .eh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .aeo2 .eblock .en{font-weight:800;font-size:15px}
+    .aeo2 .eblock .cited{font-weight:800;font-size:13px;padding:4px 11px;border-radius:999px}
+    .aeo2 .eblock .cited.no{color:var(--bad);background:#fbeae9}.aeo2 .eblock .cited.yes{color:var(--ok);background:#e7f6ee}
+    .aeo2 .eblock .miss{background:#fdeced;color:var(--bad);font-weight:700;font-size:13px;border-radius:8px;padding:8px 12px;margin-bottom:10px}
+    .aeo2 .eblock .resp{font-size:14px;line-height:1.6;color:#33303f;white-space:pre-wrap;max-height:230px;overflow:auto;background:#faf9fc;border-radius:10px;padding:12px 14px}
+    .aeo2 mark.brand{background:#eafaf1;color:#176c43;font-weight:700;padding:0 3px;border-radius:3px}
+    @media(max-width:640px){.aeo2 .engines{grid-template-columns:1fr}.aeo2 .hero{padding:40px 22px}}`;
+    const el = document.createElement("style");
+    el.id = "aeo2-style"; el.textContent = css;
+    document.head.appendChild(el);
   }
 
   // ── BOOT ─────────────────────────────────────────────────────────────────

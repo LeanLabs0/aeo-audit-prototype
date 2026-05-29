@@ -979,9 +979,22 @@
     });
 
     const scannedUrl = sol.url || data.url || "";
-    const verdict = citedCells === 0
-      ? `AI engines <span class="hl">never recommend ${esc(brand)}</span> when buyers search for ${esc(category)}.`
-      : `AI engines recommend your <span class="hl">competitors, not ${esc(brand)}</span>, when buyers search for ${esc(category)}.`;
+    // Verdict tiers by ACTUAL mention rate (not a binary cited==0 check). The old
+    // version said "competitors, not you" for ANY citation > 0, which contradicted
+    // the rate shown right below (e.g. 33% cited still read as "not recommended").
+    const rate = totalCells ? citedCells / totalCells : 0;
+    const b = esc(brand), c = esc(category);
+    let verdict;
+    if (rate === 0)
+      verdict = `AI engines <span class="hl">never recommend ${b}</span> when buyers search for ${c}. Your competitors get every spot.`;
+    else if (rate < 0.25)
+      verdict = `AI engines <span class="hl">rarely recommend ${b}</span> for ${c} — competitors dominate the answers.`;
+    else if (rate < 0.50)
+      verdict = `AI <span class="hl">sometimes recommends ${b}</span> for ${c}, but competitors still win most answers.`;
+    else if (rate < 0.80)
+      verdict = `AI engines <span class="good">often recommend ${b}</span> for ${c} — you're a frequent pick, with room to lead.`;
+    else
+      verdict = `AI engines <span class="good">consistently recommend ${b}</span> for ${c}. You own this conversation.`;
 
     injectAeoStyles();
     report.innerHTML =
@@ -999,6 +1012,7 @@
   function heroHtml(score, lvl, verdict, citedCells, totalCells, url, category, icp) {
     const off = 100 - Math.max(0, Math.min(100, score));
     const pct = totalCells ? Math.round((citedCells / totalCells) * 100) : 0;
+    const st = tone(score); // ok/warn/bad -> color the score + level by tier, not always red
     return `
     <div class="hero">
       <div class="eyebrow">Results for ${esc(url || "your solution")}</div>
@@ -1008,9 +1022,9 @@
         </linearGradient></defs>
         <path d="M10,100 A90,90 0 0 1 190,100" fill="none" stroke="#e8e8ef" stroke-width="16" stroke-linecap="round"/>
         <path class="arc" d="M10,100 A90,90 0 0 1 190,100" fill="none" stroke="url(#aeoG)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="100" style="--off:${off}" stroke-dashoffset="${off}"/></svg>
-        <div class="num"><b>${score}</b><span class="of">/100</span></div>
+        <div class="num"><b class="t-${st}">${score}</b><span class="of">/100</span></div>
       </div>
-      <div class="level2">${esc(lvl.label)}, Level ${lvl.n} of 4</div>
+      <div class="level2 t-${st}">${esc(lvl.label)}, Level ${lvl.n} of 4</div>
       <h1 class="verdict">${verdict}</h1>
       <div class="appeared">You appeared in <b>${citedCells} of ${totalCells}</b> buyer searches across ChatGPT, Claude and Gemini <b>(${pct}%)</b>.</div>
       <div class="detected">Detected: <b id="detCat">${esc(category)}</b> for <b id="detIcp">${esc(icp)}</b> &nbsp;&middot;&nbsp; <span class="link2" id="refineLink">Refine</span></div>
@@ -1256,6 +1270,10 @@
     .aeo2 .eblock .miss{background:#fdeced;color:var(--bad);font-weight:700;font-size:13px;border-radius:8px;padding:8px 12px;margin-bottom:10px}
     .aeo2 .eblock .resp{font-size:14px;line-height:1.6;color:#33303f;white-space:pre-wrap;max-height:230px;overflow:auto;background:#faf9fc;border-radius:10px;padding:12px 14px}
     .aeo2 mark.brand{background:#eafaf1;color:#176c43;font-weight:700;padding:0 3px;border-radius:3px}
+    /* score/level/verdict tiered by result (not always red) */
+    .aeo2 .gauge2 .num b.t-ok{color:var(--ok)} .aeo2 .gauge2 .num b.t-warn{color:var(--warn)} .aeo2 .gauge2 .num b.t-bad{color:var(--bad)}
+    .aeo2 .level2.t-ok{color:var(--ok)} .aeo2 .level2.t-warn{color:var(--warn)} .aeo2 .level2.t-bad{color:var(--bad)}
+    .aeo2 .verdict .good{color:var(--ok)}
     @media(max-width:640px){.aeo2 .engines{grid-template-columns:1fr}.aeo2 .hero{padding:40px 22px}}`;
     const el = document.createElement("style");
     el.id = "aeo2-style"; el.textContent = css;

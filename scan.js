@@ -1031,6 +1031,7 @@
         (comps.length ? compHtml(comps, brand, compStats, true) : "") +
         engineHtml(engCount) +
         matrixHtml(prompts, cited, false) +
+        scorecardHtml(checks, true, true) +
         nextStepHtml() +
         ctaHtml() +
       `</div>`;
@@ -1094,7 +1095,7 @@
         engineHtml(engCount) +
         (comps.length ? compHtml(comps, brand, compStats, false) : "") +
         matrixHtml(prompts, cited, true) +
-        scorecardHtml(checks, true) +
+        scorecardHtml(checks, false, true) +
         blueprintCtaHtml() +
       `</div>`;
     wireAeo(brand);
@@ -1213,7 +1214,9 @@
       <span class="cname">${esc(s.name || s.key)}${s.goal ? `<small>${esc(s.goal)}</small>` : ""}</span><span class="chev">▾</span></div>
       <div class="cbody">${body}${res ? `<div class="res">${res}</div>` : ""}</div></div>`;
   }
-  function scorecardHtml(checks, stripFix) {
+  // gated=true (preview): pillar headers stay readable, the check cards are
+  // blurred/locked, + an email unlock. gated=false (full report): open + expandable.
+  function scorecardHtml(checks, gated, stripFix) {
     if (!checks.length) return "";
     const groups = checks.map((c) => {
       const [name] = CAT_LABELS[c.key] || [c.name || c.key];
@@ -1221,10 +1224,17 @@
       const pass = subs.filter((s) => s.status === "pass").length;
       return `<div class="cgroup"><div class="cgh"><span class="cgn">${esc(name)}</span>
         <span class="cgf ${tone(c.score)}">${pass}/${subs.length}</span></div>
-        <div class="cards2">${subs.map((s) => subCard(s, stripFix)).join("")}</div></div>`;
+        <div class="cards2${gated ? " sc-locked" : ""}">${subs.map((s) => subCard(s, stripFix)).join("")}</div></div>`;
     }).join("");
-    return `<div class="sec2"><h2>Your AEO scorecard</h2>
-      <p class="sc-sub">Every area AI graded you on. This is the problem list. The fixes are your Blueprint.</p>${groups}</div>`;
+    const sub = gated
+      ? `<p class="sc-sub">The pillars AI graded you on. Unlock to see every check and exactly where you score.</p>`
+      : `<p class="sc-sub">Every area AI graded you on. This is the problem list. The fixes are your Blueprint.</p>`;
+    const gate = gated
+      ? `<div class="mx-gate"><p>Enter your email to unlock your full scorecard and see exactly where you are missing</p>
+          <div class="mx-grow"><input id="scoreEmail" type="email" placeholder="you@company.com">
+          <button class="btn-fill" id="scoreUnlockBtn">Unlock full scorecard</button></div></div>`
+      : "";
+    return `<div class="sec2"><h2>Your AEO scorecard</h2>${sub}${groups}${gate}</div>`;
   }
   // Unlock gate card (replaces the open scorecard in the preview).
   function gateCardHtml(score, lvl) {
@@ -1303,6 +1313,8 @@
     if (compBtn) compBtn.addEventListener("click", () => unlockFull("compEmail"));
     const matrixReveal = $$("#matrixRevealBtn");
     if (matrixReveal) matrixReveal.addEventListener("click", () => unlockFull("matrixEmail"));
+    const scoreUnlock = $$("#scoreUnlockBtn");
+    if (scoreUnlock) scoreUnlock.addEventListener("click", () => unlockFull("scoreEmail"));
     const focusUnlock = (e) => {
       if (e) e.preventDefault();
       const el = $$("#compEmail") || $$("#matrixEmail");
@@ -1496,6 +1508,7 @@
     .aeo2 .t-ok{color:var(--ok)}.aeo2 .t-warn{color:var(--warn)}.aeo2 .t-orange{color:var(--orange)}.aeo2 .t-bad{color:var(--bad)}
     /* gated competitors + matrix reveal + next-step ascension */
     .aeo2 .chip.locked{filter:blur(5px);user-select:none;pointer-events:none}
+    .aeo2 .cards2.sc-locked{filter:blur(5px);user-select:none;pointer-events:none}
     .aeo2 .mx-gate{margin-top:18px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
     .aeo2 .mx-gate p{margin:0 0 14px;font-weight:700}
     .aeo2 .mx-grow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}

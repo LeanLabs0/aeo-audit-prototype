@@ -47,12 +47,11 @@
   }
 
   function levelText(score) {
-    let n, label;
-    if (score >= 80)      { n = 4; label = "AI-Optimized"; }
-    else if (score >= 60) { n = 3; label = "AI-Aware"; }
-    else if (score >= 40) { n = 2; label = "Basic Presence"; }
-    else                  { n = 1; label = "Invisible to AI"; }
-    return { n, label };
+    // 4-level visibility scale (approved). cls drives color: bad/orange/warn/ok.
+    if (score >= 75) return { n: 4, label: "Consistently recommended", cls: "ok" };
+    if (score >= 50) return { n: 3, label: "Sometimes recommended", cls: "warn" };
+    if (score >= 25) return { n: 2, label: "Occasionally recommended", cls: "orange" };
+    return { n: 1, label: "Rarely recommended", cls: "bad" };
   }
 
   function truncate(s, n) {
@@ -928,12 +927,34 @@
     return API.url.replace(/\/api\/v1\/.*$/, "/api/v1/aeo-scan/lead");
   }
   function tone(score) { return score >= 70 ? "ok" : score >= 40 ? "warn" : "bad"; }
+  // Per-engine tier by cited rate -> [colorClass, label]. Drives the donut color.
   function engTone(cited, total) {
-    if (cited <= 0) return ["no", "✕", "Never mentions you"];
-    if (cited * 2 < total) return ["mid", "◑", "Rarely"];
-    if (cited < total) return ["mid", "◑", "Sometimes"];
-    return ["yes", "✓", "Recommends you"];
+    const r = total ? cited / total : 0;
+    if (cited <= 0) return ["bad", "Never mentions you"];
+    if (r < 0.4) return ["bad", "Rarely"];
+    if (r < 0.75) return ["warn", "Sometimes"];
+    return ["ok", "Often"];
   }
+  // Colored donut ring for an engine card (cited/total fraction).
+  function engineDonut(cited, total, cls) {
+    const r = 26, c = 2 * Math.PI * r, frac = total ? Math.max(0, Math.min(1, cited / total)) : 0;
+    const dash = c * frac;
+    return `<svg viewBox="0 0 64 64" class="edonut ${cls}" aria-hidden="true">
+      <circle cx="32" cy="32" r="${r}" fill="none" stroke="var(--track)" stroke-width="6"/>
+      <circle cx="32" cy="32" r="${r}" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"
+              stroke-dasharray="${dash.toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 32 32)"/>
+      <text x="32" y="32" class="edn" text-anchor="middle" dominant-baseline="central">${cited}/${total}</text></svg>`;
+  }
+  // Compact gauge used inside the unlock gate card.
+  function miniGauge(score, lvl) {
+    const off = 100 - Math.max(0, Math.min(100, score));
+    return `<div class="mgauge">
+      <svg viewBox="0 0 200 120"><path d="M10,100 A90,90 0 0 1 190,100" fill="none" stroke="var(--track)" stroke-width="16" stroke-linecap="round"/>
+        <path d="M10,100 A90,90 0 0 1 190,100" fill="none" stroke="url(#aeoG)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${off}"/></svg>
+      <div class="mnum"><b class="t-${lvl.cls}">${score}</b><span>/100</span></div>
+      <div class="mlvl t-${lvl.cls}">${esc(lvl.label)}, Level ${lvl.n} of 4</div></div>`;
+  }
+  let _lastData = null;   // stashed scan response for the "unlock -> full report" redirect
 
   function renderFull(data) {
     stopLoading();
@@ -997,23 +1018,90 @@
     else
       verdict = `AI engines <span class="good">consistently recommend ${b}</span> for ${c}. You own this conversation.`;
 
+    _lastData = data;
+    const allGreen = score >= 75 && rate >= 0.8;
     injectAeoStyles();
     report.innerHTML =
       `<div class="aeo2">` +
         heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp) +
-        (comps.length ? compHtml(comps, brand, compStats) : "") +
+        (allGreen ? allGreenHtml(brand) : "") +
         engineHtml(engCount) +
-        matrixHtml(prompts, cited, brand) +
-        scorecardHtml(checks) +
+        (comps.length ? compHtml(comps, brand, compStats, true) : "") +
+        matrixHtml(prompts, cited, false) +
+        gateCardHtml(score, lvl) +
         ctaHtml() +
       `</div>`;
     wireAeo(brand);
   }
 
+  // Full report (report.html). Same data, fully expanded, ungated.
+  // Problems only: the "how to fix" is stripped (reserved for the Blueprint).
+  function renderFullReport(data) {
+    const sol = (data.solutions || [])[0] || {};
+    const ev = sol.evidence || {};
+    const bc = data.brand_context || {};
+    const brand = bc.brand || "your brand";
+    const category = sol.buyer_category || bc.category || "your category";
+    const icp = bc.icp || "B2B buyers";
+    const score = Number.isFinite(data.overall_score) ? data.overall_score : 0;
+    const lvl = levelText(score);
+    const prompts = ev.prompts || [];
+    const runs = ev.runs || [];
+    const cited = {}, resp = {};
+    runs.forEach((r) => {
+      const k = r.engine + "|" + r.prompt_id;
+      if (r.mentioned) cited[k] = true; else if (!(k in cited)) cited[k] = false;
+      if (!(k in resp) || r.mentioned) resp[k] = r.raw_response || "";
+    });
+    const engCount = {};
+    ENGINES2.forEach(([k]) => {
+      engCount[k] = { cited: prompts.filter((p) => cited[k + "|" + p.id]).length, total: prompts.length };
+    });
+    const totalCells = prompts.length * ENGINES2.length;
+    const citedCells = prompts.reduce((n, p) =>
+      n + ENGINES2.filter(([k]) => cited[k + "|" + p.id]).length, 0);
+    const rate = totalCells ? citedCells / totalCells : 0;
+    const comps = (sol.competitors || []).filter(Boolean);
+    const compStats = (sol.competitor_stats || []).filter((s) => s && s.name);
+    const checks = (sol.checks || []).filter((c) => c.key !== "ai_citations");
+    _modalData = {};
+    prompts.forEach((p) => {
+      _modalData[p.id] = { question: p.prompt, byEngine: {} };
+      ENGINES2.forEach(([k]) => {
+        _modalData[p.id].byEngine[k] = { cited: !!cited[k + "|" + p.id], text: resp[k + "|" + p.id] || "" };
+      });
+    });
+    const scannedUrl = sol.url || data.url || "";
+    const b = esc(brand), c = esc(category);
+    let verdict;
+    if (rate === 0) verdict = `AI engines <span class="hl">never recommend ${b}</span> when buyers search for ${c}. Your competitors get every spot.`;
+    else if (rate < 0.25) verdict = `AI engines <span class="hl">rarely recommend ${b}</span> for ${c}. Competitors dominate the answers.`;
+    else if (rate < 0.50) verdict = `AI <span class="hl">sometimes recommends ${b}</span> for ${c}, but competitors still win most answers.`;
+    else if (rate < 0.80) verdict = `AI engines <span class="good">often recommend ${b}</span> for ${c}. You're a frequent pick, with room to lead.`;
+    else verdict = `AI engines <span class="good">consistently recommend ${b}</span> for ${c}. You own this conversation.`;
+    const allGreen = score >= 75 && rate >= 0.8;
+    injectAeoStyles();
+    const host = document.getElementById("report");
+    host.removeAttribute("hidden");
+    host.innerHTML =
+      `<div class="aeo2">` +
+        `<div class="fr-banner">Your full AEO Baseline report for <b>${esc(scannedUrl || brand)}</b></div>` +
+        heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp) +
+        (allGreen ? allGreenHtml(brand) : "") +
+        engineHtml(engCount) +
+        (comps.length ? compHtml(comps, brand, compStats, false) : "") +
+        matrixHtml(prompts, cited, true) +
+        scorecardHtml(checks, true) +
+        blueprintCtaHtml() +
+      `</div>`;
+    wireAeo(brand);
+    window.scrollTo({ top: 0 });
+  }
+
   function heroHtml(score, lvl, verdict, citedCells, totalCells, url, category, icp) {
     const off = 100 - Math.max(0, Math.min(100, score));
     const pct = totalCells ? Math.round((citedCells / totalCells) * 100) : 0;
-    const st = tone(score); // ok/warn/bad -> color the score + level by tier, not always red
+    const st = lvl.cls; // bad/orange/warn/ok -> color score + level by the 4-level scale
     return `
     <div class="hero">
       <div class="eyebrow">Results for ${esc(url || "your solution")}</div>
@@ -1021,7 +1109,7 @@
         <svg viewBox="0 0 200 120"><defs><linearGradient id="aeoG" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stop-color="#7612fa"/><stop offset=".5" stop-color="#c109af"/><stop offset="1" stop-color="#ff6221"/>
         </linearGradient></defs>
-        <path d="M10,100 A90,90 0 0 1 190,100" fill="none" stroke="#e8e8ef" stroke-width="16" stroke-linecap="round"/>
+        <path d="M10,100 A90,90 0 0 1 190,100" fill="none" stroke="var(--track)" stroke-width="16" stroke-linecap="round"/>
         <path class="arc" d="M10,100 A90,90 0 0 1 190,100" fill="none" stroke="url(#aeoG)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="100" style="--off:${off}" stroke-dashoffset="${off}"/></svg>
         <div class="num"><b class="t-${st}">${score}</b><span class="of">/100</span></div>
       </div>
@@ -1036,7 +1124,7 @@
       </div>
     </div>`;
   }
-  function compHtml(comps, brand, stats) {
+  function compHtml(comps, brand, stats, showEmail) {
     const ranked = (stats && stats.length) ? stats : null;
     const total = ranked && ranked[0] ? ranked[0].total : 0;
     const chips = ranked
@@ -1047,16 +1135,23 @@
     const sub = total
       ? `<p class="lead-sub">Number on each = how many of the ${total} AI answers recommended them, ranked most to least</p>`
       : "";
+    const emailBox = showEmail
+      ? `<div class="cbox"><p class="cbox-h">See every brand AI recommends in your space</p>
+          <div class="cbox-row"><input id="compEmail" type="email" placeholder="you@company.com">
+          <button class="btn-fill" id="compEmailBtn">See Full Competitor List →</button></div></div>`
+      : "";
     return `<div class="sec2"><div class="comp">
       <p class="lead">When your buyers ask AI, here is who it recommends</p>
       ${sub}
       <div class="chips">${chips}</div>
+      ${emailBox}
     </div></div>`;
   }
   function engineHtml(engCount) {
     const cards = ENGINES2.map(([k, label]) => {
-      const c = engCount[k], [cls, ic, v] = engTone(c.cited, c.total);
-      return `<div class="eng ${cls}"><div class="ename">${label}</div><div class="eic">${ic}</div>
+      const c = engCount[k], [cls, v] = engTone(c.cited, c.total);
+      return `<div class="eng ${cls}"><div class="ename">${label}</div>
+        <div class="edwrap">${engineDonut(c.cited, c.total, cls)}</div>
         <div class="ev2">${v}</div><div class="erate">${c.cited} of ${c.total} questions</div></div>`;
     }).join("");
     return `<div class="sec2"><h2>Are you recommended?</h2><div class="engines">${cards}</div></div>`;
@@ -1066,33 +1161,43 @@
       `<td class="cell"><span class="cdot ${cited[k + "|" + p.id] ? "yes" : "no"}"></span></td>`).join("");
     return `<tr><td class="q">${esc(p.prompt)}</td>${dots}<td class="cell"><span class="link2 viewresp" data-q="${esc(p.id)}">View response</span></td></tr>`;
   }
-  function matrixHtml(prompts, cited, brand) {
+  // full=true renders every row ungated (full report). Preview shows 4 + a blurred teaser.
+  function matrixHtml(prompts, cited, full) {
     const head = `<tr><th class="q">Question</th><th>ChatGPT</th><th>Claude</th><th>Gemini</th><th></th></tr>`;
+    const legend = `<div class="legend"><span><i class="y"></i>Recommended you</span><span><i class="n"></i>Did not mention you</span></div>`;
+    if (full) {
+      const rows = prompts.map((p, i) => matrixRow(p, i, cited)).join("");
+      return `<div class="sec2"><h2>The real questions your buyers ask AI</h2>
+        <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${rows}</tbody></table>
+        ${legend}</div></div>`;
+    }
     const open = prompts.slice(0, 4).map((p, i) => matrixRow(p, i, cited)).join("");
-    const rest = prompts.slice(4).map((p, i) => matrixRow(p, i, cited)).join("");
-    const gate = rest ? `
-      <span class="moreBtn" id="moreBtn">See all ${prompts.length} questions buyers ask AI</span>
-      <tbody class="locked blur" id="locked2">${rest}</tbody>` : "";
-    // gate block lives after the table
+    const rest = prompts.slice(4);
+    const restBody = rest.length ? `<tbody class="locked blur open">${rest.map((p, i) => matrixRow(p, i, cited)).join("")}</tbody>` : "";
+    const teaser = rest.length ? `<p class="mx-teaser">+ ${rest.length} more buyer questions in your full report</p>` : "";
     return `<div class="sec2"><h2>The real questions your buyers ask AI</h2>
-      <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${open}</tbody>${rest ? `<tbody class="locked blur" id="locked2">${rest}</tbody>` : ""}</table>
-      <div class="legend"><span><i class="y"></i>Recommended you</span><span><i class="n"></i>Did not mention you</span></div>
-      ${rest ? `<span class="moreBtn" id="moreBtn">See all ${prompts.length} questions buyers ask AI</span>
-      <div class="gate" id="gate"><p>Enter your email to unlock all the questions and see exactly where you are missing</p>
-        <div class="grow"><input id="emailIn" type="email" placeholder="you@company.com"><button class="btn-sm" id="revealBtn">Reveal all questions</button></div></div>` : ""}
-      </div></div>`;
+      <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${open}</tbody>${restBody}</table>
+      ${legend}${teaser}</div></div>`;
   }
-  function subCard(s) {
+  // stripFix=true (full report): show the Issue only, hide "how to fix" (the fix is
+  // the Blueprint). Each fail gets a Blueprint hook instead.
+  function subCard(s, stripFix) {
     const pass = s.status === "pass";
-    const body = pass
-      ? (s.result ? `<div class="lbl">Result</div><div>${esc(s.result)}</div>` : "")
-      : `${s.issue ? `<div class="lbl issue">Issue</div><div class="issue">${esc(s.issue)}</div>` : ""}${s.how_to_implement ? `<div class="lbl">How to fix</div><div>${esc(s.how_to_implement)}</div>` : ""}`;
+    let body;
+    if (pass) {
+      body = s.result ? `<div class="lbl">Result</div><div>${esc(s.result)}</div>` : "";
+    } else {
+      const issue = s.issue ? `<div class="lbl issue">Issue</div><div class="issue">${esc(s.issue)}</div>` : "";
+      const fix = (!stripFix && s.how_to_implement) ? `<div class="lbl">How to fix</div><div>${esc(s.how_to_implement)}</div>` : "";
+      const hook = stripFix ? `<div class="bp-hook">Not sure where to start? This is exactly what your AEO Blueprint maps out.</div>` : "";
+      body = issue + fix + hook;
+    }
     const res = (s.resources || []).map((r) => `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.label)}</a>`).join("");
-    return `<div class="ccard"><div class="chead"><span class="cicon ${pass ? "ok" : "bad"}">${pass ? "✓" : "✕"}</span>
+    return `<div class="ccard ${pass ? "" : "fail"}"><div class="chead"><span class="cicon ${pass ? "ok" : "bad"}">${pass ? "✓" : "✕"}</span>
       <span class="cname">${esc(s.name || s.key)}${s.goal ? `<small>${esc(s.goal)}</small>` : ""}</span><span class="chev">▾</span></div>
       <div class="cbody">${body}${res ? `<div class="res">${res}</div>` : ""}</div></div>`;
   }
-  function scorecardHtml(checks) {
+  function scorecardHtml(checks, stripFix) {
     if (!checks.length) return "";
     const groups = checks.map((c) => {
       const [name] = CAT_LABELS[c.key] || [c.name || c.key];
@@ -1100,14 +1205,57 @@
       const pass = subs.filter((s) => s.status === "pass").length;
       return `<div class="cgroup"><div class="cgh"><span class="cgn">${esc(name)}</span>
         <span class="cgf ${tone(c.score)}">${pass}/${subs.length}</span></div>
-        <div class="cards2">${subs.map(subCard).join("")}</div></div>`;
+        <div class="cards2">${subs.map((s) => subCard(s, stripFix)).join("")}</div></div>`;
     }).join("");
-    return `<div class="sec2"><h2>Your AEO scorecard</h2>${groups}</div>`;
+    return `<div class="sec2"><h2>Your AEO scorecard</h2>
+      <p class="sc-sub">Every area AI graded you on. This is the problem list. The fixes are your Blueprint.</p>${groups}</div>`;
+  }
+  // Unlock gate card (replaces the open scorecard in the preview).
+  function gateCardHtml(score, lvl) {
+    return `<div class="sec2"><div class="gatecard">
+      <div class="gc-left">${miniGauge(score, lvl)}</div>
+      <div class="gc-right">
+        <h3>Do you want to unlock the full baseline details?</h3>
+        <p>See every buyer question, which competitors AI recommends instead, and exactly where you are missing.</p>
+        <div class="gc-form">
+          <input id="gateEmail" type="email" placeholder="you@company.com">
+          <button class="btn-fill lock" id="gateBtn"><span class="lk">&#128274;</span> Yes, unlock full details</button>
+        </div>
+        <p class="gc-fine">We will email your full report. No spam.</p>
+      </div></div></div>`;
+  }
+  // Shown when a solution scores well across the board (all-green handler).
+  function allGreenHtml(brand) {
+    return `<div class="sec2"><div class="allgreen">
+      <div class="ag-badge">&#10003;</div>
+      <h3>You are winning this one, ${esc(brand)}.</h3>
+      <p>AI consistently recommends you for this solution. Nobody wins every category though. Scan another solution or page to find where you are losing ground.</p>
+      <button class="btn-fill" id="agScanBtn">Scan another solution</button>
+    </div></div>`;
   }
   function ctaHtml() {
     return `<div class="cta2"><h3>Get recommended by AI, not your competitors.</h3>
-      <p>Book a free 15 minute teardown. We will show you exactly how to get cited for the searches above.</p>
-      <a class="btn2" href="#">Book my teardown</a></div>`;
+      <p>Unlock your full baseline report and see exactly where you are losing to competitors.</p>
+      <a class="btn2" href="#" id="ctaUnlock">Get my full report</a></div>`;
+  }
+  function blueprintCtaHtml() {
+    return `<div class="cta2"><h3>Don't know where to start?</h3>
+      <p>This report is your problem list. Book a call and we will turn it into your AEO Blueprint, the exact plan to get AI recommending you.</p>
+      <a class="btn2" href="#book">Book my call</a></div>`;
+  }
+
+  // Conversion: capture email (best-effort POST), stash the scan response, then
+  // redirect to the full report. Email delivery of a PDF is a later phase.
+  function unlockFull(emailId) {
+    const el = document.querySelector("#" + emailId);
+    const email = ((el && el.value) || "").trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast("Enter a valid work email"); return; }
+    try {
+      fetch(_leadUrl(), { method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": API.key },
+        body: JSON.stringify({ email: email, url: (($("#scanUrl") && $("#scanUrl").value) || (_lastData && _lastData.url) || "") }) }).catch(() => {});
+    } catch (_) {}
+    try { sessionStorage.setItem("aeo_full", JSON.stringify(_lastData || {})); } catch (_) {}
+    window.location.href = "full-report.html";
   }
 
   function wireAeo(brand) {
@@ -1125,23 +1273,21 @@
       runLiveScan(parsed, updateLoadingProgress, { category: cat, icp: ic })
         .then(renderFull).catch((e) => renderGenericError(String(e && e.message || e)));
     });
-    const more = $$("#moreBtn");
-    if (more) more.addEventListener("click", function () {
-      $$("#locked2").classList.add("open");
-      $$("#gate").classList.add("show");
-      this.style.display = "none";
+    // Conversion points -> unlock the full report.
+    const compBtn = $$("#compEmailBtn");
+    if (compBtn) compBtn.addEventListener("click", () => unlockFull("compEmail"));
+    const gateBtn = $$("#gateBtn");
+    if (gateBtn) gateBtn.addEventListener("click", () => unlockFull("gateEmail"));
+    const ctaUnlock = $$("#ctaUnlock");
+    if (ctaUnlock) ctaUnlock.addEventListener("click", (e) => {
+      e.preventDefault();
+      const g = $$("#gateEmail");
+      if (g) { g.scrollIntoView({ behavior: "smooth", block: "center" }); g.focus(); }
     });
-    const reveal = $$("#revealBtn");
-    if (reveal) reveal.addEventListener("click", () => {
-      const email = ($$("#emailIn").value || "").trim();
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast("Enter a valid email"); return; }
-      try {
-        fetch(_leadUrl(), { method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": API.key },
-          body: JSON.stringify({ email: email, url: ($("#scanUrl") && $("#scanUrl").value) || "" }) }).catch(() => {});
-      } catch (_) {}
-      $$("#locked2").classList.remove("blur");
-      $$("#gate").classList.remove("show");
-      toast("Unlocked. Here is every question your buyers ask AI.");
+    const agScan = $$("#agScanBtn");
+    if (agScan) agScan.addEventListener("click", () => {
+      if (document.getElementById("entry")) { showEntry(); window.scrollTo({ top: 0 }); }
+      else { window.location.href = "scan.html"; }
     });
     document.querySelectorAll(".aeo2 .chead").forEach((h) =>
       h.addEventListener("click", () => h.parentElement.classList.toggle("open")));
@@ -1182,98 +1328,131 @@
   function injectAeoStyles() {
     if (document.getElementById("aeo2-style")) return;
     const css = `
-    .aeo2{--ink:#1a1726;--muted:#76728a;--line:#efedf4;--card:#fff;--bad:#d6453d;--warn:#cf8a1e;--ok:#1f9d61;
-      --g1:#7612fa;--grad:linear-gradient(100deg,#7612fa,#c109af 52%,#ff6221);
-      --sh:0 1px 2px rgba(26,23,38,.04),0 16px 36px -20px rgba(26,23,38,.20);
-      --shs:0 1px 2px rgba(26,23,38,.05),0 8px 20px -14px rgba(26,23,38,.14);
-      color:var(--ink);max-width:900px;margin:0 auto;padding:8px 0 90px;letter-spacing:.002em}
+    .aeo2{--ink:#f3f2f6;--muted:#9b97a8;--line:#2a2a30;--card:#141417;--card2:#1b1b20;--track:#2c2c33;
+      --bad:#e5484d;--orange:#f5821f;--warn:#f5a623;--ok:#34c98a;
+      --g1:#c47bff;--grad:linear-gradient(100deg,#7612fa,#c109af 52%,#ff6221);
+      --sh:0 1px 2px rgba(0,0,0,.4),0 20px 44px -24px rgba(0,0,0,.7);
+      --shs:0 1px 2px rgba(0,0,0,.3),0 10px 26px -18px rgba(0,0,0,.6);
+      color:var(--ink);max-width:920px;margin:0 auto;padding:8px 16px 90px;letter-spacing:.002em}
     .aeo2 *{box-sizing:border-box}
-    .aeo2 .hero{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:26px;padding:60px 40px 52px;margin-top:18px;text-align:center;box-shadow:var(--sh)}
-    .aeo2 .hero::before{content:"";position:absolute;left:0;right:0;top:-40%;height:90%;background:radial-gradient(50% 70% at 50% 50%,rgba(193,9,175,.08),transparent 65%);pointer-events:none}
-    .aeo2 .eyebrow{font-size:11.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600}
-    .aeo2 .gauge2{width:258px;margin:28px auto 0;position:relative}
+    .aeo2 .fr-banner{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:700;text-align:center;margin:14px 0 -6px}
+    .aeo2 .fr-banner b{color:var(--ink);text-transform:none;letter-spacing:0}
+    .aeo2 .hero{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:26px;padding:58px 40px 50px;margin-top:18px;text-align:center;box-shadow:var(--sh)}
+    .aeo2 .hero::before{content:"";position:absolute;left:-10%;right:30%;top:-50%;height:120%;background:radial-gradient(50% 60% at 40% 50%,rgba(118,18,250,.22),rgba(255,98,33,.10) 40%,transparent 70%);pointer-events:none}
+    .aeo2 .eyebrow{position:relative;font-size:11.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600}
+    .aeo2 .gauge2{position:relative;width:258px;margin:26px auto 0}
     .aeo2 .gauge2 svg{width:100%;display:block}
-    .aeo2 .gauge2 .arc{filter:drop-shadow(0 5px 12px rgba(193,9,175,.32));animation:aeoArc 1.15s cubic-bezier(.22,1,.36,1) .25s both}
+    .aeo2 .gauge2 .arc{filter:drop-shadow(0 4px 14px rgba(245,130,31,.35));animation:aeoArc 1.15s cubic-bezier(.22,1,.36,1) .25s both}
     @keyframes aeoArc{from{stroke-dashoffset:100}to{stroke-dashoffset:var(--off)}}
     .aeo2 .gauge2 .num{position:absolute;left:0;right:0;top:52%;text-align:center}
-    .aeo2 .gauge2 .num b{font-size:58px;font-weight:800;letter-spacing:-.02em;color:var(--bad)}
+    .aeo2 .gauge2 .num b{font-size:58px;font-weight:800;letter-spacing:-.02em}
     .aeo2 .gauge2 .num .of{font-size:16px;color:var(--muted);font-weight:600}
-    .aeo2 .level2{font-weight:800;color:var(--bad);font-size:15px;margin-top:14px}
-    .aeo2 .verdict{font-size:26px;line-height:1.26;font-weight:800;letter-spacing:-.02em;margin:24px auto 0;max-width:660px}
-    .aeo2 .verdict .hl{color:var(--bad)}
-    .aeo2 .appeared{font-size:16px;margin-top:18px}.aeo2 .appeared b{font-weight:800}
-    .aeo2 .detected{margin-top:24px;font-size:14px;color:var(--muted)}.aeo2 .detected b{color:var(--ink)}
+    .aeo2 .level2{position:relative;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.08em;margin-top:14px}
+    .aeo2 .verdict{position:relative;font-size:26px;line-height:1.26;font-weight:800;letter-spacing:-.02em;margin:22px auto 0;max-width:660px}
+    .aeo2 .verdict .hl{color:var(--warn)}.aeo2 .verdict .good{color:var(--ok)}
+    .aeo2 .appeared{position:relative;font-size:16px;margin-top:18px;color:#cfccd9}.aeo2 .appeared b{font-weight:800;color:var(--ink)}
+    .aeo2 .detected{position:relative;margin-top:24px;font-size:14px;color:var(--muted)}.aeo2 .detected b{color:var(--ink)}
     .aeo2 .link2{color:var(--g1);font-weight:700;cursor:pointer}
     .aeo2 .refine-form{display:none;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
     .aeo2 .refine-form.open{display:flex}
-    .aeo2 .refine-form input{padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:14px;min-width:230px}
-    .aeo2 .btn-sm{background:var(--grad);color:#fff;border:none;border-radius:10px;padding:11px 20px;font-weight:700;cursor:pointer;transition:transform .15s,filter .15s}
-    .aeo2 .btn-sm:hover{transform:translateY(-1px);filter:brightness(1.05)}
-    .aeo2 .sec2{margin-top:40px}
-    .aeo2 .sec2 h2{font-size:24px;font-weight:800;letter-spacing:-.02em;margin:0 0 18px}
+    .aeo2 input{font-family:inherit}
+    .aeo2 .refine-form input{padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:14px;min-width:230px;background:var(--card2);color:var(--ink)}
+    .aeo2 .btn-sm,.aeo2 .btn-fill{background:var(--grad);color:#fff;border:none;border-radius:11px;padding:13px 22px;font-weight:700;font-size:14.5px;cursor:pointer;transition:transform .15s,filter .15s;white-space:nowrap}
+    .aeo2 .btn-sm:hover,.aeo2 .btn-fill:hover{transform:translateY(-1px);filter:brightness(1.08)}
+    .aeo2 .btn-fill .lk{filter:grayscale(1) brightness(2)}
+    .aeo2 .sec2{margin-top:34px}
+    .aeo2 .sec2 h2{font-size:23px;font-weight:800;letter-spacing:-.02em;margin:0 0 16px}
     .aeo2 .comp{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px 28px;box-shadow:var(--shs)}
-    .aeo2 .comp .lead{font-size:20px;font-weight:800;margin:0 0 16px;letter-spacing:-.01em}
+    .aeo2 .comp .lead{font-size:20px;font-weight:800;margin:0 0 14px;letter-spacing:-.01em}
     .aeo2 .chips{display:flex;flex-wrap:wrap;gap:10px}
-    .aeo2 .chip{display:inline-flex;align-items:center;gap:9px;padding:9px 12px 9px 16px;border-radius:999px;background:#f3f0fb;border:1px solid #e4ddf7;font-weight:700;font-size:15px;transition:transform .15s}
+    .aeo2 .chip{display:inline-flex;align-items:center;gap:9px;padding:9px 12px 9px 16px;border-radius:999px;background:var(--card2);border:1px solid var(--line);font-weight:700;font-size:15px;transition:transform .15s}
     .aeo2 .chip:hover{transform:translateY(-2px)}
     .aeo2 .chip:first-child{background:var(--grad);color:#fff;border:none;box-shadow:0 10px 22px -10px rgba(193,9,175,.6)}
     .aeo2 .cct{display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;padding:0 6px;border-radius:999px;background:var(--grad);color:#fff;font-size:12.5px;font-weight:800;line-height:1}
     .aeo2 .chip:first-child .cct{background:#fff;color:#c109af}
-    .aeo2 .lead-sub{margin:-6px 0 16px;color:#6b6478;font-size:13.5px}
+    .aeo2 .lead-sub{margin:-4px 0 16px;color:var(--muted);font-size:13.5px}
+    .aeo2 .cbox{margin-top:22px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px 22px;text-align:center}
+    .aeo2 .cbox-h{margin:0 0 14px;font-weight:700;font-size:15px}
+    .aeo2 .cbox-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+    .aeo2 .cbox-row input{flex:1;min-width:220px;max-width:300px;padding:13px 15px;border:1px solid var(--line);border-radius:11px;font-size:14px;background:#0e0e10;color:var(--ink)}
+    .aeo2 .cbox-row input::placeholder,.aeo2 .gc-form input::placeholder{color:#6f6b7e}
     .aeo2 .engines{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-    .aeo2 .eng{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center;box-shadow:var(--shs);transition:transform .18s,box-shadow .18s}
-    .aeo2 .eng:hover{transform:translateY(-3px);box-shadow:var(--sh)}
-    .aeo2 .ename{font-weight:800;font-size:15px}.aeo2 .eic{font-size:28px;line-height:1;margin:10px 0 5px}
-    .aeo2 .ev2{font-weight:700;font-size:14px}
-    .aeo2 .eng.no .ev2{color:var(--bad)}.aeo2 .eng.mid .ev2{color:var(--warn)}.aeo2 .eng.yes .ev2{color:var(--ok)}
+    .aeo2 .eng{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 18px;text-align:center;box-shadow:var(--shs);transition:transform .18s,border-color .18s}
+    .aeo2 .eng:hover{transform:translateY(-3px);border-color:#3a3a44}
+    .aeo2 .ename{font-weight:800;font-size:15px;margin-bottom:12px}
+    .aeo2 .edwrap{width:84px;margin:0 auto 10px}
+    .aeo2 .edonut{width:100%;display:block}
+    .aeo2 .edonut.bad{color:var(--bad)}.aeo2 .edonut.warn{color:var(--warn)}.aeo2 .edonut.ok{color:var(--ok)}
+    .aeo2 .edn{font-size:15px;font-weight:800;fill:var(--ink)}
+    .aeo2 .ev2{font-weight:800;font-size:15px}
+    .aeo2 .eng.bad .ev2{color:var(--bad)}.aeo2 .eng.warn .ev2{color:var(--warn)}.aeo2 .eng.ok .ev2{color:var(--ok)}
     .aeo2 .erate{color:var(--muted);font-size:13px;margin-top:3px}
-    .aeo2 .matrix{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:8px 24px 24px;box-shadow:var(--shs)}
+    .aeo2 .matrix{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:8px 24px 22px;box-shadow:var(--shs)}
     .aeo2 table.mx{width:100%;border-collapse:collapse}
     .aeo2 table.mx th{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:14px 6px;text-align:center}
     .aeo2 table.mx th.q{text-align:left}
     .aeo2 table.mx td{padding:13px 6px;border-top:1px solid var(--line);font-size:14.5px;vertical-align:middle}
     .aeo2 table.mx td.q{padding-right:14px}.aeo2 table.mx td.cell{text-align:center;width:92px}
     .aeo2 .cdot{display:inline-block;width:16px;height:16px;border-radius:50%}
-    .aeo2 .cdot.yes{background:var(--ok);box-shadow:0 0 0 4px rgba(31,157,97,.14)}
-    .aeo2 .cdot.no{background:#fff;border:2px solid #e0dde9}
+    .aeo2 .cdot.yes{background:var(--ok);box-shadow:0 0 0 4px rgba(52,201,138,.16)}
+    .aeo2 .cdot.no{background:#0e0e10;border:2px solid #3a3a44}
     .aeo2 .viewresp{font-weight:700;font-size:13px}
     .aeo2 .legend{display:flex;gap:18px;justify-content:flex-end;font-size:12px;color:var(--muted);margin-top:12px}
     .aeo2 .legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
-    .aeo2 .legend .y{background:var(--ok)}.aeo2 .legend .n{background:#fff;border:2px solid #e0dde9}
-    .aeo2 .moreBtn{display:inline-block;margin-top:16px;color:var(--g1);font-weight:700;font-size:14px;cursor:pointer}
+    .aeo2 .legend .y{background:var(--ok)}.aeo2 .legend .n{background:#0e0e10;border:2px solid #3a3a44}
+    .aeo2 .mx-teaser{margin:14px 0 0;color:var(--g1);font-weight:700;font-size:14px;text-align:center}
     .aeo2 .locked{display:none}.aeo2 .locked.open{display:table-row-group}
-    .aeo2 .locked.open.blur td.q,.aeo2 .locked.open.blur td.cell{filter:blur(5px)}
-    .aeo2 .gate{display:none;margin-top:18px;background:#faf8ff;border:1px solid #e4ddf7;border-radius:14px;padding:22px;text-align:center}
-    .aeo2 .gate.show{display:block}.aeo2 .gate p{margin:0 0 14px;font-weight:700}
-    .aeo2 .gate .grow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-    .aeo2 .gate input{padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:14px;min-width:260px}
+    .aeo2 .locked.open.blur td.q,.aeo2 .locked.open.blur td.cell{filter:blur(5px);opacity:.8}
+    /* gate card (unlock full details) */
+    .aeo2 .gatecard{display:grid;grid-template-columns:240px 1fr;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px 32px;box-shadow:var(--sh);position:relative;overflow:hidden}
+    .aeo2 .gatecard::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 80% at 15% 50%,rgba(118,18,250,.16),transparent 70%);pointer-events:none}
+    .aeo2 .mgauge{position:relative;width:200px;margin:0 auto;text-align:center}
+    .aeo2 .mgauge svg{width:100%;display:block}
+    .aeo2 .mnum{position:absolute;left:0;right:0;top:50%;text-align:center}
+    .aeo2 .mnum b{font-size:42px;font-weight:800}.aeo2 .mnum span{font-size:13px;color:var(--muted);font-weight:600}
+    .aeo2 .mlvl{font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.07em;margin-top:6px}
+    .aeo2 .gc-right{position:relative}
+    .aeo2 .gc-right h3{font-size:21px;font-weight:800;margin:0 0 8px;letter-spacing:-.01em}
+    .aeo2 .gc-right p{margin:0 0 16px;color:#cfccd9;font-size:14.5px;line-height:1.5}
+    .aeo2 .gc-form{display:flex;gap:10px;flex-wrap:wrap}
+    .aeo2 .gc-form input{flex:1;min-width:200px;padding:13px 15px;border:1px solid var(--line);border-radius:11px;font-size:14px;background:#0e0e10;color:var(--ink)}
+    .aeo2 .gc-fine{margin:10px 0 0;font-size:12px;color:var(--muted)}
+    /* all-green handler */
+    .aeo2 .allgreen{background:var(--card);border:1px solid rgba(52,201,138,.4);border-radius:20px;padding:34px 32px;text-align:center;box-shadow:var(--sh)}
+    .aeo2 .allgreen .ag-badge{width:54px;height:54px;border-radius:50%;background:var(--ok);color:#06281c;font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+    .aeo2 .allgreen h3{font-size:23px;font-weight:800;margin:0 0 8px;letter-spacing:-.01em}
+    .aeo2 .allgreen p{margin:0 auto 18px;color:#cfccd9;font-size:15px;line-height:1.55;max-width:520px}
+    /* scorecard */
+    .aeo2 .sc-sub{margin:-8px 0 18px;color:var(--muted);font-size:14px}
     .aeo2 .cgroup{margin-bottom:22px}
     .aeo2 .cgh{display:flex;justify-content:space-between;align-items:center;margin:0 4px 12px}
     .aeo2 .cgn{font-weight:800;font-size:16px}
     .aeo2 .cgf{font-weight:800;font-size:14px;padding:3px 10px;border-radius:8px}
-    .aeo2 .cgf.ok{color:var(--ok);background:#eafaf1}.aeo2 .cgf.warn{color:var(--warn);background:#fdf3e3}.aeo2 .cgf.bad{color:var(--bad);background:#fdeced}
+    .aeo2 .cgf.ok{color:var(--ok);background:rgba(52,201,138,.14)}.aeo2 .cgf.warn{color:var(--warn);background:rgba(245,166,35,.14)}.aeo2 .cgf.bad{color:var(--bad);background:rgba(229,72,77,.14)}
     .aeo2 .cards2{display:flex;flex-direction:column;gap:12px}
-    .aeo2 .ccard{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shs);transition:box-shadow .18s}
-    .aeo2 .ccard:hover{box-shadow:var(--sh)}
+    .aeo2 .ccard{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shs);transition:border-color .18s}
+    .aeo2 .ccard.fail{border-color:rgba(229,72,77,.3)}
+    .aeo2 .ccard:hover{border-color:#3a3a44}
     .aeo2 .chead{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer}
-    .aeo2 .cicon{width:28px;height:28px;flex:0 0 28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px}
-    .aeo2 .cicon.ok{background:var(--ok)}.aeo2 .cicon.bad{background:var(--bad)}
+    .aeo2 .cicon{width:28px;height:28px;flex:0 0 28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#06281c;font-weight:800;font-size:14px}
+    .aeo2 .cicon.ok{background:var(--ok)}.aeo2 .cicon.bad{background:var(--bad);color:#2b0808}
     .aeo2 .cname{flex:1;font-weight:800;font-size:15.5px}
     .aeo2 .cname small{display:block;font-weight:600;color:var(--muted);font-size:12.5px;margin-top:1px}
     .aeo2 .chev{color:var(--muted);transition:transform .15s;font-size:13px}
     .aeo2 .ccard.open .chev{transform:rotate(180deg)}
-    .aeo2 .cbody{display:none;padding:0 18px 18px 60px}.aeo2 .ccard.open .cbody{display:block}
-    .aeo2 .cbody .lbl{font-weight:700;margin-top:12px}.aeo2 .cbody .issue{color:var(--bad)}
+    .aeo2 .cbody{display:none;padding:0 18px 18px 60px;color:#cfccd9}.aeo2 .ccard.open .cbody{display:block}
+    .aeo2 .cbody .lbl{font-weight:700;margin-top:12px;color:var(--ink)}.aeo2 .cbody .issue{color:#f3a0a2}
+    .aeo2 .bp-hook{margin-top:12px;background:rgba(118,18,250,.12);border:1px solid rgba(118,18,250,.3);border-radius:10px;padding:11px 13px;font-size:13.5px;color:#d9c6ff;font-weight:600}
     .aeo2 .res{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .aeo2 .res a{font-size:13px;color:#ff6221;border:1px solid #f0d9cc;border-radius:8px;padding:5px 10px;text-decoration:none}
+    .aeo2 .res a{font-size:13px;color:#ffb38a;border:1px solid #45342c;border-radius:8px;padding:5px 10px;text-decoration:none}
     .aeo2 .cta2{margin-top:42px;background:var(--grad);border-radius:22px;padding:40px;text-align:center;color:#fff;box-shadow:0 26px 54px -22px rgba(193,9,175,.6)}
     .aeo2 .cta2 h3{font-size:26px;margin:0 0 8px;font-weight:800;letter-spacing:-.01em}
-    .aeo2 .cta2 p{margin:0 0 20px;opacity:.92}
-    .aeo2 .btn2{display:inline-block;background:#fff;color:var(--g1);font-weight:800;padding:15px 30px;border-radius:12px;text-decoration:none;transition:transform .15s}
+    .aeo2 .cta2 p{margin:0 auto 20px;opacity:.94;max-width:520px}
+    .aeo2 .btn2{display:inline-block;background:#fff;color:#7612fa;font-weight:800;padding:15px 30px;border-radius:12px;text-decoration:none;transition:transform .15s;cursor:pointer}
     .aeo2 .btn2:hover{transform:translateY(-2px)}
-    .aeo2.overlay{display:none;position:fixed;inset:0;background:rgba(26,23,38,.55);z-index:9999;justify-content:center;padding:40px 16px;overflow:auto;max-width:none}
+    .aeo2.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;justify-content:center;padding:40px 16px;overflow:auto;max-width:none}
     .aeo2.overlay.show{display:flex}
-    .aeo2 .modal{background:#fff;border-radius:18px;max-width:760px;width:100%;padding:24px 28px 28px;height:max-content;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+    .aeo2 .modal{background:var(--card);border:1px solid var(--line);border-radius:18px;max-width:760px;width:100%;padding:24px 28px 28px;height:max-content;box-shadow:0 20px 60px rgba(0,0,0,.6)}
     .aeo2 .modal .x{float:right;cursor:pointer;color:var(--muted);font-size:24px;line-height:1;border:none;background:none}
     .aeo2 .modal .meyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
     .aeo2 .modal .mq{font-size:19px;font-weight:800;margin:4px 30px 4px 0}
@@ -1281,15 +1460,14 @@
     .aeo2 .eblock .eh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
     .aeo2 .eblock .en{font-weight:800;font-size:15px}
     .aeo2 .eblock .cited{font-weight:800;font-size:13px;padding:4px 11px;border-radius:999px}
-    .aeo2 .eblock .cited.no{color:var(--bad);background:#fbeae9}.aeo2 .eblock .cited.yes{color:var(--ok);background:#e7f6ee}
-    .aeo2 .eblock .miss{background:#fdeced;color:var(--bad);font-weight:700;font-size:13px;border-radius:8px;padding:8px 12px;margin-bottom:10px}
-    .aeo2 .eblock .resp{font-size:14px;line-height:1.6;color:#33303f;white-space:pre-wrap;max-height:230px;overflow:auto;background:#faf9fc;border-radius:10px;padding:12px 14px}
-    .aeo2 mark.brand{background:#eafaf1;color:#176c43;font-weight:700;padding:0 3px;border-radius:3px}
-    /* score/level/verdict tiered by result (not always red) */
-    .aeo2 .gauge2 .num b.t-ok{color:var(--ok)} .aeo2 .gauge2 .num b.t-warn{color:var(--warn)} .aeo2 .gauge2 .num b.t-bad{color:var(--bad)}
-    .aeo2 .level2.t-ok{color:var(--ok)} .aeo2 .level2.t-warn{color:var(--warn)} .aeo2 .level2.t-bad{color:var(--bad)}
-    .aeo2 .verdict .good{color:var(--ok)}
-    @media(max-width:640px){.aeo2 .engines{grid-template-columns:1fr}.aeo2 .hero{padding:40px 22px}}`;
+    .aeo2 .eblock .cited.no{color:var(--bad);background:rgba(229,72,77,.16)}.aeo2 .eblock .cited.yes{color:var(--ok);background:rgba(52,201,138,.16)}
+    .aeo2 .eblock .miss{background:rgba(229,72,77,.12);color:#f3a0a2;font-weight:700;font-size:13px;border-radius:8px;padding:8px 12px;margin-bottom:10px}
+    .aeo2 .eblock .resp{font-size:14px;line-height:1.6;color:#cfccd9;white-space:pre-wrap;max-height:230px;overflow:auto;background:#0e0e10;border-radius:10px;padding:12px 14px}
+    .aeo2 mark.brand{background:rgba(52,201,138,.22);color:#7ee8b6;font-weight:700;padding:0 3px;border-radius:3px}
+    /* score/level tiered by the 4-level scale */
+    .aeo2 .t-ok{color:var(--ok)}.aeo2 .t-warn{color:var(--warn)}.aeo2 .t-orange{color:var(--orange)}.aeo2 .t-bad{color:var(--bad)}
+    @media(max-width:680px){.aeo2 .engines{grid-template-columns:1fr 1fr}.aeo2 .gatecard{grid-template-columns:1fr}.aeo2 .hero{padding:42px 22px}}
+    @media(max-width:460px){.aeo2 .engines{grid-template-columns:1fr}}`;
     const el = document.createElement("style");
     el.id = "aeo2-style"; el.textContent = css;
     document.head.appendChild(el);
@@ -1335,6 +1513,18 @@
   }
 
   function boot() {
+    // Full report page (report.html): render the stashed scan response, ungated.
+    if (document.body.hasAttribute("data-full-report")) {
+      let data = null;
+      try { data = JSON.parse(sessionStorage.getItem("aeo_full") || "null"); } catch (_) {}
+      if (data && data.solutions) { renderFullReport(data); }
+      else {
+        const host = document.getElementById("report");
+        if (host) host.innerHTML = `<div style="padding:80px 20px;text-align:center;color:#9b97a8">No report data found. <a href="scan.html" style="color:#c47bff;font-weight:700">Run a scan first</a>.</div>`;
+      }
+      return;
+    }
+
     const form = $("#scanForm");
     if (form) form.addEventListener("submit", handleScanSubmit);
 

@@ -1,0 +1,60 @@
+/* scan-dark.css — dark theme for the AEO Baseline scanner chrome.
+ * Loaded after styles.css + scan.css. The page chrome is fully tokenized,
+ * so re-pointing the surface/text tokens on body.scan-body flips the whole
+ * entry + results shell dark while leaving the purple/orange brand accents.
+ * The report body itself (.aeo2) is dark-themed in scan.js (injectAeoStyles).
+ */
+body.scan-body {
+  --ll-white: #141417;
+  --ll-off-white: #0a0a0b;
+  --ll-light-purple: #20202a;
+  --ll-purple-tint: #17171b;
+  --ll-purple-border: #2a2a30;
+  --ll-heading: #f3f2f6;
+  --ll-body: #cfccd9;
+  --ll-muted: #9b97a8;
+  --ll-border: #2a2a30;
+  --ll-border-light: #222228;
+  --ll-dark: #f3f2f6;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+  --shadow-md: 0 4px 24px rgba(0,0,0,.5);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,.65);
+  background: #0a0a0b;
+  color: #f3f2f6;
+}
+
+/* Surfaces that may hardcode a light bg — pin them dark for safety. */
+body.scan-body,
+.scan-entry,
+.scan-hero,
+.results-screen,
+.results { background: #0a0a0b; }
+
+.scan-hero { position: relative; }
+
+/* Inputs: dark field, light text, muted placeholder. */
+.scan-input-wrap { background: #141417; border-color: #2a2a30; }
+.scan-input,
+.ctx-input { background: #141417; color: #f3f2f6; }
+.scan-input::placeholder,
+.ctx-input::placeholder { color: #6f6b7e; }
+.scan-input-icon { color: #9b97a8; }
+
+/* Nav + compact header on dark. */
+.nav-logo-text { color: #f3f2f6; }
+.nav-pill { background: #141417; border-color: #2a2a30; color: #f3f2f6; }
+.nav-pill:hover { background: #1b1b20; }
+.compact-url { color: #9b97a8; }
+.link-btn { color: #c47bff; }
+
+/* "Customize scan" disclosure. */
+.hero-context-toggle { background: #141417; border-color: #2a2a30; }
+.hero-context-summary { color: #cfccd9; }
+.ctx-field { color: #cfccd9; }
+.ctx-help, .scan-hero-foot { color: #9b97a8; }
+
+/* Loading / state container stays readable on dark. */
+.scan-state { color: #f3f2f6; }
+
+/* The input glow reads nicely on dark already; lift it slightly. */
+.input-glow-bg { opacity: .9; }

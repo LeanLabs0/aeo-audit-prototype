@@ -36,7 +36,10 @@
 
   // ── Small DOM helpers ─────────────────────────────────────────────────
   const $ = (sel) => document.querySelector(sel);
+  // Also strips em/en dashes from ALL rendered text (incl. backend-sourced check
+  // copy + AI responses) so no em dash ever reaches the report. House rule.
   const esc = (s) => String(s == null ? "" : s)
+    .replace(/\s*—\s*/g, ", ").replace(/\s*–\s*/g, "-")
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 

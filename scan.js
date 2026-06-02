@@ -1152,7 +1152,7 @@
     const emailBox = gated
       ? `<div class="cbox"><p class="cbox-h">See every brand AI recommends in your space</p>
           <div class="cbox-row"><input id="compEmail" type="email" placeholder="you@company.com">
-          <button class="btn-fill" id="compEmailBtn">See Full Competitor List →</button></div></div>`
+          <button class="btn-fill" id="compEmailBtn">Unlock full details</button></div></div>`
       : "";
     return `<div class="sec2"><div class="comp">
       <p class="lead">When your buyers ask AI, here is who it recommends</p>
@@ -1191,7 +1191,7 @@
     const reveal = rest.length ? `<div class="mx-gate">
       <p>Enter your email to unlock all the questions and see exactly where you are missing</p>
       <div class="mx-grow"><input id="matrixEmail" type="email" placeholder="you@company.com">
-      <button class="btn-fill" id="matrixRevealBtn">Reveal all questions</button></div></div>` : "";
+      <button class="btn-fill" id="matrixRevealBtn">Unlock full details</button></div></div>` : "";
     return `<div class="sec2"><h2>The real questions your buyers ask AI</h2>
       <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${open}</tbody>${restBody}</table>
       ${legend}${reveal}</div></div>`;
@@ -1232,7 +1232,7 @@
         <p class="sc-sub">The pillars AI graded you on. Unlock to see every check and exactly where you are missing.</p>
         <div class="pillrows">${rows}</div>
         <div class="mx-grow"><input id="scoreEmail" type="email" placeholder="you@company.com">
-          <button class="btn-fill" id="scoreUnlockBtn">Unlock full scorecard</button></div>
+          <button class="btn-fill" id="scoreUnlockBtn">Unlock full details</button></div>
       </div></div>`;
     }
     // Full report: open, expandable accordions.
@@ -1282,7 +1282,7 @@
   function ctaHtml() {
     return `<div class="cta2"><h3>Get recommended by AI, not your competitors.</h3>
       <p>Unlock your full baseline report and see exactly where you are losing to competitors.</p>
-      <a class="btn2" href="#" id="ctaUnlock">Get my full report</a></div>`;
+      <a class="btn2" href="#" id="ctaUnlock">Unlock full details</a></div>`;
   }
   function blueprintCtaHtml() {
     return `<div class="cta2"><h3>Don't know where to start?</h3>
@@ -1293,13 +1293,18 @@
   // Conversion: capture email (best-effort POST), stash the scan response, then
   // redirect to the full report. Email delivery of a PDF is a later phase.
   function unlockFull(emailId) {
-    const el = document.querySelector("#" + emailId);
-    const email = ((el && el.value) || "").trim();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast("Enter a valid work email"); return; }
-    try {
-      fetch(_leadUrl(), { method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": API.key },
-        body: JSON.stringify({ email: email, url: (($("#scanUrl") && $("#scanUrl").value) || (_lastData && _lastData.url) || "") }) }).catch(() => {});
-    } catch (_) {}
+    // Capture the email if one was entered (best effort), then ALWAYS go to the
+    // full report. Every unlock button routes here; none reveal blur in place.
+    if (emailId) {
+      const el = document.querySelector("#" + emailId);
+      const email = ((el && el.value) || "").trim();
+      if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        try {
+          fetch(_leadUrl(), { method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": API.key },
+            body: JSON.stringify({ email: email, url: (($("#scanUrl") && $("#scanUrl").value) || (_lastData && _lastData.url) || "") }) }).catch(() => {});
+        } catch (_) {}
+      }
+    }
     try { sessionStorage.setItem("aeo_full", JSON.stringify(_lastData || {})); } catch (_) {}
     window.location.href = "full-report.html";
   }
@@ -1326,15 +1331,10 @@
     if (matrixReveal) matrixReveal.addEventListener("click", () => unlockFull("matrixEmail"));
     const scoreUnlock = $$("#scoreUnlockBtn");
     if (scoreUnlock) scoreUnlock.addEventListener("click", () => unlockFull("scoreEmail"));
-    const focusUnlock = (e) => {
-      if (e) e.preventDefault();
-      const el = $$("#compEmail") || $$("#matrixEmail");
-      if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.focus(); }
-    };
     const startBp = $$("#startBpBtn");
-    if (startBp) startBp.addEventListener("click", focusUnlock);
+    if (startBp) startBp.addEventListener("click", () => unlockFull());
     const ctaUnlock = $$("#ctaUnlock");
-    if (ctaUnlock) ctaUnlock.addEventListener("click", focusUnlock);
+    if (ctaUnlock) ctaUnlock.addEventListener("click", (e) => { e.preventDefault(); unlockFull(); });
     const agScan = $$("#agScanBtn");
     if (agScan) agScan.addEventListener("click", () => {
       if (document.getElementById("entry")) { showEntry(); window.scrollTo({ top: 0 }); }

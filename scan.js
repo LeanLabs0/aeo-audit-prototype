@@ -1248,6 +1248,128 @@
   }
   let _lastData = null;   // stashed scan response for the "unlock -> full report" redirect
 
+  // ===== Pillar B: AI source mix (from the engine responses we already collect) =====
+  const AUTHORITY_DOMAINS = ["wikipedia.org", "reddit.com", "linkedin.com", "youtube.com",
+    "g2.com", "capterra.com", "trustpilot.com", "trustradius.com", "clutch.co", "gartner.com",
+    "forbes.com", "github.com", "medium.com", "quora.com", "producthunt.com", "techcrunch.com"];
+  const POS_WORDS = ["best", "leading", "top", "trusted", "recommended", "popular", "strong", "excellent", "reliable", "proven", "preferred", "standout", "robust"];
+  const NEG_WORDS = ["lacks", "limited", "expensive", "weak", "outdated", "avoid", "worse", "drawback", "downside", "poor", "clunky", "confusing"];
+  const INTENT_WEIGHT = { Comparative: 3, Evaluative: 2, Question: 1 };
+
+  function _hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, "").toLowerCase(); } catch (_) { return ""; } }
+  function _isAuthority(h) { return AUTHORITY_DOMAINS.some((d) => h === d || h.endsWith("." + d)); }
+  function _ck(key, name, pass, goal, ok, bad) {
+    return pass ? { key, name, status: "pass", goal, result: ok } : { key, name, status: "fail", goal, issue: bad };
+  }
+
+  function buildCitationFootprint(ev, brand, compStats) {
+    const runs = (ev && ev.runs) || [];
+    if (!runs.length) return null;
+    const brandL = (brand || "").toLowerCase();
+    const compNames = (compStats || []).map((c) => (c.name || "").toLowerCase()).filter(Boolean);
+    const distinctAuth = new Set(); let authorityHits = 0;
+    runs.forEach((r) => (r.sources || []).forEach((u) => {
+      const h = _hostOf(u); if (h && _isAuthority(h)) { distinctAuth.add(h); authorityHits++; }
+    }));
+    let brandM = 0, compM = 0;
+    runs.forEach((r) => {
+      const t = (r.raw_response || "").toLowerCase();
+      if (brandL && t.includes(brandL)) brandM++;
+      compNames.forEach((c) => { if (t.includes(c)) compM++; });
+    });
+    const sov = (brandM + compM) ? Math.round((brandM / (brandM + compM)) * 100) : 0;
+    let pos = 0, neg = 0;
+    runs.forEach((r) => {
+      const t = (r.raw_response || "").toLowerCase();
+      if (!brandL || !t.includes(brandL)) return;
+      const i = t.indexOf(brandL), win = t.slice(Math.max(0, i - 160), i + 160);
+      if (POS_WORDS.some((w) => win.includes(w))) pos++;
+      if (NEG_WORDS.some((w) => win.includes(w))) neg++;
+    });
+    const sentiment = neg > pos ? "negative" : (pos > 0 ? "positive" : "neutral");
+    const auth = [...distinctAuth];
+    const subs = [
+      _ck("authority_sources", "AI pulls from authority sources", auth.length >= 2,
+        "Be present where AI looks: high-trust domains (Wikipedia, Reddit, G2, LinkedIn).",
+        `Answers in your space cite ${auth.length} authority domains (${auth.slice(0, 4).join(", ")}).`,
+        `AI answers cite few high-trust sources (${auth.length}). Earning placements there lifts citations.`),
+      _ck("share_of_voice", "Share of voice vs competitors", sov >= 25,
+        "Win a meaningful slice of the brand mentions in AI answers.",
+        `You hold ${sov}% share of voice (you ${brandM}, competitors ${compM}).`,
+        `Low share of voice (${sov}%): competitors named ${compM} times to your ${brandM}.`),
+      _ck("sentiment", "Positive brand sentiment", sentiment !== "negative",
+        "Be described positively when AI mentions you.",
+        `Brand sentiment in answers reads ${sentiment}.`,
+        `Brand sentiment reads negative; the framing around your name is unfavorable.`),
+      _ck("source_mix", "Third-party sources vouch for you", authorityHits > 0,
+        "Get cited by third-party/editorial sources, not just your own site.",
+        `Answers reference ${authorityHits} third-party/authority sources.`,
+        `Answers lean on owned/thin sources; little third-party validation.`),
+    ];
+    const pass = subs.filter((s) => s.status === "pass").length;
+    return { key: "citation_footprint", name: "AI source mix", score: Math.round((pass / subs.length) * 100), subchecks: subs };
+  }
+
+  // ===== Boss Baseline sections (full report), all from the scan response =====
+  function buildCitationGaps(ev, compStats) {
+    const prompts = (ev && ev.prompts) || [], runs = (ev && ev.runs) || [];
+    const names = (compStats || []).map((c) => c.name).filter(Boolean);
+    const byP = {}; runs.forEach((r) => { (byP[r.prompt_id] = byP[r.prompt_id] || []).push(r); });
+    const gaps = [];
+    prompts.forEach((p) => {
+      const rs = byP[p.id] || [];
+      if (rs.some((r) => r.mentioned)) return;
+      const text = rs.map((r) => (r.raw_response || "").toLowerCase()).join(" ");
+      const w = names.filter((n) => text.includes(n.toLowerCase()));
+      if (w.length) gaps.push({ q: p.prompt, winners: w.slice(0, 3) });
+    });
+    return gaps;
+  }
+  function citationGapHtml(ev, compStats) {
+    const g = buildCitationGaps(ev, compStats);
+    if (!g.length) return "";
+    const rows = g.map((x) => `<tr><td class="q">${esc(x.q)}</td><td>${x.winners.map((w) => `<span class="chip sm">${esc(w)}</span>`).join(" ")}</td></tr>`).join("");
+    return `<div class="sec2"><h2>Citation gaps</h2><p class="sc-sub">Questions where rivals get cited and you do not.</p>
+      <div class="matrix"><table class="mx"><thead><tr><th class="q">Buyer question</th><th>AI recommended instead</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  function queryMapHtml(ev) {
+    const prompts = (ev && ev.prompts) || [], runs = (ev && ev.runs) || [];
+    if (!prompts.length) return "";
+    const cited = {}; runs.forEach((r) => { if (r.mentioned) cited[r.prompt_id] = true; });
+    const rows = prompts.map((p) => ({ q: p.prompt, intent: p.intent || "Question", won: !!cited[p.id], w: (cited[p.id] ? 0 : 10) + (INTENT_WEIGHT[p.intent] || 1) }))
+      .sort((a, b) => b.w - a.w)
+      .map((x) => `<tr><td class="q">${esc(x.q)}</td><td><span class="chip sm">${esc(x.intent)}</span></td><td class="cell"><span class="cdot ${x.won ? "yes" : "no"}"></span></td></tr>`).join("");
+    return `<div class="sec2"><h2>Buyer questions to win first</h2><p class="sc-sub">Highest-intent questions you are losing, ranked.</p>
+      <div class="matrix"><table class="mx"><thead><tr><th class="q">Question</th><th>Intent</th><th>You</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  function benchmarkHtml(citedCells, totalCells, brand, compStats) {
+    const you = { name: brand, count: citedCells, you: true };
+    const rivals = (compStats || []).slice(0, 3).map((c) => ({ name: c.name, count: c.count }));
+    const rows = [you, ...rivals].sort((a, b) => b.count - a.count);
+    const max = Math.max(1, ...rows.map((r) => r.count));
+    const bars = rows.map((r) => `<div class="bmrow ${r.you ? "you" : ""}"><span class="bmname">${esc(r.name)}</span><span class="bmbar"><i style="width:${Math.round((r.count / max) * 100)}%"></i></span><span class="bmnum">${r.count}</span></div>`).join("");
+    return `<div class="sec2"><div class="comp"><p class="lead">Head-to-head</p>
+      <p class="lead-sub">How you rank against your top competitors across the ${totalCells} answers.</p>${bars}</div></div>`;
+  }
+
+  // Register the new pillar labels + check guides (mutate the existing maps).
+  Object.assign(CAT_LABELS, {
+    content_geo: ["Answer-ready content", "Content extractability"],
+    citation_footprint: ["Where AI gets answers", "AI source mix"],
+  });
+  Object.assign(CHECK_GUIDE, {
+    authority_sources: { how_to: "Earn placements on the domains AI answer engines cite most for B2B: get listed/reviewed on G2, Capterra and TrustRadius; build an authoritative Wikipedia/Wikidata entity; participate in relevant Reddit and LinkedIn discussions; and publish to YouTube. AI engines disproportionately cite Reddit, YouTube, LinkedIn and review platforms, so a presence there is a direct path into generated answers in your category.", resources: [{ label: "Search Engine Land - AI search engines cite Reddit, YouTube and LinkedIn most", url: "https://searchengineland.com/ai-search-engines-cite-reddit-youtube-and-linkedin-most-study-473138" }, { label: "Peec AI - Top domains cited by AI search (30M sources)", url: "https://peec.ai/blog/top-domains-cited-by-ai-search-analysis-based-on-30m-sources" }] },
+    share_of_voice: { how_to: "Share of voice is your brand mentions divided by all brand mentions (you + competitors) across the AI answers. Lift it by winning the buyer-intent prompts where competitors currently dominate: publish comparison and best-X-for-Y assets, strengthen the on-page answer-ready content for those queries, and earn third-party citations on the sources those answers pull from.", resources: [{ label: "HubSpot AEO Grader - Share of Voice", url: "https://www.hubspot.com/aeo-grader/share-of-voice" }] },
+    sentiment: { how_to: "When AI describes your brand unfavorably it usually echoes negative third-party content (reviews, forum threads, comparison posts). Audit what the engines cite around your name, address the substantive complaints, refresh outdated third-party pages where possible, and publish strong first-party proof (case studies, outcomes, named customers) so engines have positive, quotable material to synthesize.", resources: [{ label: "HubSpot AEO Grader - Brand Sentiment", url: "https://www.hubspot.com/aeo-grader/brand-sentiment-analysis" }] },
+    source_mix: { how_to: "When answers cite only your own site (or thin sources), engines have little independent validation of your claims. Build third-party citations: directory/review profiles, partner and integration pages, guest articles, podcast/press mentions, and Wikipedia. A healthy mix of owned + independent sources is what makes an engine confident enough to recommend you.", resources: [{ label: "Discovered Labs - AEO performance metrics & citations", url: "https://discoveredlabs.com/blog/aeo-performance-metrics-what-to-measure-and-how-to-track-ai-citations" }] },
+    stats_density: { how_to: "Add concrete, quotable statistics to the page body: percentages, dollar figures, multipliers ('3x faster'), and year-stamped data points, ideally tied to your own outcomes or cited research. The Princeton GEO study found adding statistics was the single strongest content lever, raising a source's visibility in generated answers by ~30-40%, because LLMs preferentially quote concrete numbers as the evidence line of an answer.", resources: [{ label: "Princeton - GEO: Generative Engine Optimization (paper)", url: "https://arxiv.org/abs/2311.09735" }, { label: "GEO paper, plain English", url: "https://derivatex.agency/blog/princeton-geo-paper-plain-english/" }] },
+    citations_quotes: { how_to: "Attribute claims to credible sources and include at least one expert quote with a name/title; link out to primary sources (research, .gov/.edu/.org, vendor docs). In the GEO study, adding citations and quotations each lifted visibility ~30-40% (up to ~100%+ for lower-ranked pages) because engines treat well-sourced, quotable content as synthesis-ready.", resources: [{ label: "Princeton GEO paper", url: "https://arxiv.org/abs/2311.09735" }, { label: "GEO factors explained", url: "https://www.stackmatix.com/blog/generative-engine-optimization-paper" }] },
+    lists_tables: { how_to: "Convert wall-of-text sections into scannable structure: ordered lists for steps/processes, unordered lists for feature/benefit sets, and HTML tables for comparisons and specs. AI engines extract from specific sections and lift lists and tables far more reliably than prose, and pages cited in AI Overviews score materially better on structural formatting.", resources: [{ label: "How to structure content for AEO/GEO", url: "https://pathfinderseo.com/blog/how-to-structure-content-for-aeo-and-geo/" }] },
+    heading_hierarchy: { how_to: "Use exactly one H1 (the page title), then a logical H2 > H3 outline with no skipped levels and headings used for structure (not styling). A clean outline lets engines chunk the page into sections and pull the right passage; pages cited in AI Overviews score ~20% better on heading hierarchy and navigation.", resources: [{ label: "Structure content for Google AI Overviews", url: "https://www.serpwizard.com/how-to-structure-content-for-google-ai-overviews-feature/" }] },
+    readability: { how_to: "Tune body copy toward clear, self-contained sentences: aim Flesch Reading Ease ~50-70 (grade ~8-12) and average sentence length ~15-25 words. The GEO study's fluency optimization delivered a consistent ~15-30% visibility lift, while naive over-simplification did not, so target the band rather than simpler is better. Short, declarative sentences are the most quotable unit for an answer.", resources: [{ label: "Flesch Reading Ease / Flesch-Kincaid explained", url: "https://readable.com/readability/flesch-reading-ease-flesch-kincaid-grade-level/" }, { label: "Princeton GEO paper", url: "https://arxiv.org/abs/2311.09735" }] },
+    def_comparison: { how_to: "Add a crisp definition of your core term/category near the top (X is a ...) and publish comparison assets (X vs Y, best X for [persona]) with a verdict line and a feature table. These map directly to bottom-funnel buyer queries; a brand with no comparison/definition content is structurally absent from what-is-X and X-vs-Y answers regardless of mention rate.", resources: [{ label: "Comparison / vs-page patterns for AEO", url: "https://citevera.com/blog/comparison-pages-aeo-vs-page-patterns" }, { label: "HubSpot - AEO page structure", url: "https://blog.hubspot.com/marketing/aeo-page-structure" }] },
+  });
+
   function renderFull(data) {
     stopLoading();
     showResults();
@@ -1282,7 +1404,9 @@
       n + ENGINES2.filter(([k]) => cited[k + "|" + p.id]).length, 0);
     const comps = (sol.competitors || []).filter(Boolean);
     const compStats = (sol.competitor_stats || []).filter((s) => s && s.name);
-    const checks = (sol.checks || []).filter((c) => c.key !== "ai_citations");
+    const checks0 = (sol.checks || []).filter((c) => c.key !== "ai_citations");
+    const cf = buildCitationFootprint(ev, brand, compStats);
+    const checks = cf ? [...checks0, cf] : checks0;
 
     _modalData = {};
     prompts.forEach((p) => {
@@ -1356,7 +1480,9 @@
     const rate = totalCells ? citedCells / totalCells : 0;
     const comps = (sol.competitors || []).filter(Boolean);
     const compStats = (sol.competitor_stats || []).filter((s) => s && s.name);
-    const checks = (sol.checks || []).filter((c) => c.key !== "ai_citations");
+    const checks0 = (sol.checks || []).filter((c) => c.key !== "ai_citations");
+    const cf = buildCitationFootprint(ev, brand, compStats);
+    const checks = cf ? [...checks0, cf] : checks0;
     _modalData = {};
     prompts.forEach((p) => {
       _modalData[p.id] = { question: p.prompt, byEngine: {} };
@@ -1386,6 +1512,9 @@
         (comps.length ? compHtml(comps, brand, compStats, false) : "") +
         matrixHtml(prompts, cited, true) +
         scorecardHtml(checks, false, false) +
+        citationGapHtml(ev, compStats) +
+        queryMapHtml(ev) +
+        benchmarkHtml(citedCells, totalCells, brand, compStats) +
         blueprintCtaHtml() +
       `</div>`;
     wireAeo(brand);
@@ -1723,6 +1852,14 @@
     .aeo2 .cct{display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;padding:0 6px;border-radius:999px;background:var(--grad);color:#fff;font-size:12.5px;font-weight:800;line-height:1}
     .aeo2 .chip:first-child .cct{background:#fff;color:#c109af}
     .aeo2 .lead-sub{margin:-4px 0 16px;color:var(--muted);font-size:13.5px}
+    .aeo2 .chip.sm{padding:5px 11px;font-size:13px;gap:6px}
+    .aeo2 .bmrow{display:flex;align-items:center;gap:12px;padding:9px 0}
+    .aeo2 .bmname{flex:0 0 190px;font-weight:700;font-size:14px;color:#cfccd9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .aeo2 .bmrow.you .bmname{color:var(--ink);font-weight:800}
+    .aeo2 .bmbar{flex:1;height:12px;background:var(--card2);border-radius:999px;overflow:hidden}
+    .aeo2 .bmbar i{display:block;height:100%;background:#3a3a44;border-radius:999px}
+    .aeo2 .bmrow.you .bmbar i{background:var(--grad)}
+    .aeo2 .bmnum{flex:0 0 34px;text-align:right;font-weight:800;font-size:14px}
     .aeo2 .cbox{margin-top:22px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px 22px;text-align:center}
     .aeo2 .cbox-h{margin:0 0 14px;font-weight:700;font-size:15px}
     .aeo2 .cbox-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}

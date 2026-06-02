@@ -1028,10 +1028,11 @@
       `<div class="aeo2">` +
         heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp) +
         (allGreen ? allGreenHtml(brand) : "") +
-        engineHtml(engCount) +
         (comps.length ? compHtml(comps, brand, compStats, true) : "") +
+        engineHtml(engCount) +
         matrixHtml(prompts, cited, false) +
         gateCardHtml(score, lvl) +
+        nextStepHtml(category) +
         ctaHtml() +
       `</div>`;
     wireAeo(brand);
@@ -1127,18 +1128,28 @@
       </div>
     </div>`;
   }
-  function compHtml(comps, brand, stats, showEmail) {
+  // gated=true (preview): show the top 3 competitors, blur/lock the rest, + the
+  // email box. gated=false (full report): show the whole list.
+  function compHtml(comps, brand, stats, gated) {
     const ranked = (stats && stats.length) ? stats : null;
     const total = ranked && ranked[0] ? ranked[0].total : 0;
-    const chips = ranked
-      ? ranked.map((s) =>
-          `<span class="chip" title="Recommended in ${s.count} of ${s.total} AI answers">${esc(s.name)}<b class="cct">${s.count}</b></span>`
-        ).join("")
-      : comps.map((c) => `<span class="chip">${esc(c)}</span>`).join("");
+    const list = ranked
+      ? ranked.map((s) => ({ name: s.name, count: s.count }))
+      : comps.map((c) => ({ name: c, count: null }));
+    const SHOWN = 3;
+    const chip = (s, locked) =>
+      `<span class="chip${locked ? " locked" : ""}"${s.count != null ? ` title="Recommended in ${s.count} of ${total} AI answers"` : ""}>${esc(s.name)}${s.count != null ? `<b class="cct">${s.count}</b>` : ""}</span>`;
+    let chips;
+    if (gated && list.length > SHOWN) {
+      chips = list.slice(0, SHOWN).map((s) => chip(s, false)).join("")
+            + list.slice(SHOWN).map((s) => chip(s, true)).join("");
+    } else {
+      chips = list.map((s) => chip(s, false)).join("");
+    }
     const sub = total
       ? `<p class="lead-sub">Number on each = how many of the ${total} AI answers recommended them, ranked most to least</p>`
       : "";
-    const emailBox = showEmail
+    const emailBox = gated
       ? `<div class="cbox"><p class="cbox-h">See every brand AI recommends in your space</p>
           <div class="cbox-row"><input id="compEmail" type="email" placeholder="you@company.com">
           <button class="btn-fill" id="compEmailBtn">See Full Competitor List →</button></div></div>`
@@ -1177,10 +1188,13 @@
     const open = prompts.slice(0, 4).map((p, i) => matrixRow(p, i, cited)).join("");
     const rest = prompts.slice(4);
     const restBody = rest.length ? `<tbody class="locked blur open">${rest.map((p, i) => matrixRow(p, i, cited)).join("")}</tbody>` : "";
-    const teaser = rest.length ? `<p class="mx-teaser">+ ${rest.length} more buyer questions in your full report</p>` : "";
+    const reveal = rest.length ? `<div class="mx-gate">
+      <p>Enter your email to unlock all the questions and see exactly where you are missing</p>
+      <div class="mx-grow"><input id="matrixEmail" type="email" placeholder="you@company.com">
+      <button class="btn-fill" id="matrixRevealBtn">Reveal all questions</button></div></div>` : "";
     return `<div class="sec2"><h2>The real questions your buyers ask AI</h2>
       <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${open}</tbody>${restBody}</table>
-      ${legend}${teaser}</div></div>`;
+      ${legend}${reveal}</div></div>`;
   }
   // stripFix=true (full report): show the Issue only, hide "how to fix" (the fix is
   // the Blueprint). Each fail gets a Blueprint hook instead.
@@ -1236,6 +1250,41 @@
       <button class="btn-fill" id="agScanBtn">Scan another solution</button>
     </div></div>`;
   }
+  // The ascension after the baseline gates: Blueprint pitch -> Start my Blueprint
+  // -> "Already done for you" locked value teasers. Mirrors Jonathan's P2.
+  function nextStepHtml(category) {
+    const c = esc(category);
+    return `
+      <div class="sec2"><div class="gatecard bp">
+        <div class="gc-right gc-wide">
+          <div class="bp-eyebrow">Your blueprint</div>
+          <h3>Want to see how we would make you the AEO Authority?</h3>
+          <p>We are generating a blueprint for how to beat your competitors in AEO and become the brand AI recommends for ${c}.</p>
+          <div class="gc-form"><input id="bpEmail" type="email" placeholder="you@company.com">
+            <button class="btn-fill lock" id="bpBtn"><span class="lk">&#128274;</span> Yes, unlock full details</button></div>
+        </div>
+      </div></div>
+      <div class="sec2"><div class="nextstep">
+        <div class="ns-eyebrow">Next step</div>
+        <h3>Let us score your AEO foundation and build you the plan to become the AEO authority.</h3>
+        <button class="btn2" id="startBpBtn">Start my AEO Blueprint</button>
+      </div></div>
+      <div class="sec2"><div class="adfu">
+        <div class="ad-eyebrow">Already done for you</div>
+        <h3>We have analyzed the volume of your space and the AEO opportunity for your brand.</h3>
+        <div class="ad-cards">
+          <div class="ad-card"><div class="ad-idx">01 / 02</div>
+            <div class="ad-fig blur">&#8226;&#8226;&#8226;&#8226;</div><span class="ad-lock">&#128274; Locked</span>
+            <div class="ad-label">The volume of your space</div>
+            <p>Monthly buyer searches hiding in AI answers for your category.</p></div>
+          <div class="ad-card"><div class="ad-idx">02 / 02</div>
+            <div class="ad-fig blur">&#8226;&#8226;&#8226;&#8226;</div><span class="ad-lock">&#128274; Locked</span>
+            <div class="ad-label">The opportunity for your brand</div>
+            <p>What owning those answers is worth to your pipeline.</p></div>
+        </div>
+        <button class="btn-fill" id="valueBtn">See the AEO opportunity →</button>
+      </div></div>`;
+  }
   function ctaHtml() {
     return `<div class="cta2"><h3>Get recommended by AI, not your competitors.</h3>
       <p>Unlock your full baseline report and see exactly where you are losing to competitors.</p>
@@ -1279,8 +1328,20 @@
     // Conversion points -> unlock the full report.
     const compBtn = $$("#compEmailBtn");
     if (compBtn) compBtn.addEventListener("click", () => unlockFull("compEmail"));
+    const matrixReveal = $$("#matrixRevealBtn");
+    if (matrixReveal) matrixReveal.addEventListener("click", () => unlockFull("matrixEmail"));
     const gateBtn = $$("#gateBtn");
     if (gateBtn) gateBtn.addEventListener("click", () => unlockFull("gateEmail"));
+    const bpBtn = $$("#bpBtn");
+    if (bpBtn) bpBtn.addEventListener("click", () => unlockFull("bpEmail"));
+    const focusUnlock = () => {
+      const e = $$("#bpEmail") || $$("#gateEmail");
+      if (e) { e.scrollIntoView({ behavior: "smooth", block: "center" }); e.focus(); }
+    };
+    const startBp = $$("#startBpBtn");
+    if (startBp) startBp.addEventListener("click", focusUnlock);
+    const valueBtn = $$("#valueBtn");
+    if (valueBtn) valueBtn.addEventListener("click", focusUnlock);
     const ctaUnlock = $$("#ctaUnlock");
     if (ctaUnlock) ctaUnlock.addEventListener("click", (e) => {
       e.preventDefault();
@@ -1469,7 +1530,31 @@
     .aeo2 mark.brand{background:rgba(52,201,138,.22);color:#7ee8b6;font-weight:700;padding:0 3px;border-radius:3px}
     /* score/level tiered by the 4-level scale */
     .aeo2 .t-ok{color:var(--ok)}.aeo2 .t-warn{color:var(--warn)}.aeo2 .t-orange{color:var(--orange)}.aeo2 .t-bad{color:var(--bad)}
-    @media(max-width:680px){.aeo2 .engines{grid-template-columns:1fr 1fr}.aeo2 .gatecard{grid-template-columns:1fr}.aeo2 .hero{padding:42px 22px}}
+    /* gated competitors + matrix reveal + next-step ascension */
+    .aeo2 .chip.locked{filter:blur(5px);user-select:none;pointer-events:none}
+    .aeo2 .mx-gate{margin-top:18px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
+    .aeo2 .mx-gate p{margin:0 0 14px;font-weight:700}
+    .aeo2 .mx-grow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+    .aeo2 .mx-grow input{padding:13px 15px;border:1px solid var(--line);border-radius:11px;font-size:14px;min-width:240px;background:#0e0e10;color:var(--ink)}
+    .aeo2 .mx-grow input::placeholder{color:#6f6b7e}
+    .aeo2 .gatecard.bp{grid-template-columns:1fr}
+    .aeo2 .gc-wide{grid-column:1/-1}
+    .aeo2 .bp-eyebrow,.aeo2 .ns-eyebrow,.aeo2 .ad-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--g1);font-weight:800;margin-bottom:8px}
+    .aeo2 .nextstep{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:34px 32px;text-align:center;box-shadow:var(--sh)}
+    .aeo2 .nextstep::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 90% at 50% 0,rgba(118,18,250,.16),transparent 70%);pointer-events:none}
+    .aeo2 .nextstep .ns-eyebrow,.aeo2 .nextstep h3,.aeo2 .nextstep .btn2{position:relative}
+    .aeo2 .nextstep h3{font-size:22px;font-weight:800;margin:0 auto 18px;max-width:520px;letter-spacing:-.01em}
+    .aeo2 .adfu{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px 32px;text-align:center;box-shadow:var(--shs)}
+    .aeo2 .adfu h3{font-size:20px;font-weight:800;margin:0 auto 20px;max-width:540px;letter-spacing:-.01em}
+    .aeo2 .ad-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px}
+    .aeo2 .ad-card{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:left}
+    .aeo2 .ad-idx{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.05em}
+    .aeo2 .ad-fig{font-size:34px;font-weight:800;letter-spacing:.1em;margin:6px 0 4px;color:var(--ink)}
+    .aeo2 .ad-fig.blur{filter:blur(7px);user-select:none}
+    .aeo2 .ad-lock{display:inline-block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .aeo2 .ad-label{font-weight:800;font-size:15px;margin-top:10px}
+    .aeo2 .ad-card p{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.5}
+    @media(max-width:680px){.aeo2 .engines{grid-template-columns:1fr 1fr}.aeo2 .gatecard{grid-template-columns:1fr}.aeo2 .ad-cards{grid-template-columns:1fr}.aeo2 .hero{padding:42px 22px}}
     @media(max-width:460px){.aeo2 .engines{grid-template-columns:1fr}}`;
     const el = document.createElement("style");
     el.id = "aeo2-style"; el.textContent = css;

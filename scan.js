@@ -1031,8 +1031,7 @@
         (comps.length ? compHtml(comps, brand, compStats, true) : "") +
         engineHtml(engCount) +
         matrixHtml(prompts, cited, false) +
-        gateCardHtml(score, lvl) +
-        nextStepHtml(category) +
+        nextStepHtml() +
         ctaHtml() +
       `</div>`;
     wireAeo(brand);
@@ -1250,39 +1249,13 @@
       <button class="btn-fill" id="agScanBtn">Scan another solution</button>
     </div></div>`;
   }
-  // The ascension after the baseline gates: Blueprint pitch -> Start my Blueprint
-  // -> "Already done for you" locked value teasers. Mirrors Jonathan's P2.
-  function nextStepHtml(category) {
-    const c = esc(category);
+  // The ascension after the baseline gates: a single Next-step card.
+  function nextStepHtml() {
     return `
-      <div class="sec2"><div class="gatecard bp">
-        <div class="gc-right gc-wide">
-          <div class="bp-eyebrow">Your blueprint</div>
-          <h3>Want to see how we would make you the AEO Authority?</h3>
-          <p>We are generating a blueprint for how to beat your competitors in AEO and become the brand AI recommends for ${c}.</p>
-          <div class="gc-form"><input id="bpEmail" type="email" placeholder="you@company.com">
-            <button class="btn-fill lock" id="bpBtn"><span class="lk">&#128274;</span> Yes, unlock full details</button></div>
-        </div>
-      </div></div>
       <div class="sec2"><div class="nextstep">
         <div class="ns-eyebrow">Next step</div>
         <h3>Let us score your AEO foundation and build you the plan to become the AEO authority.</h3>
         <button class="btn2" id="startBpBtn">Start my AEO Blueprint</button>
-      </div></div>
-      <div class="sec2"><div class="adfu">
-        <div class="ad-eyebrow">Already done for you</div>
-        <h3>We have analyzed the volume of your space and the AEO opportunity for your brand.</h3>
-        <div class="ad-cards">
-          <div class="ad-card"><div class="ad-idx">01 / 02</div>
-            <div class="ad-fig blur">&#8226;&#8226;&#8226;&#8226;</div><span class="ad-lock">&#128274; Locked</span>
-            <div class="ad-label">The volume of your space</div>
-            <p>Monthly buyer searches hiding in AI answers for your category.</p></div>
-          <div class="ad-card"><div class="ad-idx">02 / 02</div>
-            <div class="ad-fig blur">&#8226;&#8226;&#8226;&#8226;</div><span class="ad-lock">&#128274; Locked</span>
-            <div class="ad-label">The opportunity for your brand</div>
-            <p>What owning those answers is worth to your pipeline.</p></div>
-        </div>
-        <button class="btn-fill" id="valueBtn">See the AEO opportunity →</button>
       </div></div>`;
   }
   function ctaHtml() {
@@ -1330,24 +1303,15 @@
     if (compBtn) compBtn.addEventListener("click", () => unlockFull("compEmail"));
     const matrixReveal = $$("#matrixRevealBtn");
     if (matrixReveal) matrixReveal.addEventListener("click", () => unlockFull("matrixEmail"));
-    const gateBtn = $$("#gateBtn");
-    if (gateBtn) gateBtn.addEventListener("click", () => unlockFull("gateEmail"));
-    const bpBtn = $$("#bpBtn");
-    if (bpBtn) bpBtn.addEventListener("click", () => unlockFull("bpEmail"));
-    const focusUnlock = () => {
-      const e = $$("#bpEmail") || $$("#gateEmail");
-      if (e) { e.scrollIntoView({ behavior: "smooth", block: "center" }); e.focus(); }
+    const focusUnlock = (e) => {
+      if (e) e.preventDefault();
+      const el = $$("#compEmail") || $$("#matrixEmail");
+      if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.focus(); }
     };
     const startBp = $$("#startBpBtn");
     if (startBp) startBp.addEventListener("click", focusUnlock);
-    const valueBtn = $$("#valueBtn");
-    if (valueBtn) valueBtn.addEventListener("click", focusUnlock);
     const ctaUnlock = $$("#ctaUnlock");
-    if (ctaUnlock) ctaUnlock.addEventListener("click", (e) => {
-      e.preventDefault();
-      const g = $$("#gateEmail");
-      if (g) { g.scrollIntoView({ behavior: "smooth", block: "center" }); g.focus(); }
-    });
+    if (ctaUnlock) ctaUnlock.addEventListener("click", focusUnlock);
     const agScan = $$("#agScanBtn");
     if (agScan) agScan.addEventListener("click", () => {
       if (document.getElementById("entry")) { showEntry(); window.scrollTo({ top: 0 }); }

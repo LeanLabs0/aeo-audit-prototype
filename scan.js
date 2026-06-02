@@ -1033,7 +1033,6 @@
         matrixHtml(prompts, cited, false) +
         scorecardHtml(checks, true, true) +
         nextStepHtml() +
-        ctaHtml() +
       `</div>`;
     wireAeo(brand);
   }
@@ -1224,8 +1223,12 @@
         const [name] = CAT_LABELS[c.key] || [c.name || c.key];
         const subs = c.subchecks || [];
         const pass = subs.filter((s) => s.status === "pass").length;
-        return `<div class="pillrow"><span class="pillname">${esc(name)}</span>
-          <span class="cgf ${tone(c.score)}">${pass}/${subs.length}</span></div>`;
+        const tease = subs.map((s) => s.name || s.key).filter(Boolean).join("  ·  ");
+        return `<div class="pillitem">
+          <div class="pillrow"><span class="pillname">${esc(name)}</span>
+            <span class="cgf ${tone(c.score)}">${pass}/${subs.length}</span></div>
+          ${tease ? `<div class="pilltease blur">${esc(tease)}</div>` : ""}
+        </div>`;
       }).join("");
       return `<div class="sec2"><div class="scgate">
         <h2>Your AEO scorecard</h2>
@@ -1523,8 +1526,11 @@
     .aeo2 .scgate h2{margin:0 0 4px;font-size:22px}
     .aeo2 .scgate .sc-sub{margin:0 0 16px}
     .aeo2 .pillrows{display:flex;flex-direction:column;margin-bottom:20px}
-    .aeo2 .pillrow{display:flex;justify-content:space-between;align-items:center;padding:14px 2px;border-top:1px solid var(--line)}
-    .aeo2 .pillrow:first-child{border-top:none}
+    .aeo2 .pillitem{padding:13px 2px;border-top:1px solid var(--line)}
+    .aeo2 .pillitem:first-child{border-top:none}
+    .aeo2 .pillrow{display:flex;justify-content:space-between;align-items:center}
+    .aeo2 .pilltease{margin-top:7px;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .aeo2 .pilltease.blur{filter:blur(4px);user-select:none;pointer-events:none}
     .aeo2 .pillname{font-weight:800;font-size:15.5px}
     .aeo2 .scgate .mx-grow{display:flex;gap:10px;flex-wrap:wrap}
     .aeo2 .mx-gate{margin-top:18px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}

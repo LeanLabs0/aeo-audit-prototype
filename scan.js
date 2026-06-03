@@ -1311,10 +1311,11 @@
   }
 
   // ===== Boss Baseline sections (full report), all from the scan response =====
-  // A gap is one (engine, question) answer where you were NOT named but at least
-  // one competitor WAS. Per-engine (up to prompts x engines cells), not per-prompt
-  // -- the old per-prompt version dropped a whole question if any single engine
-  // cited you, hiding real gaps on the other engines.
+  // One row per LOST question: the engines that did NOT name you (but named a
+  // rival), plus the union of rivals recommended instead. Scans every
+  // (engine, question) answer where you were absent + a rival appeared, then
+  // aggregates by question -- so we still catch per-engine gaps the old
+  // per-prompt version hid, without exploding into 16-24 rows.
   function buildCitationGaps(ev, compStats) {
     const prompts = (ev && ev.prompts) || [], runs = (ev && ev.runs) || [];
     const names = (compStats || []).map((c) => c.name).filter(Boolean);
@@ -1322,36 +1323,40 @@
     ENGINES2.forEach(([k, lbl], i) => { engOrder[k] = i; engLabel[k] = lbl; });
     const pOrder = {}, pById = {};
     prompts.forEach((p, i) => { pOrder[p.id] = i; pById[p.id] = p; });
-    const gaps = [];
+    const byQ = {};
     runs.forEach((r) => {
       if (r.mentioned || !(r.engine in engLabel)) return; // you were named, or off-report engine
       const p = pById[r.prompt_id]; if (!p) return;
       const text = (r.raw_response || "").toLowerCase();
-      const seen = new Set(), w = [];
-      names.forEach((n) => {
-        const nl = (n || "").toLowerCase();
-        if (nl && !seen.has(nl) && text.includes(nl)) { seen.add(nl); w.push(n); }
-      });
-      if (w.length) gaps.push({ q: p.prompt, engine: engLabel[r.engine], winners: w, _p: pOrder[r.prompt_id], _e: engOrder[r.engine] });
+      const wins = names.filter((n) => n && text.includes(n.toLowerCase()));
+      if (!wins.length) return;
+      const g = byQ[r.prompt_id] || (byQ[r.prompt_id] = { q: p.prompt, _o: pOrder[r.prompt_id], _eng: [], rivals: [] });
+      g._eng.push({ label: engLabel[r.engine], o: engOrder[r.engine] });
+      wins.forEach((w) => { if (!g.rivals.includes(w)) g.rivals.push(w); });
     });
-    gaps.sort((a, b) => (a._p - b._p) || (a._e - b._e)); // group by question, then engine
-    return gaps;
+    const out = Object.keys(byQ).map((k) => byQ[k]);
+    out.forEach((g) => {
+      g._eng.sort((a, b) => a.o - b.o);
+      g.engines = g._eng.map((e) => e.label);
+    });
+    out.sort((a, b) => a._o - b._o);
+    return out;
   }
   function citationGapHtml(ev, compStats, num) {
     const g = buildCitationGaps(ev, compStats);
     // Always render the section (keeps section numbering + sidebar link valid);
     // an empty gap list gets a positive empty-state instead of disappearing.
-    let lastQ = null;
+    const RIVAL_CAP = 5;
     const rows = g.map((x) => {
-      const qcell = x.q === lastQ ? "" : esc(x.q); // print each question once, engines beneath
-      lastQ = x.q;
-      const chips = x.winners.slice(0, 6).map((w) => `<span class="chip sm">${esc(w)}</span>`).join(" ");
-      return `<tr><td class="q">${qcell}</td><td><span class="chip sm">${esc(x.engine)}</span></td><td>${chips}</td></tr>`;
+      const miss = x.engines.map((e) => `<span class="miss-eng">${esc(e)}</span>`).join("");
+      const shown = x.rivals.slice(0, RIVAL_CAP).map((w) => `<span class="chip sm">${esc(w)}</span>`).join(" ");
+      const more = x.rivals.length > RIVAL_CAP ? ` <span class="gapmore">+${x.rivals.length - RIVAL_CAP} more</span>` : "";
+      return `<tr><td class="q">${esc(x.q)}</td><td class="gmiss">${miss}</td><td>${shown}${more}</td></tr>`;
     }).join("");
     const body = g.length
-      ? `<div class="matrix"><table class="mx"><thead><tr><th class="q">Buyer question</th><th>Engine</th><th>AI recommended instead</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      ? `<div class="matrix"><table class="mx"><thead><tr><th class="q">Buyer question</th><th class="lcol">Missed on</th><th class="lcol">AI recommended instead</th></tr></thead><tbody>${rows}</tbody></table></div>`
       : `<div class="gap-empty">No citation gaps found. Wherever a competitor gets cited, you do too.</div>`;
-    return `<div class="sec2"><h2 id="sec-gap">${secNum(num)}Citation Gap Analysis</h2><p class="sc-sub">Every answer where a rival is named and you are not, broken out by engine.</p>
+    return `<div class="sec2"><h2 id="sec-gap">${secNum(num)}Citation Gap Analysis</h2><p class="sc-sub">Buyer questions where rivals get named and you do not, and who wins instead.</p>
       ${body}</div>`;
   }
   function queryMapHtml(ev, num) {
@@ -2016,6 +2021,10 @@
     /* section-number badge (matches sidebar numbering) */
     .aeo2 .secn{display:inline-flex;align-items:center;justify-content:center;min-width:1.7em;height:1.7em;padding:0 .45em;margin-right:.5em;border-radius:8px;background:rgba(118,18,250,.14);border:1px solid rgba(118,18,250,.35);color:var(--g1);font-size:.62em;font-weight:800;font-variant-numeric:tabular-nums;vertical-align:middle;line-height:1;transform:translateY(-.06em)}
     .aeo2 .gap-empty{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;color:#cfccd9;font-size:14.5px;box-shadow:var(--shs)}
+    .aeo2 table.mx th.lcol{text-align:left}
+    .aeo2 .gmiss{white-space:normal}
+    .aeo2 .miss-eng{display:inline-block;font-size:12px;font-weight:700;color:#f3a0a2;background:rgba(229,72,77,.12);border:1px solid rgba(229,72,77,.25);border-radius:7px;padding:3px 9px;margin:2px 6px 2px 0;white-space:nowrap}
+    .aeo2 .gapmore{font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap}
     .aeo2 .soa{display:flex;align-items:center;gap:18px;margin-top:6px}
     .aeo2 .soa-num{font-size:48px;font-weight:800;letter-spacing:-.02em;line-height:1}
     .aeo2 .soa-txt{color:#cfccd9;font-size:15px}

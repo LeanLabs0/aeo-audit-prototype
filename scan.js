@@ -1329,7 +1329,7 @@
     const g = buildCitationGaps(ev, compStats);
     if (!g.length) return "";
     const rows = g.map((x) => `<tr><td class="q">${esc(x.q)}</td><td>${x.winners.map((w) => `<span class="chip sm">${esc(w)}</span>`).join(" ")}</td></tr>`).join("");
-    return `<div class="sec2"><h2>Citation gaps</h2><p class="sc-sub">Questions where rivals get cited and you do not.</p>
+    return `<div class="sec2"><h2 id="sec-gap">Citation Gap Analysis</h2><p class="sc-sub">The exact questions where rivals get cited and you do not.</p>
       <div class="matrix"><table class="mx"><thead><tr><th class="q">Buyer question</th><th>AI recommended instead</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
   }
   function queryMapHtml(ev) {
@@ -1339,7 +1339,7 @@
     const rows = prompts.map((p) => ({ q: p.prompt, intent: p.intent || "Question", won: !!cited[p.id], w: (cited[p.id] ? 0 : 10) + (INTENT_WEIGHT[p.intent] || 1) }))
       .sort((a, b) => b.w - a.w)
       .map((x) => `<tr><td class="q">${esc(x.q)}</td><td><span class="chip sm">${esc(x.intent)}</span></td><td class="cell"><span class="cdot ${x.won ? "yes" : "no"}"></span></td></tr>`).join("");
-    return `<div class="sec2"><h2>Buyer questions to win first</h2><p class="sc-sub">Highest-intent questions you are losing, ranked.</p>
+    return `<div class="sec2"><h2 id="sec-query">High-Intent Query Map</h2><p class="sc-sub">The buyer questions you should be winning first, ranked by intent.</p>
       <div class="matrix"><table class="mx"><thead><tr><th class="q">Question</th><th>Intent</th><th>You</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
   }
   function benchmarkHtml(citedCells, totalCells, brand, compStats) {
@@ -1348,8 +1348,48 @@
     const rows = [you, ...rivals].sort((a, b) => b.count - a.count);
     const max = Math.max(1, ...rows.map((r) => r.count));
     const bars = rows.map((r) => `<div class="bmrow ${r.you ? "you" : ""}"><span class="bmname">${esc(r.name)}</span><span class="bmbar"><i style="width:${Math.round((r.count / max) * 100)}%"></i></span><span class="bmnum">${r.count}</span></div>`).join("");
-    return `<div class="sec2"><div class="comp"><p class="lead">Head-to-head</p>
-      <p class="lead-sub">How you rank against your top competitors across the ${totalCells} answers.</p>${bars}</div></div>`;
+    return `<div class="sec2"><h2 id="sec-benchmark">Competitor Benchmark</h2><div class="comp">
+      <p class="lead-sub">A head-to-head ranking against your top competitors across the ${totalCells} answers.</p>${bars}</div></div>`;
+  }
+  // Share of Answer as its own named element (boss mockup item 2).
+  function shareOfAnswerHtml(ev, brand, compStats) {
+    const runs = (ev && ev.runs) || [];
+    if (!runs.length) return "";
+    const brandL = (brand || "").toLowerCase();
+    const names = (compStats || []).map((c) => (c.name || "").toLowerCase()).filter(Boolean);
+    let b = 0, c = 0;
+    runs.forEach((r) => {
+      const t = (r.raw_response || "").toLowerCase();
+      if (brandL && t.includes(brandL)) b++;
+      names.forEach((n) => { if (t.includes(n)) c++; });
+    });
+    const sov = (b + c) ? Math.round((b / (b + c)) * 100) : 0;
+    const cls = sov >= 40 ? "ok" : sov >= 20 ? "warn" : "bad";
+    return `<div class="sec2" id="sec-share"><div class="comp">
+      <p class="lead">Share of Answer</p>
+      <p class="lead-sub">Your slice of AI answers versus the competitors who own your space.</p>
+      <div class="soa"><div class="soa-num t-${cls}">${sov}%</div>
+        <div class="soa-txt">You were named <b>${b}</b> times; competitors <b>${c}</b> times across the answers.</div></div>
+    </div></div>`;
+  }
+  // "Get Your AEO Baseline" summary - the 6 named elements from the boss mockup.
+  function baselineSummaryHtml() {
+    const items = [
+      { t: "AEO Visibility Score", d: "How often AI answer engines surface and cite your brand today.", h: "#sec-visibility" },
+      { t: "Share of Answer", d: "Your slice of AI answers versus the competitors who own your space.", h: "#sec-share" },
+      { t: "Citation Gap Analysis", d: "The exact questions where rivals get cited and you do not.", h: "#sec-gap" },
+      { t: "High-Intent Query Map", d: "The buyer questions you should be winning answers for first.", h: "#sec-query" },
+      { t: "Content Authority Audit", d: "Where your pages fall short of what answer engines trust.", h: "#sec-content" },
+      { t: "Competitor Benchmark", d: "A head-to-head ranking against your top three competitors.", h: "#sec-benchmark" },
+    ];
+    const cards = items.map((it) =>
+      `<a class="bsl-card" href="${it.h}"><div class="bsl-t">${esc(it.t)}</div><div class="bsl-d">${esc(it.d)}</div></a>`).join("");
+    return `<div class="sec2"><div class="bsl">
+      <div class="bsl-eyebrow">Your AEO Baseline</div>
+      <h2 class="bsl-h">Get Your AEO Baseline</h2>
+      <p class="bsl-sub">The full picture leadership needs to make the call: exactly where you stand and what to do about it.</p>
+      <div class="bsl-grid">${cards}</div>
+    </div></div>`;
   }
 
   // Register the new pillar labels + check guides (mutate the existing maps).
@@ -1507,9 +1547,11 @@
         `<div class="fr-banner">Your full AEO Baseline report for <b>${esc(scannedUrl || brand)}</b></div>` +
         heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, checks) +
         detectBoxHtml(category, icp) +
+        baselineSummaryHtml() +
         (allGreen ? allGreenHtml(brand) : "") +
         engineHtml(engCount) +
         (comps.length ? compHtml(comps, brand, compStats, false) : "") +
+        shareOfAnswerHtml(ev, brand, compStats) +
         matrixHtml(prompts, cited, true) +
         scorecardHtml(checks, false, false) +
         citationGapHtml(ev, compStats) +
@@ -1526,8 +1568,9 @@
     const pct = totalCells ? Math.round((citedCells / totalCells) * 100) : 0;
     const st = lvl.cls; // bad/orange/warn/ok -> color score + level by the 4-level scale
     return `
-    <div class="hero">
+    <div class="hero" id="sec-visibility">
       <div class="eyebrow">Results for ${esc(url || "your solution")}</div>
+      <div class="metric-eyebrow">AEO Visibility Score</div>
       <div class="gauge2">
         <svg viewBox="0 0 200 120"><defs><linearGradient id="aeoG" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stop-color="#7612fa"/><stop offset=".5" stop-color="#c109af"/><stop offset="1" stop-color="#ff6221"/>
@@ -1648,7 +1691,7 @@
         </div>`;
       }).join("");
       return `<div class="sec2"><div class="scgate">
-        <h2>Your AEO scorecard</h2>
+        <h2>Content Authority Audit</h2>
         <p class="sc-sub">The pillars AI graded you on. Unlock to see every check and exactly where you are missing.</p>
         <div class="pillrows">${rows}</div>
         <div class="mx-grow"><input id="scoreEmail" type="email" placeholder="you@company.com">
@@ -1664,8 +1707,8 @@
         <span class="cgf ${tone(c.score)}">${pass}/${subs.length}</span></div>
         <div class="cards2">${subs.map((s) => subCard(s, stripFix)).join("")}</div></div>`;
     }).join("");
-    return `<div class="sec2"><h2>Your AEO scorecard</h2>
-      <p class="sc-sub">Every area AI graded you on. This is the problem list. The fixes are your Blueprint.</p>${groups}</div>`;
+    return `<div class="sec2"><h2 id="sec-content">Content Authority Audit</h2>
+      <p class="sc-sub">Where your pages fall short of what answer engines trust, and how to fix each.</p>${groups}</div>`;
   }
   // Unlock gate card (replaces the open scorecard in the preview).
   function gateCardHtml(score, lvl) {
@@ -1833,6 +1876,20 @@
     .aeo2 .detectbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 22px;box-shadow:var(--shs);text-align:center}
     .aeo2 .detectbox .detected{margin:0}
     .aeo2 .detectbox .refine-form{margin-top:14px}
+    .aeo2 .metric-eyebrow{position:relative;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--g1);margin-top:8px}
+    .aeo2 .bsl{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px 32px;box-shadow:var(--shs)}
+    .aeo2 .bsl-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--g1);font-weight:800;text-align:center}
+    .aeo2 .bsl-h{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:6px 0 4px;text-align:center}
+    .aeo2 .bsl-sub{margin:0 auto 22px;color:var(--muted);font-size:14px;text-align:center;max-width:520px}
+    .aeo2 .bsl-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .aeo2 .bsl-card{display:block;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:18px 20px;text-decoration:none;transition:transform .15s,border-color .15s}
+    .aeo2 .bsl-card:hover{transform:translateY(-2px);border-color:#3a3a44}
+    .aeo2 .bsl-t{font-weight:800;font-size:16px;color:var(--ink)}
+    .aeo2 .bsl-d{margin-top:5px;color:var(--muted);font-size:13.5px;line-height:1.5}
+    .aeo2 .soa{display:flex;align-items:center;gap:18px;margin-top:6px}
+    .aeo2 .soa-num{font-size:48px;font-weight:800;letter-spacing:-.02em;line-height:1}
+    .aeo2 .soa-txt{color:#cfccd9;font-size:15px}
+    @media(max-width:680px){.aeo2 .bsl-grid{grid-template-columns:1fr}}
     .aeo2 .link2{color:var(--g1);font-weight:700;cursor:pointer}
     .aeo2 .refine-form{display:none;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
     .aeo2 .refine-form.open{display:flex}

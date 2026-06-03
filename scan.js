@@ -1351,8 +1351,9 @@
     const rows = [you, ...rivals].sort((a, b) => b.count - a.count);
     const max = Math.max(1, ...rows.map((r) => r.count));
     const bars = rows.map((r) => `<div class="bmrow ${r.you ? "you" : ""}"><span class="bmname">${esc(r.name)}</span><span class="bmbar"><i style="width:${Math.round((r.count / max) * 100)}%"></i></span><span class="bmnum">${r.count}</span></div>`).join("");
-    return `<div class="sec2"><h2 id="sec-benchmark">${secNum(num)}Competitor Benchmark</h2><div class="comp">
-      <p class="lead-sub">A head-to-head ranking against your top competitors across the ${totalCells} answers.</p>${bars}</div></div>`;
+    return `<div class="sec2"><h2 id="sec-benchmark">${secNum(num)}Competitor Benchmark</h2>
+      <p class="sc-sub">Head-to-head mention counts across all ${totalCells} answers.</p>
+      <div class="comp">${bars}</div></div>`;
   }
   // Share of Answer as its own named element (boss mockup item 2).
   function shareOfAnswerHtml(ev, brand, compStats, num) {
@@ -1368,12 +1369,12 @@
     });
     const sov = (b + c) ? Math.round((b / (b + c)) * 100) : 0;
     const cls = sov >= 40 ? "ok" : sov >= 20 ? "warn" : "bad";
-    return `<div class="sec2" id="sec-share"><div class="comp">
-      <p class="lead">${secNum(num)}Share of Answer</p>
-      <p class="lead-sub">Your slice of AI answers versus the competitors who own your space.</p>
-      <div class="soa"><div class="soa-num t-${cls}">${sov}%</div>
-        <div class="soa-txt">You were named <b>${b}</b> times; competitors <b>${c}</b> times across the answers.</div></div>
-    </div></div>`;
+    return `<div class="sec2"><h2 id="sec-share">${secNum(num)}Share of Answer</h2>
+      <p class="sc-sub">Your share of AI answers versus the competitors who own your space.</p>
+      <div class="comp">
+        <div class="soa"><div class="soa-num t-${cls}">${sov}%</div>
+          <div class="soa-txt">You were named <b>${b}</b> times; competitors <b>${c}</b> times across the answers.</div></div>
+      </div></div>`;
   }
   // "Get Your AEO Baseline" summary - the 6 named elements from the boss mockup.
   // The "Get Your AEO Baseline" section is now a floating, clickable section
@@ -1611,14 +1612,16 @@
     const off = 100 - Math.max(0, Math.min(100, score));
     const pct = totalCells ? Math.round((citedCells / totalCells) * 100) : 0;
     const st = lvl.cls; // bad/orange/warn/ok -> color score + level by the 4-level scale
-    // The full report carries the url in the big fr-head title, so drop the
-    // duplicate "Results for {url}" eyebrow there (hideUrlEyebrow).
-    const urlEyebrow = opts.hideUrlEyebrow ? ""
+    // Full report (opts.num set): heading + sub sit OUTSIDE the box, like every
+    // other section. Preview (no num): keep the centered eyebrow label inside.
+    const numbered = !!opts.num;
+    const urlEyebrow = (numbered || opts.hideUrlEyebrow) ? ""
       : `<div class="eyebrow">Results for ${esc(url || "your solution")}</div>`;
-    return `
-    <div class="hero" id="sec-visibility">
+    const innerLabel = numbered ? "" : `<div class="metric-eyebrow">AEO Visibility Score</div>`;
+    const heroBox = `
+    <div class="hero"${numbered ? "" : ` id="sec-visibility"`}>
       ${urlEyebrow}
-      <div class="metric-eyebrow">${secNum(opts.num)}AEO Visibility Score</div>
+      ${innerLabel}
       <div class="gauge2">
         <svg viewBox="0 0 200 120"><defs><linearGradient id="aeoG" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stop-color="#7612fa"/><stop offset=".5" stop-color="#c109af"/><stop offset="1" stop-color="#ff6221"/>
@@ -1632,6 +1635,10 @@
       <div class="appeared">You appeared in <b>${citedCells} of ${totalCells}</b> buyer searches across ChatGPT, Claude and Gemini <b>(${pct}%)</b>.</div>
       ${heroPillarsHtml(checks)}
     </div>`;
+    if (!numbered) return heroBox;
+    return `<div class="sec2"><h2 id="sec-visibility">${secNum(opts.num)}AEO Visibility Score</h2>
+      <p class="sc-sub">How often AI engines recommend you across buyer searches.</p>
+      ${heroBox}</div>`;
   }
   // gated=true (preview): show the top 3 competitors, blur/lock the rest, + the
   // email box. gated=false (full report): show the whole list.
@@ -1651,20 +1658,20 @@
     } else {
       chips = list.map((s) => chip(s, false)).join("");
     }
-    const sub = total
-      ? `<p class="lead-sub">Number on each = how many of the ${total} AI answers recommended them, ranked most to least</p>`
-      : "";
+    const subTxt = total
+      ? `The brands AI names when buyers ask in your space, by mention count out of ${total}.`
+      : `The brands AI names when buyers ask in your space.`;
     const emailBox = gated
       ? `<div class="cbox"><p class="cbox-h">See every brand AI recommends in your space</p>
           <div class="cbox-row"><input id="compEmail" type="email" placeholder="you@company.com">
           <button class="btn-fill" id="compEmailBtn">Unlock full details</button></div></div>`
       : "";
-    return `<div class="sec2" id="sec-competitors"><div class="comp">
-      <p class="lead">${secNum(num)}When your buyers ask AI, here is who it recommends</p>
-      ${sub}
-      <div class="chips">${chips}</div>
-      ${emailBox}
-    </div></div>`;
+    return `<div class="sec2"><h2 id="sec-competitors">${secNum(num)}Who AI recommends</h2>
+      <p class="sc-sub">${esc(subTxt)}</p>
+      <div class="comp">
+        <div class="chips">${chips}</div>
+        ${emailBox}
+      </div></div>`;
   }
   function engineHtml(engCount, num) {
     const cards = ENGINES2.map(([k, label]) => {
@@ -1673,7 +1680,9 @@
         <div class="edwrap">${engineDonut(c.cited, c.total, cls)}</div>
         <div class="ev2">${v}</div><div class="erate">${c.cited} of ${c.total} questions</div></div>`;
     }).join("");
-    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}Are you recommended?</h2><div class="engines">${cards}</div></div>`;
+    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}Are you recommended?</h2>
+      <p class="sc-sub">How often each AI engine names you across the buyer prompts.</p>
+      <div class="engines">${cards}</div></div>`;
   }
   function matrixRow(p, i, cited) {
     const dots = ENGINES2.map(([k]) =>
@@ -1686,7 +1695,8 @@
     const legend = `<div class="legend"><span><i class="y"></i>Recommended you</span><span><i class="n"></i>Did not mention you</span></div>`;
     if (full) {
       const rows = prompts.map((p, i) => matrixRow(p, i, cited)).join("");
-      return `<div class="sec2"><h2 id="sec-questions">${secNum(num)}The real questions your buyers ask AI</h2>
+      return `<div class="sec2"><h2 id="sec-questions">${secNum(num)}The questions buyers ask</h2>
+        <p class="sc-sub">Every buyer prompt we ran, and which engines named you.</p>
         <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${rows}</tbody></table>
         ${legend}</div></div>`;
     }
@@ -1756,7 +1766,7 @@
         <div class="cards2">${subs.map((s) => subCard(s, stripFix)).join("")}</div></div>`;
     }).join("");
     return `<div class="sec2"><h2 id="sec-content">${secNum(num)}Content Authority Audit</h2>
-      <p class="sc-sub">Where your pages fall short of what answer engines trust, and how to fix each.</p>${groups}</div>`;
+      <p class="sc-sub">Where your pages fall short of what AI answer engines trust.</p>${groups}</div>`;
   }
   // Unlock gate card (replaces the open scorecard in the preview).
   function gateCardHtml(score, lvl) {
@@ -1859,31 +1869,34 @@
     if (bslNav) wireBaselineNav(bslNav);
   }
 
-  // Floating section sidebar: highlight active link on click + as sections
-  // cross the viewport center (IntersectionObserver scrollspy). Smooth scroll
-  // itself is handled by CSS (html{scroll-behavior:smooth}) on the anchor jump.
+  // Floating section sidebar scrollspy: the active link is the topmost section
+  // currently inside the top band of the viewport. Defaults to the first link so
+  // the absolute top of the report reads as section 01. Smooth scroll on the
+  // anchor jump is handled by CSS (html{scroll-behavior:smooth}).
   function wireBaselineNav(nav) {
     const links = Array.from(nav.querySelectorAll(".bsl-link"));
     const byId = {};
+    const setActive = (a) => { links.forEach((l) => l.classList.remove("active")); if (a) a.classList.add("active"); };
     links.forEach((a) => {
       const id = (a.getAttribute("data-target") || "").replace("#", "");
       if (id) byId[id] = a;
-      a.addEventListener("click", () => {
-        links.forEach((l) => l.classList.remove("active"));
-        a.classList.add("active");
-      });
+      a.addEventListener("click", () => setActive(a));
     });
     const targets = Object.keys(byId).map((id) => document.getElementById(id)).filter(Boolean);
+    if (targets.length) setActive(byId[targets[0].id]);
     if (!("IntersectionObserver" in window) || !targets.length) return;
+    const visible = new Set();
     const io = new IntersectionObserver((entries) => {
-      entries.forEach((en) => {
-        if (!en.isIntersecting) return;
-        const a = byId[en.target.id];
-        if (!a) return;
-        links.forEach((l) => l.classList.remove("active"));
-        a.classList.add("active");
+      entries.forEach((en) => { if (en.isIntersecting) visible.add(en.target.id); else visible.delete(en.target.id); });
+      let best = null, bestTop = Infinity;
+      visible.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const t = el.getBoundingClientRect().top;
+        if (t < bestTop) { bestTop = t; best = id; }
       });
-    }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+      if (best && byId[best]) setActive(byId[best]);
+    }, { rootMargin: "0px 0px -65% 0px", threshold: 0 });
     targets.forEach((t) => io.observe(t));
   }
 

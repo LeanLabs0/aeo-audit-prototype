@@ -1450,6 +1450,48 @@
     def_comparison: { how_to: "Add a crisp definition of your core term/category near the top (X is a ...) and publish comparison assets (X vs Y, best X for [persona]) with a verdict line and a feature table. These map directly to bottom-funnel buyer queries; a brand with no comparison/definition content is structurally absent from what-is-X and X-vs-Y answers regardless of mention rate.", resources: [{ label: "Comparison / vs-page patterns for AEO", url: "https://citevera.com/blog/comparison-pages-aeo-vs-page-patterns" }, { label: "HubSpot - AEO page structure", url: "https://blog.hubspot.com/marketing/aeo-page-structure" }] },
   });
 
+  // "Why this is important" copy per check (full report). This lead magnet shows
+  // the user WHAT is wrong and WHY it costs them AI visibility -- it does NOT hand
+  // over the fix (that is the paid Blueprint). Keyed by subcheck key; covers the
+  // backend pillars (content / structured data / crawler / entity) + the GEO
+  // content + AI source-mix checks. No em dashes (esc strips them).
+  const CHECK_WHY = {
+    // Content & Answers
+    answer_first: "AI engines lift the first direct answer they find. When a page opens with brand narrative instead of the answer, the engine grabs a competitor's answer-first page instead of yours.",
+    atomic_paragraphs: "Engines quote in small chunks. Long, multi-idea paragraphs are hard to lift cleanly, so your points lose to rivals whose tight paragraphs drop straight into an answer.",
+    question_headings: "Engines match page sections to the exact questions buyers ask. Without question-shaped headings, your content is harder to map to a query and gets passed over.",
+    faq_schema: "FAQPage schema lets engines extract your Q&A directly. Without it, your answers sit in raw HTML the engine may never parse, while schema-marked competitors get pulled in.",
+    // Structured Data
+    organization_schema: "Organization schema is your canonical identity block. Without it, engines have no authoritative record of who you are and fall back to whatever third parties say.",
+    page_schema: "WebSite and WebPage schema tell engines what each page is. Without it, your pages are harder to classify and trust, weakening how confidently you get cited.",
+    jsonld_coverage: "Engines lean on structured data to understand a page. When most pages carry none, large parts of your site are effectively invisible to the machines deciding who to recommend.",
+    freshness: "Engines favor content they can tell is current. With no recent dateModified, your pages read as stale and get out-prioritized by fresher competitor pages.",
+    // AI Crawler Access
+    bot_gptbot: "If GPTBot cannot fetch your pages, ChatGPT has nothing of yours to cite. You are excluded from its answers before the contest even starts.",
+    bot_claudebot: "If ClaudeBot cannot reach your site, Claude cannot read or recommend you. You are invisible on that engine no matter how good your content is.",
+    bot_perplexitybot: "If PerplexityBot is blocked, Perplexity cannot index or cite you, handing those answers to reachable competitors.",
+    bot_google_extended: "Google-Extended controls whether Gemini and AI Overviews can use your content. Blocked, you forfeit visibility across Google's AI surfaces.",
+    robots_ai: "A robots.txt that disallows AI crawlers quietly locks you out of the engines. It is the single fastest way to be absent from every answer.",
+    ssr: "AI crawlers often do not run JavaScript. If your content only appears after JS, the engine sees a blank page and has nothing to cite.",
+    llms_txt: "llms.txt is a direct map of your key pages for AI agents. Without it, engines have to guess what matters on your site, and often guess wrong.",
+    // Entity & Authority
+    wikidata: "A Wikidata entity is how engines confirm you are a real, distinct brand. Without one, they fall back to fuzzy name-matching and may confuse or skip you.",
+    sameas: "sameAs links bind your brand to its canonical profiles (LinkedIn, Crunchbase, G2). Without them, engines cannot connect the scattered mentions of you into one trusted entity.",
+    authors: "Named authors are a core E-E-A-T signal. Anonymous content reads as lower authority, so engines prefer competitors whose expertise is attributable.",
+    // Answer-ready content (GEO)
+    stats_density: "LLMs quote concrete numbers as the evidence line of an answer. Pages thin on stats give engines nothing to lift, so they synthesize from competitors who supply the figures. Princeton's GEO study found statistics the single strongest content lever (~30-40% lift).",
+    citations_quotes: "Engines treat well-sourced, quotable content as synthesis-ready. With few cited claims or expert quotes, your page is harder to trust and excerpt, so it is passed over for pages that are not.",
+    lists_tables: "Engines extract from lists and tables far more reliably than prose. Wall-of-text sections are hard to lift, so structured competitors win the placement.",
+    heading_hierarchy: "A clean H1, H2, H3 outline lets engines chunk your page and pull the right passage. A messy outline makes your content harder to parse and cite accurately.",
+    readability: "Short, self-contained sentences are the most quotable unit of an answer. Dense copy is less likely to be lifted verbatim, costing you placements to clearer-writing rivals.",
+    def_comparison: "What-is-X and X-vs-Y are bottom-funnel buyer questions. With no definition or comparison content, you are structurally absent from those answers no matter how often your name appears elsewhere.",
+    // AI source mix
+    authority_sources: "AI engines pull disproportionately from a few trusted domains (Reddit, YouTube, review sites, Wikipedia). Absent from the sources an engine trusts, it has nothing external to validate you with and recommends the brands that are there.",
+    share_of_voice: "Share of voice is how much of the AI conversation you own versus rivals. When competitors dominate the answers buyers read, they become the default shortlist before you are ever considered.",
+    sentiment: "AI describes you using the third-party content it finds. Negative or unflattering framing around your name gets repeated into every answer, quietly steering buyers toward rivals.",
+    source_mix: "When answers cite only your own site, engines have no independent proof your claims are true. A thin, owned-only source profile reads as unverified, so engines hedge or pick a brand with outside validation.",
+  };
+
   function renderFull(data) {
     stopLoading();
     showResults();
@@ -1745,9 +1787,10 @@
       body = s.result ? `<div class="lbl">Result</div><div>${esc(s.result)}</div>` : "";
     } else {
       const issue = s.issue ? `<div class="lbl issue">Issue</div><div class="issue">${esc(s.issue)}</div>` : "";
-      const howTxt = (guide && guide.how_to) || s.how_to_implement;
-      const how = (!stripFix && howTxt) ? `<div class="lbl">How to implement</div><div>${esc(howTxt)}</div>` : "";
-      body = issue + how;
+      // Show WHY it matters, never HOW to fix it (the fix is the paid Blueprint).
+      const whyTxt = CHECK_WHY[s.key] || (guide && guide.why) || s.why_it_matters;
+      const why = whyTxt ? `<div class="lbl">Why this is important</div><div>${esc(whyTxt)}</div>` : "";
+      body = issue + why;
     }
     const resList = mergeResources(guide ? guide.resources : [], s.resources);
     const res = resList.map((r) => `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.label)}</a>`).join("");

@@ -1344,7 +1344,7 @@
   }
   function benchmarkHtml(citedCells, totalCells, brand, compStats) {
     const you = { name: brand, count: citedCells, you: true };
-    const rivals = (compStats || []).slice(0, 3).map((c) => ({ name: c.name, count: c.count }));
+    const rivals = (compStats || []).map((c) => ({ name: c.name, count: c.count }));
     const rows = [you, ...rivals].sort((a, b) => b.count - a.count);
     const max = Math.max(1, ...rows.map((r) => r.count));
     const bars = rows.map((r) => `<div class="bmrow ${r.you ? "you" : ""}"><span class="bmname">${esc(r.name)}</span><span class="bmbar"><i style="width:${Math.round((r.count / max) * 100)}%"></i></span><span class="bmnum">${r.count}</span></div>`).join("");
@@ -1380,7 +1380,7 @@
       { t: "Citation Gap Analysis", d: "The exact questions where rivals get cited and you do not.", h: "#sec-gap" },
       { t: "High-Intent Query Map", d: "The buyer questions you should be winning answers for first.", h: "#sec-query" },
       { t: "Content Authority Audit", d: "Where your pages fall short of what answer engines trust.", h: "#sec-content" },
-      { t: "Competitor Benchmark", d: "A head-to-head ranking against your top three competitors.", h: "#sec-benchmark" },
+      { t: "Competitor Benchmark", d: "A head-to-head ranking against the competitors who own your space.", h: "#sec-benchmark" },
     ];
     const cards = items.map((it) =>
       `<a class="bsl-card" href="${it.h}"><div class="bsl-t">${esc(it.t)}</div><div class="bsl-d">${esc(it.d)}</div></a>`).join("");

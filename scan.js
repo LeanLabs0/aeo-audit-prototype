@@ -1327,10 +1327,13 @@
   }
   function citationGapHtml(ev, compStats) {
     const g = buildCitationGaps(ev, compStats);
-    if (!g.length) return "";
-    const rows = g.map((x) => `<tr><td class="q">${esc(x.q)}</td><td>${x.winners.map((w) => `<span class="chip sm">${esc(w)}</span>`).join(" ")}</td></tr>`).join("");
-    return `<div class="sec2"><h2 id="sec-gap">Citation Gap Analysis</h2><p class="sc-sub">The exact questions where rivals get cited and you do not.</p>
-      <div class="matrix"><table class="mx"><thead><tr><th class="q">Buyer question</th><th>AI recommended instead</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+    // Always render the section (keeps section numbering + sidebar link 04 valid);
+    // an empty gap list gets a positive empty-state instead of disappearing.
+    const body = g.length
+      ? `<div class="matrix"><table class="mx"><thead><tr><th class="q">Buyer question</th><th>AI recommended instead</th></tr></thead><tbody>${g.map((x) => `<tr><td class="q">${esc(x.q)}</td><td>${x.winners.map((w) => `<span class="chip sm">${esc(w)}</span>`).join(" ")}</td></tr>`).join("")}</tbody></table></div>`
+      : `<div class="gap-empty">No citation gaps found. Wherever a competitor gets cited, you do too.</div>`;
+    return `<div class="sec2"><h2 id="sec-gap">${secNum("04")}Citation Gap Analysis</h2><p class="sc-sub">The exact questions where rivals get cited and you do not.</p>
+      ${body}</div>`;
   }
   function queryMapHtml(ev) {
     const prompts = (ev && ev.prompts) || [], runs = (ev && ev.runs) || [];
@@ -1339,7 +1342,7 @@
     const rows = prompts.map((p) => ({ q: p.prompt, intent: p.intent || "Question", won: !!cited[p.id], w: (cited[p.id] ? 0 : 10) + (INTENT_WEIGHT[p.intent] || 1) }))
       .sort((a, b) => b.w - a.w)
       .map((x) => `<tr><td class="q">${esc(x.q)}</td><td><span class="chip sm">${esc(x.intent)}</span></td><td class="cell"><span class="cdot ${x.won ? "yes" : "no"}"></span></td></tr>`).join("");
-    return `<div class="sec2"><h2 id="sec-query">High-Intent Query Map</h2><p class="sc-sub">The buyer questions you should be winning first, ranked by intent.</p>
+    return `<div class="sec2"><h2 id="sec-query">${secNum("05")}High-Intent Query Map</h2><p class="sc-sub">The buyer questions you should be winning first, ranked by intent.</p>
       <div class="matrix"><table class="mx"><thead><tr><th class="q">Question</th><th>Intent</th><th>You</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
   }
   function benchmarkHtml(citedCells, totalCells, brand, compStats) {
@@ -1348,7 +1351,7 @@
     const rows = [you, ...rivals].sort((a, b) => b.count - a.count);
     const max = Math.max(1, ...rows.map((r) => r.count));
     const bars = rows.map((r) => `<div class="bmrow ${r.you ? "you" : ""}"><span class="bmname">${esc(r.name)}</span><span class="bmbar"><i style="width:${Math.round((r.count / max) * 100)}%"></i></span><span class="bmnum">${r.count}</span></div>`).join("");
-    return `<div class="sec2"><h2 id="sec-benchmark">Competitor Benchmark</h2><div class="comp">
+    return `<div class="sec2"><h2 id="sec-benchmark">${secNum("06")}Competitor Benchmark</h2><div class="comp">
       <p class="lead-sub">A head-to-head ranking against your top competitors across the ${totalCells} answers.</p>${bars}</div></div>`;
   }
   // Share of Answer as its own named element (boss mockup item 2).
@@ -1366,7 +1369,7 @@
     const sov = (b + c) ? Math.round((b / (b + c)) * 100) : 0;
     const cls = sov >= 40 ? "ok" : sov >= 20 ? "warn" : "bad";
     return `<div class="sec2" id="sec-share"><div class="comp">
-      <p class="lead">Share of Answer</p>
+      <p class="lead">${secNum("02")}Share of Answer</p>
       <p class="lead-sub">Your slice of AI answers versus the competitors who own your space.</p>
       <div class="soa"><div class="soa-num t-${cls}">${sov}%</div>
         <div class="soa-txt">You were named <b>${b}</b> times; competitors <b>${c}</b> times across the answers.</div></div>
@@ -1377,18 +1380,21 @@
   // sidebar (jump nav). Each link scrolls to its report section; the active
   // section is highlighted via an IntersectionObserver wired in wireBaselineNav.
   function baselineSidebarHtml() {
+    // Order MUST match the document order the sections render in renderFullReport
+    // (visibility, share, content, gap, query, benchmark). The two-digit index
+    // here is the same number stamped on each section heading (secNum).
     const items = [
       { t: "AEO Visibility Score", h: "#sec-visibility" },
       { t: "Share of Answer", h: "#sec-share" },
+      { t: "Content Authority Audit", h: "#sec-content" },
       { t: "Citation Gap Analysis", h: "#sec-gap" },
       { t: "High-Intent Query Map", h: "#sec-query" },
-      { t: "Content Authority Audit", h: "#sec-content" },
       { t: "Competitor Benchmark", h: "#sec-benchmark" },
     ];
     const links = items.map((it, i) =>
       `<a class="bsl-link" href="${it.h}" data-target="${it.h}"><span class="bsl-ln">${String(i + 1).padStart(2, "0")}</span><span class="bsl-lt">${esc(it.t)}</span></a>`).join("");
     return `<nav class="bsl-nav" id="bslNav" aria-label="Report sections">
-      <div class="bsl-nav-h">Get Your<br>AEO Baseline</div>
+      <div class="bsl-nav-h">Your<br>AEO Baseline</div>
       <div class="bsl-links">${links}</div>
     </nav>`;
   }
@@ -1401,6 +1407,12 @@
       : `<b>${u}</b>`;
     return `<div class="fr-head"><h1 class="fr-title">AEO Baseline report</h1>
       <div class="fr-for">for ${link}</div></div>`;
+  }
+
+  // Section-number badge. The two-digit number MUST match this section's slot in
+  // the floating sidebar (baselineSidebarHtml items order). Full report only.
+  function secNum(n) {
+    return n ? `<span class="secn">${esc(String(n))}</span>` : "";
   }
 
   // Register the new pillar labels + check guides (mutate the existing maps).
@@ -1557,7 +1569,7 @@
       `<div class="aeo2">` +
         baselineSidebarHtml() +
         frHeadHtml(scannedUrl, brand) +
-        heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, checks, { hideUrlEyebrow: true }) +
+        heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, checks, { hideUrlEyebrow: true, num: "01" }) +
         detectBoxHtml(category, icp) +
         (allGreen ? allGreenHtml(brand) : "") +
         engineHtml(engCount) +
@@ -1586,7 +1598,7 @@
     return `
     <div class="hero" id="sec-visibility">
       ${urlEyebrow}
-      <div class="metric-eyebrow">AEO Visibility Score</div>
+      <div class="metric-eyebrow">${secNum(opts.num)}AEO Visibility Score</div>
       <div class="gauge2">
         <svg viewBox="0 0 200 120"><defs><linearGradient id="aeoG" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stop-color="#7612fa"/><stop offset=".5" stop-color="#c109af"/><stop offset="1" stop-color="#ff6221"/>
@@ -1723,7 +1735,7 @@
         <span class="cgf ${tone(c.score)}">${pass}/${subs.length}</span></div>
         <div class="cards2">${subs.map((s) => subCard(s, stripFix)).join("")}</div></div>`;
     }).join("");
-    return `<div class="sec2"><h2 id="sec-content">Content Authority Audit</h2>
+    return `<div class="sec2"><h2 id="sec-content">${secNum("03")}Content Authority Audit</h2>
       <p class="sc-sub">Where your pages fall short of what answer engines trust, and how to fix each.</p>${groups}</div>`;
   }
   // Unlock gate card (replaces the open scorecard in the preview).
@@ -1949,6 +1961,9 @@
     .aeo2 .bsl-link.active .bsl-ln{color:var(--g1)}
     .aeo2 .bsl-link.active::before{content:"";position:absolute;left:-14px;top:8px;bottom:8px;width:3px;border-radius:3px;background:var(--grad)}
     @media(min-width:1300px){.aeo2 .bsl-nav{display:block}}
+    /* section-number badge (matches sidebar numbering) */
+    .aeo2 .secn{display:inline-flex;align-items:center;justify-content:center;min-width:1.7em;height:1.7em;padding:0 .45em;margin-right:.5em;border-radius:8px;background:rgba(118,18,250,.14);border:1px solid rgba(118,18,250,.35);color:var(--g1);font-size:.62em;font-weight:800;font-variant-numeric:tabular-nums;vertical-align:middle;line-height:1;transform:translateY(-.06em)}
+    .aeo2 .gap-empty{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;color:#cfccd9;font-size:14.5px;box-shadow:var(--shs)}
     .aeo2 .soa{display:flex;align-items:center;gap:18px;margin-top:6px}
     .aeo2 .soa-num{font-size:48px;font-weight:800;letter-spacing:-.02em;line-height:1}
     .aeo2 .soa-txt{color:#cfccd9;font-size:15px}

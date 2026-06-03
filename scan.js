@@ -1311,28 +1311,47 @@
   }
 
   // ===== Boss Baseline sections (full report), all from the scan response =====
+  // A gap is one (engine, question) answer where you were NOT named but at least
+  // one competitor WAS. Per-engine (up to prompts x engines cells), not per-prompt
+  // -- the old per-prompt version dropped a whole question if any single engine
+  // cited you, hiding real gaps on the other engines.
   function buildCitationGaps(ev, compStats) {
     const prompts = (ev && ev.prompts) || [], runs = (ev && ev.runs) || [];
     const names = (compStats || []).map((c) => c.name).filter(Boolean);
-    const byP = {}; runs.forEach((r) => { (byP[r.prompt_id] = byP[r.prompt_id] || []).push(r); });
+    const engOrder = {}, engLabel = {};
+    ENGINES2.forEach(([k, lbl], i) => { engOrder[k] = i; engLabel[k] = lbl; });
+    const pOrder = {}, pById = {};
+    prompts.forEach((p, i) => { pOrder[p.id] = i; pById[p.id] = p; });
     const gaps = [];
-    prompts.forEach((p) => {
-      const rs = byP[p.id] || [];
-      if (rs.some((r) => r.mentioned)) return;
-      const text = rs.map((r) => (r.raw_response || "").toLowerCase()).join(" ");
-      const w = names.filter((n) => text.includes(n.toLowerCase()));
-      if (w.length) gaps.push({ q: p.prompt, winners: w.slice(0, 3) });
+    runs.forEach((r) => {
+      if (r.mentioned || !(r.engine in engLabel)) return; // you were named, or off-report engine
+      const p = pById[r.prompt_id]; if (!p) return;
+      const text = (r.raw_response || "").toLowerCase();
+      const seen = new Set(), w = [];
+      names.forEach((n) => {
+        const nl = (n || "").toLowerCase();
+        if (nl && !seen.has(nl) && text.includes(nl)) { seen.add(nl); w.push(n); }
+      });
+      if (w.length) gaps.push({ q: p.prompt, engine: engLabel[r.engine], winners: w, _p: pOrder[r.prompt_id], _e: engOrder[r.engine] });
     });
+    gaps.sort((a, b) => (a._p - b._p) || (a._e - b._e)); // group by question, then engine
     return gaps;
   }
   function citationGapHtml(ev, compStats, num) {
     const g = buildCitationGaps(ev, compStats);
-    // Always render the section (keeps section numbering + sidebar link 04 valid);
+    // Always render the section (keeps section numbering + sidebar link valid);
     // an empty gap list gets a positive empty-state instead of disappearing.
+    let lastQ = null;
+    const rows = g.map((x) => {
+      const qcell = x.q === lastQ ? "" : esc(x.q); // print each question once, engines beneath
+      lastQ = x.q;
+      const chips = x.winners.slice(0, 6).map((w) => `<span class="chip sm">${esc(w)}</span>`).join(" ");
+      return `<tr><td class="q">${qcell}</td><td><span class="chip sm">${esc(x.engine)}</span></td><td>${chips}</td></tr>`;
+    }).join("");
     const body = g.length
-      ? `<div class="matrix"><table class="mx"><thead><tr><th class="q">Buyer question</th><th>AI recommended instead</th></tr></thead><tbody>${g.map((x) => `<tr><td class="q">${esc(x.q)}</td><td>${x.winners.map((w) => `<span class="chip sm">${esc(w)}</span>`).join(" ")}</td></tr>`).join("")}</tbody></table></div>`
+      ? `<div class="matrix"><table class="mx"><thead><tr><th class="q">Buyer question</th><th>Engine</th><th>AI recommended instead</th></tr></thead><tbody>${rows}</tbody></table></div>`
       : `<div class="gap-empty">No citation gaps found. Wherever a competitor gets cited, you do too.</div>`;
-    return `<div class="sec2"><h2 id="sec-gap">${secNum(num)}Citation Gap Analysis</h2><p class="sc-sub">The exact questions where rivals get cited and you do not.</p>
+    return `<div class="sec2"><h2 id="sec-gap">${secNum(num)}Citation Gap Analysis</h2><p class="sc-sub">Every answer where a rival is named and you are not, broken out by engine.</p>
       ${body}</div>`;
   }
   function queryMapHtml(ev, num) {
@@ -2016,9 +2035,9 @@
     .aeo2 .chips{display:flex;flex-wrap:wrap;gap:10px}
     .aeo2 .chip{display:inline-flex;align-items:center;gap:9px;padding:9px 12px 9px 16px;border-radius:999px;background:var(--card2);border:1px solid var(--line);font-weight:700;font-size:15px;transition:transform .15s}
     .aeo2 .chip:hover{transform:translateY(-2px)}
-    .aeo2 .chip:first-child{background:var(--grad);color:#fff;border:none;box-shadow:0 10px 22px -10px rgba(193,9,175,.6)}
+    .aeo2 .chips .chip:first-child{background:var(--grad);color:#fff;border:none;box-shadow:0 10px 22px -10px rgba(193,9,175,.6)}
     .aeo2 .cct{display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;padding:0 6px;border-radius:999px;background:var(--grad);color:#fff;font-size:12.5px;font-weight:800;line-height:1}
-    .aeo2 .chip:first-child .cct{background:#fff;color:#c109af}
+    .aeo2 .chips .chip:first-child .cct{background:#fff;color:#c109af}
     .aeo2 .lead-sub{margin:-4px 0 16px;color:var(--muted);font-size:13.5px}
     .aeo2 .chip.sm{padding:5px 11px;font-size:13px;gap:6px}
     .aeo2 .bmrow{display:flex;align-items:center;gap:12px;padding:9px 0}

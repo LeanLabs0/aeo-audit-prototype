@@ -1583,7 +1583,7 @@
     const defs = [
       { id: "sec-visibility", label: "AEO Visibility Score", on: true,
         render: (n) => heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, checks, { hideUrlEyebrow: true, num: n }) },
-      { id: "sec-engines", label: "Are you recommended?", on: true,
+      { id: "sec-engines", label: "Breakdown by AI engine", on: true,
         render: (n) => engineHtml(engCount, n) },
       { id: "sec-competitors", label: "Who AI recommends", on: comps.length > 0,
         render: (n) => compHtml(comps, brand, compStats, false, n) },
@@ -1699,7 +1699,7 @@
         <div class="edwrap">${engineDonut(c.cited, c.total, cls)}</div>
         <div class="ev2">${v}</div><div class="erate">${c.cited} of ${c.total} questions</div></div>`;
     }).join("");
-    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}Are you recommended?</h2>
+    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}Breakdown by AI engine</h2>
       <p class="sc-sub">How often each AI engine names you across the buyer prompts.</p>
       <div class="engines">${cards}</div></div>`;
   }

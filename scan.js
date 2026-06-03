@@ -1325,37 +1325,37 @@
     });
     return gaps;
   }
-  function citationGapHtml(ev, compStats) {
+  function citationGapHtml(ev, compStats, num) {
     const g = buildCitationGaps(ev, compStats);
     // Always render the section (keeps section numbering + sidebar link 04 valid);
     // an empty gap list gets a positive empty-state instead of disappearing.
     const body = g.length
       ? `<div class="matrix"><table class="mx"><thead><tr><th class="q">Buyer question</th><th>AI recommended instead</th></tr></thead><tbody>${g.map((x) => `<tr><td class="q">${esc(x.q)}</td><td>${x.winners.map((w) => `<span class="chip sm">${esc(w)}</span>`).join(" ")}</td></tr>`).join("")}</tbody></table></div>`
       : `<div class="gap-empty">No citation gaps found. Wherever a competitor gets cited, you do too.</div>`;
-    return `<div class="sec2"><h2 id="sec-gap">${secNum("04")}Citation Gap Analysis</h2><p class="sc-sub">The exact questions where rivals get cited and you do not.</p>
+    return `<div class="sec2"><h2 id="sec-gap">${secNum(num)}Citation Gap Analysis</h2><p class="sc-sub">The exact questions where rivals get cited and you do not.</p>
       ${body}</div>`;
   }
-  function queryMapHtml(ev) {
+  function queryMapHtml(ev, num) {
     const prompts = (ev && ev.prompts) || [], runs = (ev && ev.runs) || [];
     if (!prompts.length) return "";
     const cited = {}; runs.forEach((r) => { if (r.mentioned) cited[r.prompt_id] = true; });
     const rows = prompts.map((p) => ({ q: p.prompt, intent: p.intent || "Question", won: !!cited[p.id], w: (cited[p.id] ? 0 : 10) + (INTENT_WEIGHT[p.intent] || 1) }))
       .sort((a, b) => b.w - a.w)
       .map((x) => `<tr><td class="q">${esc(x.q)}</td><td><span class="chip sm">${esc(x.intent)}</span></td><td class="cell"><span class="cdot ${x.won ? "yes" : "no"}"></span></td></tr>`).join("");
-    return `<div class="sec2"><h2 id="sec-query">${secNum("05")}High-Intent Query Map</h2><p class="sc-sub">The buyer questions you should be winning first, ranked by intent.</p>
+    return `<div class="sec2"><h2 id="sec-query">${secNum(num)}High-Intent Query Map</h2><p class="sc-sub">The buyer questions you should be winning first, ranked by intent.</p>
       <div class="matrix"><table class="mx"><thead><tr><th class="q">Question</th><th>Intent</th><th>You</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
   }
-  function benchmarkHtml(citedCells, totalCells, brand, compStats) {
+  function benchmarkHtml(citedCells, totalCells, brand, compStats, num) {
     const you = { name: brand, count: citedCells, you: true };
     const rivals = (compStats || []).map((c) => ({ name: c.name, count: c.count }));
     const rows = [you, ...rivals].sort((a, b) => b.count - a.count);
     const max = Math.max(1, ...rows.map((r) => r.count));
     const bars = rows.map((r) => `<div class="bmrow ${r.you ? "you" : ""}"><span class="bmname">${esc(r.name)}</span><span class="bmbar"><i style="width:${Math.round((r.count / max) * 100)}%"></i></span><span class="bmnum">${r.count}</span></div>`).join("");
-    return `<div class="sec2"><h2 id="sec-benchmark">${secNum("06")}Competitor Benchmark</h2><div class="comp">
+    return `<div class="sec2"><h2 id="sec-benchmark">${secNum(num)}Competitor Benchmark</h2><div class="comp">
       <p class="lead-sub">A head-to-head ranking against your top competitors across the ${totalCells} answers.</p>${bars}</div></div>`;
   }
   // Share of Answer as its own named element (boss mockup item 2).
-  function shareOfAnswerHtml(ev, brand, compStats) {
+  function shareOfAnswerHtml(ev, brand, compStats, num) {
     const runs = (ev && ev.runs) || [];
     if (!runs.length) return "";
     const brandL = (brand || "").toLowerCase();
@@ -1369,7 +1369,7 @@
     const sov = (b + c) ? Math.round((b / (b + c)) * 100) : 0;
     const cls = sov >= 40 ? "ok" : sov >= 20 ? "warn" : "bad";
     return `<div class="sec2" id="sec-share"><div class="comp">
-      <p class="lead">${secNum("02")}Share of Answer</p>
+      <p class="lead">${secNum(num)}Share of Answer</p>
       <p class="lead-sub">Your slice of AI answers versus the competitors who own your space.</p>
       <div class="soa"><div class="soa-num t-${cls}">${sov}%</div>
         <div class="soa-txt">You were named <b>${b}</b> times; competitors <b>${c}</b> times across the answers.</div></div>
@@ -1379,20 +1379,12 @@
   // The "Get Your AEO Baseline" section is now a floating, clickable section
   // sidebar (jump nav). Each link scrolls to its report section; the active
   // section is highlighted via an IntersectionObserver wired in wireBaselineNav.
-  function baselineSidebarHtml() {
-    // Order MUST match the document order the sections render in renderFullReport
-    // (visibility, share, content, gap, query, benchmark). The two-digit index
-    // here is the same number stamped on each section heading (secNum).
-    const items = [
-      { t: "AEO Visibility Score", h: "#sec-visibility" },
-      { t: "Share of Answer", h: "#sec-share" },
-      { t: "Content Authority Audit", h: "#sec-content" },
-      { t: "Citation Gap Analysis", h: "#sec-gap" },
-      { t: "High-Intent Query Map", h: "#sec-query" },
-      { t: "Competitor Benchmark", h: "#sec-benchmark" },
-    ];
-    const links = items.map((it, i) =>
-      `<a class="bsl-link" href="${it.h}" data-target="${it.h}"><span class="bsl-ln">${String(i + 1).padStart(2, "0")}</span><span class="bsl-lt">${esc(it.t)}</span></a>`).join("");
+  // Floating jump nav. `items` come from renderFullReport's section registry as
+  // [{ t: label, h: "#sec-id", n: "01" }, ...] so the sidebar numbering and order
+  // always mirror the actual rendered sections.
+  function baselineSidebarHtml(items) {
+    const links = (items || []).map((it) =>
+      `<a class="bsl-link" href="${it.h}" data-target="${it.h}"><span class="bsl-ln">${esc(it.n)}</span><span class="bsl-lt">${esc(it.t)}</span></a>`).join("");
     return `<nav class="bsl-nav" id="bslNav" aria-label="Report sections">
       <div class="bsl-nav-h">Your<br>AEO Baseline</div>
       <div class="bsl-links">${links}</div>
@@ -1565,21 +1557,49 @@
     injectAeoStyles();
     const host = document.getElementById("report");
     host.removeAttribute("hidden");
+    // One ordered registry of full-report sections. Filter out empties, number
+    // the survivors 01..N in document order, and feed BOTH the body and the
+    // floating sidebar from the same list so the numbering can never drift.
+    const defs = [
+      { id: "sec-visibility", label: "AEO Visibility Score", on: true,
+        render: (n) => heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, checks, { hideUrlEyebrow: true, num: n }) },
+      { id: "sec-engines", label: "Are you recommended?", on: true,
+        render: (n) => engineHtml(engCount, n) },
+      { id: "sec-competitors", label: "Who AI recommends", on: comps.length > 0,
+        render: (n) => compHtml(comps, brand, compStats, false, n) },
+      { id: "sec-share", label: "Share of Answer", on: runs.length > 0,
+        render: (n) => shareOfAnswerHtml(ev, brand, compStats, n) },
+      { id: "sec-questions", label: "Buyer questions", on: prompts.length > 0,
+        render: (n) => matrixHtml(prompts, cited, true, n) },
+      { id: "sec-content", label: "Content Authority Audit", on: true,
+        render: (n) => scorecardHtml(checks, false, false, n) },
+      { id: "sec-gap", label: "Citation Gap Analysis", on: true,
+        render: (n) => citationGapHtml(ev, compStats, n) },
+      { id: "sec-query", label: "High-Intent Query Map", on: prompts.length > 0,
+        render: (n) => queryMapHtml(ev, n) },
+      { id: "sec-benchmark", label: "Competitor Benchmark", on: true,
+        render: (n) => benchmarkHtml(citedCells, totalCells, brand, compStats, n) },
+    ];
+    const live = defs.filter((d) => d.on);
+    live.forEach((d, i) => { d.num = String(i + 1).padStart(2, "0"); });
+    const navItems = live.map((d) => ({ t: d.label, h: "#" + d.id, n: d.num }));
+    const sec = {};
+    live.forEach((d) => { sec[d.id] = d.render(d.num); });
     host.innerHTML =
       `<div class="aeo2">` +
-        baselineSidebarHtml() +
+        baselineSidebarHtml(navItems) +
         frHeadHtml(scannedUrl, brand) +
-        heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, checks, { hideUrlEyebrow: true, num: "01" }) +
+        (sec["sec-visibility"] || "") +
         detectBoxHtml(category, icp) +
         (allGreen ? allGreenHtml(brand) : "") +
-        engineHtml(engCount) +
-        (comps.length ? compHtml(comps, brand, compStats, false) : "") +
-        shareOfAnswerHtml(ev, brand, compStats) +
-        matrixHtml(prompts, cited, true) +
-        scorecardHtml(checks, false, false) +
-        citationGapHtml(ev, compStats) +
-        queryMapHtml(ev) +
-        benchmarkHtml(citedCells, totalCells, brand, compStats) +
+        (sec["sec-engines"] || "") +
+        (sec["sec-competitors"] || "") +
+        (sec["sec-share"] || "") +
+        (sec["sec-questions"] || "") +
+        (sec["sec-content"] || "") +
+        (sec["sec-gap"] || "") +
+        (sec["sec-query"] || "") +
+        (sec["sec-benchmark"] || "") +
         blueprintCtaHtml() +
       `</div>`;
     wireAeo(brand);
@@ -1615,7 +1635,7 @@
   }
   // gated=true (preview): show the top 3 competitors, blur/lock the rest, + the
   // email box. gated=false (full report): show the whole list.
-  function compHtml(comps, brand, stats, gated) {
+  function compHtml(comps, brand, stats, gated, num) {
     const ranked = (stats && stats.length) ? stats : null;
     const total = ranked && ranked[0] ? ranked[0].total : 0;
     const list = ranked
@@ -1639,21 +1659,21 @@
           <div class="cbox-row"><input id="compEmail" type="email" placeholder="you@company.com">
           <button class="btn-fill" id="compEmailBtn">Unlock full details</button></div></div>`
       : "";
-    return `<div class="sec2"><div class="comp">
-      <p class="lead">When your buyers ask AI, here is who it recommends</p>
+    return `<div class="sec2" id="sec-competitors"><div class="comp">
+      <p class="lead">${secNum(num)}When your buyers ask AI, here is who it recommends</p>
       ${sub}
       <div class="chips">${chips}</div>
       ${emailBox}
     </div></div>`;
   }
-  function engineHtml(engCount) {
+  function engineHtml(engCount, num) {
     const cards = ENGINES2.map(([k, label]) => {
       const c = engCount[k], [cls, v] = engTone(c.cited, c.total);
       return `<div class="eng ${cls}"><div class="ename">${label}</div>
         <div class="edwrap">${engineDonut(c.cited, c.total, cls)}</div>
         <div class="ev2">${v}</div><div class="erate">${c.cited} of ${c.total} questions</div></div>`;
     }).join("");
-    return `<div class="sec2"><h2>Are you recommended?</h2><div class="engines">${cards}</div></div>`;
+    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}Are you recommended?</h2><div class="engines">${cards}</div></div>`;
   }
   function matrixRow(p, i, cited) {
     const dots = ENGINES2.map(([k]) =>
@@ -1661,12 +1681,12 @@
     return `<tr><td class="q">${esc(p.prompt)}</td>${dots}<td class="cell"><span class="link2 viewresp" data-q="${esc(p.id)}">View response</span></td></tr>`;
   }
   // full=true renders every row ungated (full report). Preview shows 4 + a blurred teaser.
-  function matrixHtml(prompts, cited, full) {
+  function matrixHtml(prompts, cited, full, num) {
     const head = `<tr><th class="q">Question</th><th>ChatGPT</th><th>Claude</th><th>Gemini</th><th></th></tr>`;
     const legend = `<div class="legend"><span><i class="y"></i>Recommended you</span><span><i class="n"></i>Did not mention you</span></div>`;
     if (full) {
       const rows = prompts.map((p, i) => matrixRow(p, i, cited)).join("");
-      return `<div class="sec2"><h2>The real questions your buyers ask AI</h2>
+      return `<div class="sec2"><h2 id="sec-questions">${secNum(num)}The real questions your buyers ask AI</h2>
         <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${rows}</tbody></table>
         ${legend}</div></div>`;
     }
@@ -1703,7 +1723,7 @@
   }
   // gated=true (preview): pillar headers stay readable, the check cards are
   // blurred/locked, + an email unlock. gated=false (full report): open + expandable.
-  function scorecardHtml(checks, gated, stripFix) {
+  function scorecardHtml(checks, gated, stripFix, num) {
     if (!checks.length) return "";
     // Preview: ONE concise card — pillar name + score per row, then the unlock.
     if (gated) {
@@ -1735,7 +1755,7 @@
         <span class="cgf ${tone(c.score)}">${pass}/${subs.length}</span></div>
         <div class="cards2">${subs.map((s) => subCard(s, stripFix)).join("")}</div></div>`;
     }).join("");
-    return `<div class="sec2"><h2 id="sec-content">${secNum("03")}Content Authority Audit</h2>
+    return `<div class="sec2"><h2 id="sec-content">${secNum(num)}Content Authority Audit</h2>
       <p class="sc-sub">Where your pages fall short of what answer engines trust, and how to fix each.</p>${groups}</div>`;
   }
   // Unlock gate card (replaces the open scorecard in the preview).

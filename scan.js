@@ -1373,23 +1373,34 @@
     </div></div>`;
   }
   // "Get Your AEO Baseline" summary - the 6 named elements from the boss mockup.
-  function baselineSummaryHtml() {
+  // The "Get Your AEO Baseline" section is now a floating, clickable section
+  // sidebar (jump nav). Each link scrolls to its report section; the active
+  // section is highlighted via an IntersectionObserver wired in wireBaselineNav.
+  function baselineSidebarHtml() {
     const items = [
-      { t: "AEO Visibility Score", d: "How often AI answer engines surface and cite your brand today.", h: "#sec-visibility" },
-      { t: "Share of Answer", d: "Your slice of AI answers versus the competitors who own your space.", h: "#sec-share" },
-      { t: "Citation Gap Analysis", d: "The exact questions where rivals get cited and you do not.", h: "#sec-gap" },
-      { t: "High-Intent Query Map", d: "The buyer questions you should be winning answers for first.", h: "#sec-query" },
-      { t: "Content Authority Audit", d: "Where your pages fall short of what answer engines trust.", h: "#sec-content" },
-      { t: "Competitor Benchmark", d: "A head-to-head ranking against the competitors who own your space.", h: "#sec-benchmark" },
+      { t: "AEO Visibility Score", h: "#sec-visibility" },
+      { t: "Share of Answer", h: "#sec-share" },
+      { t: "Citation Gap Analysis", h: "#sec-gap" },
+      { t: "High-Intent Query Map", h: "#sec-query" },
+      { t: "Content Authority Audit", h: "#sec-content" },
+      { t: "Competitor Benchmark", h: "#sec-benchmark" },
     ];
-    const cards = items.map((it) =>
-      `<a class="bsl-card" href="${it.h}"><div class="bsl-t">${esc(it.t)}</div><div class="bsl-d">${esc(it.d)}</div></a>`).join("");
-    return `<div class="sec2"><div class="bsl">
-      <div class="bsl-eyebrow">Your AEO Baseline</div>
-      <h2 class="bsl-h">Get Your AEO Baseline</h2>
-      <p class="bsl-sub">The full picture leadership needs to make the call: exactly where you stand and what to do about it.</p>
-      <div class="bsl-grid">${cards}</div>
-    </div></div>`;
+    const links = items.map((it, i) =>
+      `<a class="bsl-link" href="${it.h}" data-target="${it.h}"><span class="bsl-ln">${String(i + 1).padStart(2, "0")}</span><span class="bsl-lt">${esc(it.t)}</span></a>`).join("");
+    return `<nav class="bsl-nav" id="bslNav" aria-label="Report sections">
+      <div class="bsl-nav-h">Get Your<br>AEO Baseline</div>
+      <div class="bsl-links">${links}</div>
+    </nav>`;
+  }
+
+  // Big page title for the full report: "AEO Baseline report" + "for {url}".
+  function frHeadHtml(url, brand) {
+    const u = esc(url || brand || "your solution");
+    const link = url
+      ? `<a href="${esc(url)}" target="_blank" rel="noopener">${u}</a>`
+      : `<b>${u}</b>`;
+    return `<div class="fr-head"><h1 class="fr-title">AEO Baseline report</h1>
+      <div class="fr-for">for ${link}</div></div>`;
   }
 
   // Register the new pillar labels + check guides (mutate the existing maps).
@@ -1544,10 +1555,10 @@
     host.removeAttribute("hidden");
     host.innerHTML =
       `<div class="aeo2">` +
-        `<div class="fr-banner">Your full AEO Baseline report for <b>${esc(scannedUrl || brand)}</b></div>` +
-        heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, checks) +
+        baselineSidebarHtml() +
+        frHeadHtml(scannedUrl, brand) +
+        heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, checks, { hideUrlEyebrow: true }) +
         detectBoxHtml(category, icp) +
-        baselineSummaryHtml() +
         (allGreen ? allGreenHtml(brand) : "") +
         engineHtml(engCount) +
         (comps.length ? compHtml(comps, brand, compStats, false) : "") +
@@ -1563,13 +1574,18 @@
     window.scrollTo({ top: 0 });
   }
 
-  function heroHtml(score, lvl, verdict, citedCells, totalCells, url, category, icp, checks) {
+  function heroHtml(score, lvl, verdict, citedCells, totalCells, url, category, icp, checks, opts) {
+    opts = opts || {};
     const off = 100 - Math.max(0, Math.min(100, score));
     const pct = totalCells ? Math.round((citedCells / totalCells) * 100) : 0;
     const st = lvl.cls; // bad/orange/warn/ok -> color score + level by the 4-level scale
+    // The full report carries the url in the big fr-head title, so drop the
+    // duplicate "Results for {url}" eyebrow there (hideUrlEyebrow).
+    const urlEyebrow = opts.hideUrlEyebrow ? ""
+      : `<div class="eyebrow">Results for ${esc(url || "your solution")}</div>`;
     return `
     <div class="hero" id="sec-visibility">
-      <div class="eyebrow">Results for ${esc(url || "your solution")}</div>
+      ${urlEyebrow}
       <div class="metric-eyebrow">AEO Visibility Score</div>
       <div class="gauge2">
         <svg viewBox="0 0 200 120"><defs><linearGradient id="aeoG" x1="0" y1="0" x2="1" y2="0">
@@ -1807,6 +1823,36 @@
       h.addEventListener("click", () => h.parentElement.classList.toggle("open")));
     document.querySelectorAll(".aeo2 .viewresp").forEach((v) =>
       v.addEventListener("click", () => openRespModal(v.getAttribute("data-q"), brand)));
+    const bslNav = document.getElementById("bslNav");
+    if (bslNav) wireBaselineNav(bslNav);
+  }
+
+  // Floating section sidebar: highlight active link on click + as sections
+  // cross the viewport center (IntersectionObserver scrollspy). Smooth scroll
+  // itself is handled by CSS (html{scroll-behavior:smooth}) on the anchor jump.
+  function wireBaselineNav(nav) {
+    const links = Array.from(nav.querySelectorAll(".bsl-link"));
+    const byId = {};
+    links.forEach((a) => {
+      const id = (a.getAttribute("data-target") || "").replace("#", "");
+      if (id) byId[id] = a;
+      a.addEventListener("click", () => {
+        links.forEach((l) => l.classList.remove("active"));
+        a.classList.add("active");
+      });
+    });
+    const targets = Object.keys(byId).map((id) => document.getElementById(id)).filter(Boolean);
+    if (!("IntersectionObserver" in window) || !targets.length) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return;
+        const a = byId[en.target.id];
+        if (!a) return;
+        links.forEach((l) => l.classList.remove("active"));
+        a.classList.add("active");
+      });
+    }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+    targets.forEach((t) => io.observe(t));
   }
 
   function openRespModal(qid, brand) {
@@ -1849,8 +1895,11 @@
       --shs:0 1px 2px rgba(0,0,0,.3),0 10px 26px -18px rgba(0,0,0,.6);
       color:var(--ink);max-width:920px;margin:0 auto;padding:8px 16px 90px;letter-spacing:.002em}
     .aeo2 *{box-sizing:border-box}
-    .aeo2 .fr-banner{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:700;text-align:center;margin:14px 0 -6px}
-    .aeo2 .fr-banner b{color:var(--ink);text-transform:none;letter-spacing:0}
+    .aeo2 .fr-head{text-align:center;margin:22px 0 2px}
+    .aeo2 .fr-title{font-size:clamp(34px,5.4vw,54px);font-weight:800;letter-spacing:-.03em;line-height:1.03;margin:0;color:var(--ink)}
+    .aeo2 .fr-for{margin-top:12px;font-size:15px;color:var(--muted);font-weight:600;word-break:break-word}
+    .aeo2 .fr-for a{color:#cfccd9;text-decoration:none;border-bottom:1px solid #3a3a44}
+    .aeo2 .fr-for a:hover{color:var(--ink)}
     .aeo2 .hero{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:26px;padding:58px 40px 50px;margin-top:18px;text-align:center;box-shadow:var(--sh)}
     .aeo2 .hero::before{content:"";position:absolute;left:-10%;right:30%;top:-50%;height:120%;background:radial-gradient(50% 60% at 40% 50%,rgba(118,18,250,.22),rgba(255,98,33,.10) 40%,transparent 70%);pointer-events:none}
     .aeo2 .eyebrow{position:relative;font-size:11.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600}
@@ -1876,7 +1925,7 @@
     .aeo2 .detectbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 22px;box-shadow:var(--shs);text-align:center}
     .aeo2 .detectbox .detected{margin:0}
     .aeo2 .detectbox .refine-form{margin-top:14px}
-    .aeo2 .metric-eyebrow{position:relative;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--g1);margin-top:8px}
+    .aeo2 .metric-eyebrow{position:relative;font-size:clamp(20px,2.6vw,28px);font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--g1);margin-top:6px;line-height:1.1}
     .aeo2 .bsl{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px 32px;box-shadow:var(--shs)}
     .aeo2 .bsl-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--g1);font-weight:800;text-align:center}
     .aeo2 .bsl-h{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:6px 0 4px;text-align:center}
@@ -1886,6 +1935,20 @@
     .aeo2 .bsl-card:hover{transform:translateY(-2px);border-color:#3a3a44}
     .aeo2 .bsl-t{font-weight:800;font-size:16px;color:var(--ink)}
     .aeo2 .bsl-d{margin-top:5px;color:var(--muted);font-size:13.5px;line-height:1.5}
+    /* floating section sidebar (jump nav) */
+    html{scroll-behavior:smooth}
+    .aeo2 [id^="sec-"]{scroll-margin-top:24px}
+    .aeo2 .bsl-nav{display:none;position:fixed;left:16px;top:50%;transform:translateY(-50%);width:184px;z-index:40;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 14px;box-shadow:var(--sh)}
+    .aeo2 .bsl-nav-h{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--g1);line-height:1.25;margin:2px 4px 12px}
+    .aeo2 .bsl-links{display:flex;flex-direction:column;gap:2px}
+    .aeo2 .bsl-link{display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;text-decoration:none;color:var(--muted);transition:background .15s,color .15s;position:relative}
+    .aeo2 .bsl-link:hover{background:var(--card2);color:var(--ink)}
+    .aeo2 .bsl-ln{font-size:11px;font-weight:800;color:#5f5b6e;flex:0 0 18px}
+    .aeo2 .bsl-lt{font-size:13px;font-weight:700;line-height:1.2}
+    .aeo2 .bsl-link.active{background:var(--card2);color:var(--ink)}
+    .aeo2 .bsl-link.active .bsl-ln{color:var(--g1)}
+    .aeo2 .bsl-link.active::before{content:"";position:absolute;left:-14px;top:8px;bottom:8px;width:3px;border-radius:3px;background:var(--grad)}
+    @media(min-width:1300px){.aeo2 .bsl-nav{display:block}}
     .aeo2 .soa{display:flex;align-items:center;gap:18px;margin-top:6px}
     .aeo2 .soa-num{font-size:48px;font-weight:800;letter-spacing:-.02em;line-height:1}
     .aeo2 .soa-txt{color:#cfccd9;font-size:15px}

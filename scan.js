@@ -1564,7 +1564,7 @@
         heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, checks) +
         detectBoxHtml(category, icp) +
         (allGreen ? allGreenHtml(brand) : "") +
-        (comps.length ? compHtml(comps, brand, compStats, true) : "") +
+        (comps.length ? compHtml(comps, brand, compStats, true, undefined, category) : "") +
         engineHtml(engCount) +
         matrixHtml(prompts, cited, false) +
         scorecardHtml(checks, true, true) +
@@ -1633,7 +1633,7 @@
       { id: "sec-engines", label: "Breakdown by AI engine", on: true,
         render: (n) => engineHtml(engCount, n) },
       { id: "sec-competitors", label: "Who AI recommends", on: comps.length > 0,
-        render: (n) => compHtml(comps, brand, compStats, false, n) },
+        render: (n) => compHtml(comps, brand, compStats, false, n, category) },
       { id: "sec-share", label: "Share of Answer", on: runs.length > 0,
         render: (n) => shareOfAnswerHtml(ev, brand, compStats, n) },
       { id: "sec-questions", label: "Buyer questions", on: prompts.length > 0,
@@ -1681,12 +1681,9 @@
     // Full report (opts.num set): heading + sub sit OUTSIDE the box, like every
     // other section. Preview (no num): keep the centered eyebrow label inside.
     const numbered = !!opts.num;
-    const urlEyebrow = (numbered || opts.hideUrlEyebrow) ? ""
-      : `<div class="eyebrow">Results for ${esc(url || "your solution")}</div>`;
     const innerLabel = numbered ? "" : `<div class="metric-eyebrow">AEO Visibility Score</div>`;
     const heroBox = `
     <div class="hero"${numbered ? "" : ` id="sec-visibility"`}>
-      ${urlEyebrow}
       ${innerLabel}
       <div class="gauge2">
         <svg viewBox="0 0 200 120"><defs><linearGradient id="aeoG" x1="0" y1="0" x2="1" y2="0">
@@ -1696,9 +1693,8 @@
         <path class="arc" d="M10,100 A90,90 0 0 1 190,100" fill="none" stroke="url(#aeoG)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="100" style="--off:${off}" stroke-dashoffset="${off}"/></svg>
         <div class="num"><b class="t-${st}">${score}</b><span class="of">/100</span></div>
       </div>
-      <div class="level2 t-${st}">${esc(lvl.label)}, Level ${lvl.n} of 4</div>
-      <h1 class="verdict">${verdict}</h1>
-      <div class="appeared">You appeared in <b>${citedCells} of ${totalCells}</b> buyer searches across ChatGPT, Claude and Gemini <b>(${pct}%)</b>.</div>
+      <h1 class="hverdict">You show up in <b>${citedCells} of ${totalCells}</b> AI answers <span class="hpct">(${pct}%)</span></h1>
+      <div class="hsupport">Across ChatGPT, Claude and Gemini for ${esc(category)}.</div>
       ${heroPillarsHtml(checks)}
     </div>`;
     if (!numbered) return heroBox;
@@ -1708,7 +1704,7 @@
   }
   // gated=true (preview): show the top 3 competitors, blur/lock the rest, + the
   // email box. gated=false (full report): show the whole list.
-  function compHtml(comps, brand, stats, gated, num) {
+  function compHtml(comps, brand, stats, gated, num, category) {
     const ranked = (stats && stats.length) ? stats : null;
     const total = ranked && ranked[0] ? ranked[0].total : 0;
     const list = ranked
@@ -1716,7 +1712,7 @@
       : comps.map((c) => ({ name: c, count: null }));
     const SHOWN = 3;
     const chip = (s, locked) =>
-      `<span class="chip${locked ? " locked" : ""}"${s.count != null ? ` title="Recommended in ${s.count} of ${total} AI answers"` : ""}>${esc(s.name)}${s.count != null ? `<b class="cct">${s.count}</b>` : ""}</span>`;
+      `<span class="chip${locked ? " locked" : ""}"${s.count != null ? ` title="Named in ${s.count} of ${total} AI answers"` : ""}>${esc(s.name)}${s.count != null ? `<b class="cct">${s.count}x</b>` : ""}</span>`;
     let chips;
     if (gated && list.length > SHOWN) {
       chips = list.slice(0, SHOWN).map((s) => chip(s, false)).join("")
@@ -1725,14 +1721,15 @@
       chips = list.map((s) => chip(s, false)).join("");
     }
     const subTxt = total
-      ? `The brands AI names when buyers ask in your space, by mention count out of ${total}.`
-      : `The brands AI names when buyers ask in your space.`;
+      ? `Ranked by how many of the ${total} AI answers named each brand.`
+      : `Ranked by how often each brand is named in AI answers.`;
     const emailBox = gated
       ? `<div class="cbox"><p class="cbox-h">See every brand AI recommends in your space</p>
           <div class="cbox-row"><input id="compEmail" type="email" placeholder="you@company.com">
           <button class="btn-fill" id="compEmailBtn">Unlock full details</button></div></div>`
       : "";
-    return `<div class="sec2"><h2 id="sec-competitors">${secNum(num)}Who AI recommends</h2>
+    const heading = category ? `Who AI recommends for ${esc(category)}` : "Who AI recommends";
+    return `<div class="sec2"><h2 id="sec-competitors">${secNum(num)}${heading}</h2>
       <p class="sc-sub">${esc(subTxt)}</p>
       <div class="comp">
         <div class="chips">${chips}</div>
@@ -2023,9 +2020,10 @@
     .aeo2 .gauge2 .num b{font-size:58px;font-weight:800;letter-spacing:-.02em}
     .aeo2 .gauge2 .num .of{font-size:16px;color:var(--muted);font-weight:600}
     .aeo2 .level2{position:relative;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.08em;margin-top:14px}
-    .aeo2 .verdict{position:relative;font-size:clamp(19px,2.2vw,22px);line-height:1.3;font-weight:800;letter-spacing:-.01em;margin:20px auto 0;max-width:620px}
-    .aeo2 .verdict .hl{color:var(--warn)}.aeo2 .verdict .good{color:var(--ok)}
-    .aeo2 .appeared{position:relative;font-size:16px;margin-top:18px;color:#cfccd9}.aeo2 .appeared b{font-weight:800;color:var(--ink)}
+    .aeo2 .hverdict{position:relative;font-size:clamp(26px,3.6vw,40px);line-height:1.18;font-weight:800;letter-spacing:-.015em;margin:22px auto 0;max-width:640px}
+    .aeo2 .hverdict b{color:var(--ink)}
+    .aeo2 .hpct{color:var(--muted);font-weight:800}
+    .aeo2 .hsupport{position:relative;font-size:15px;margin-top:12px;color:#cfccd9}
     .aeo2 .detected{position:relative;margin-top:24px;font-size:14px;color:var(--muted)}.aeo2 .detected b{color:var(--ink)}
     .aeo2 .hero-pillars{position:relative;display:flex;justify-content:center;flex-wrap:wrap;gap:26px;margin-top:30px;padding-top:26px;border-top:1px solid var(--line)}
     .aeo2 .hpill{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:96px}
@@ -2037,7 +2035,7 @@
     .aeo2 .detectbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 22px;box-shadow:var(--shs);text-align:center}
     .aeo2 .detectbox .detected{margin:0}
     .aeo2 .detectbox .refine-form{margin-top:14px}
-    .aeo2 .metric-eyebrow{position:relative;font-size:clamp(20px,2.6vw,28px);font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--g1);margin-top:6px;line-height:1.1}
+    .aeo2 .metric-eyebrow{position:relative;font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--g1);margin-top:2px}
     .aeo2 .bsl{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px 32px;box-shadow:var(--shs)}
     .aeo2 .bsl-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--g1);font-weight:800;text-align:center}
     .aeo2 .bsl-h{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:6px 0 4px;text-align:center}

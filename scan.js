@@ -1379,25 +1379,51 @@
       <p class="sc-sub">Head-to-head mention counts across all ${totalCells} answers.</p>
       <div class="comp">${bars}</div></div>`;
   }
-  // Share of Answer as its own named element (boss mockup item 2).
-  function shareOfAnswerHtml(ev, brand, compStats, num) {
+  // Share of Answer. Uses the SAME per-answer counts as the Competitor Benchmark
+  // (your citedCells + each rival's compStats.count) so the two sections can never
+  // disagree on who is #1. Leads with RANK (not the raw share %) + a stacked share
+  // bar, because share-of-voice in a crowded field is naturally low for the leader
+  // -- being the biggest slice of 15 brands still reads as ~17%, which looks bad
+  // as a bare number but is clearly winning as a ranked bar.
+  function shareOfAnswerHtml(ev, brand, compStats, num, citedCells) {
     const runs = (ev && ev.runs) || [];
     if (!runs.length) return "";
-    const brandL = (brand || "").toLowerCase();
-    const names = (compStats || []).map((c) => (c.name || "").toLowerCase()).filter(Boolean);
-    let b = 0, c = 0;
-    runs.forEach((r) => {
-      const t = (r.raw_response || "").toLowerCase();
-      if (brandL && t.includes(brandL)) b++;
-      names.forEach((n) => { if (t.includes(n)) c++; });
-    });
-    const sov = (b + c) ? Math.round((b / (b + c)) * 100) : 0;
-    const cls = sov >= 40 ? "ok" : sov >= 20 ? "warn" : "bad";
+    const stats = (compStats || []).filter((s) => s && s.name);
+    const mine = Number.isFinite(citedCells) ? citedCells : 0;
+    const entries = [{ name: brand, count: mine, you: true },
+                     ...stats.map((s) => ({ name: s.name, count: s.count || 0 }))]
+                    .filter((e) => e.count > 0)
+                    .sort((a, b) => b.count - a.count);
+    const total = entries.reduce((n, e) => n + e.count, 0);
+    if (!total) return "";
+    const pct = (k) => Math.round(k / total * 100);
+    const sov = pct(mine);
+    const rank = 1 + stats.filter((s) => (s.count || 0) > mine).length;
+    const nBrands = stats.length + 1;
+    const cls = rank === 1 ? "ok" : rank <= 3 ? "warn" : "bad";
+    const TOP = 6;
+    const shown = entries.slice(0, TOP);
+    const otherCount = entries.slice(TOP).reduce((n, e) => n + e.count, 0);
+    const seg = (name, count, kind) =>
+      `<span class="soaseg ${kind}" style="width:${(count / total * 100).toFixed(1)}%" title="${esc(name)}: named in ${count} of ${total} (${pct(count)}%)"></span>`;
+    const bar = shown.map((e) => seg(e.name, e.count, e.you ? "you" : "")).join("")
+              + (otherCount ? seg("Other brands", otherCount, "other") : "");
+    const leg = (name, count, kind) =>
+      `<span class="soaleg ${kind}"><i></i>${esc(name)} ${pct(count)}%</span>`;
+    const legend = shown.map((e) => leg(e.name, e.count, e.you ? "you" : "")).join("")
+                 + (otherCount ? leg("Others", otherCount, "other") : "");
+    const runnerUp = entries[0] && entries[0].you ? entries[1] : null;
+    const leader = entries[0];
+    const lead = rank === 1
+      ? `You own the largest share of AI answers: <b>${sov}%</b> of every brand AI named${runnerUp ? `, ahead of ${esc(runnerUp.name)} at ${pct(runnerUp.count)}%` : ""}.`
+      : `You hold <b>${sov}%</b> of every brand AI named. ${esc(leader.name)} leads at ${pct(leader.count)}%.`;
     return `<div class="sec2"><h2 id="sec-share">${secNum(num)}Share of Answer</h2>
-      <p class="sc-sub">Your share of AI answers versus the competitors who own your space.</p>
+      <p class="sc-sub">Your slice of every brand AI named across your ${stats.length} competitors.</p>
       <div class="comp">
-        <div class="soa"><div class="soa-num t-${cls}">${sov}%</div>
-          <div class="soa-txt">You were named <b>${b}</b> times; competitors <b>${c}</b> times across the answers.</div></div>
+        <div class="soa"><div class="soa-num t-${cls}">#${rank}<span class="soa-of">of ${nBrands}</span></div>
+          <div class="soa-txt">${lead}</div></div>
+        <div class="soabar">${bar}</div>
+        <div class="soalegend">${legend}</div>
       </div></div>`;
   }
   // "Get Your AEO Baseline" summary - the 6 named elements from the boss mockup.
@@ -1635,7 +1661,7 @@
       { id: "sec-competitors", label: "Who AI recommends", on: comps.length > 0,
         render: (n) => compHtml(comps, brand, compStats, false, n, category) },
       { id: "sec-share", label: "Share of Answer", on: runs.length > 0,
-        render: (n) => shareOfAnswerHtml(ev, brand, compStats, n) },
+        render: (n) => shareOfAnswerHtml(ev, brand, compStats, n, citedCells) },
       { id: "sec-questions", label: "Buyer questions", on: prompts.length > 0,
         render: (n) => matrixHtml(prompts, cited, true, n) },
       { id: "sec-content", label: "Content Authority Audit", on: true,
@@ -2067,8 +2093,18 @@
     .aeo2 .miss-eng{display:inline-block;font-size:12px;font-weight:700;color:#f3a0a2;background:rgba(229,72,77,.12);border:1px solid rgba(229,72,77,.25);border-radius:7px;padding:3px 9px;margin:2px 6px 2px 0;white-space:nowrap}
     .aeo2 .gapmore{font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap}
     .aeo2 .soa{display:flex;align-items:center;gap:18px;margin-top:6px}
-    .aeo2 .soa-num{font-size:48px;font-weight:800;letter-spacing:-.02em;line-height:1}
-    .aeo2 .soa-txt{color:#cfccd9;font-size:15px}
+    .aeo2 .soa-num{font-size:48px;font-weight:800;letter-spacing:-.02em;line-height:1;white-space:nowrap;flex:0 0 auto}
+    .aeo2 .soa-txt{color:#cfccd9;font-size:15px}.aeo2 .soa-txt b{color:var(--ink);font-weight:800}
+    .aeo2 .soa-num .soa-of{font-size:17px;color:var(--muted);font-weight:600;margin-left:7px}
+    .aeo2 .soabar{display:flex;height:18px;border-radius:999px;overflow:hidden;margin-top:20px;background:var(--card2)}
+    .aeo2 .soaseg{height:100%;background:#3a3a44;box-shadow:inset -1px 0 0 var(--card)}
+    .aeo2 .soaseg.you{background:var(--grad)}
+    .aeo2 .soaseg.other{background:#26262c}
+    .aeo2 .soalegend{display:flex;flex-wrap:wrap;gap:14px;margin-top:13px;font-size:12.5px;color:var(--muted)}
+    .aeo2 .soaleg{display:inline-flex;align-items:center;gap:6px}
+    .aeo2 .soaleg i{width:10px;height:10px;border-radius:3px;background:#3a3a44;display:inline-block}
+    .aeo2 .soaleg.you{color:var(--ink);font-weight:700}.aeo2 .soaleg.you i{background:var(--grad)}
+    .aeo2 .soaleg.other i{background:#26262c}
     @media(max-width:680px){.aeo2 .bsl-grid{grid-template-columns:1fr}}
     .aeo2 .link2{color:var(--g1);font-weight:700;cursor:pointer}
     .aeo2 .refine-form{display:none;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}

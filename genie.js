@@ -145,7 +145,7 @@
       <div class="mrow-body">
         <div class="mrow-asset">${esc(m.asset)}</div>
         <div class="mrow-why"><b>Why:</b> ${esc(m.why)}</div>
-        <div class="mrow-foot"><span class="mc-tag ${side === "on-site" ? "on" : "off"}">${esc(side)}</span><span class="mc-effort">${esc(m.effort)}</span></div>
+        <div class="mrow-foot"><span class="mc-tag ${side === "on-site" ? "on" : "off"}">${esc(side)}</span></div>
       </div>
     </div>`;
   }
@@ -194,7 +194,7 @@
       <p class="g-h2sub">What becoming the AEO authority for <span class="catq">"${esc(DATA.category)}"</span> is worth to ${esc(DATA.brand)}.</p>
       <div class="mm-card">
         <div class="mm-q">What's one new customer worth to you?</div>
-        <div class="mm-opts" id="mmOpts">${opts}</div>
+        <div class="mm-opts" id="mmOpts">${opts}<span class="mm-or">or</span><span class="mm-custom">$<input id="mmCustom" type="number" min="0" step="1000" placeholder="your number"></span></div>
         <div class="mm-tiers" id="mmTiers">${tiers}</div>
         <div class="mm-demand-h">There is more than enough demand to exceed these numbers.</div>
         <div class="mm-demand">${demand}</div>
@@ -299,6 +299,11 @@
     .gen .mm-opts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:26px}
     .gen .mm-opt{background:var(--card2);border:1px solid var(--line);color:#cfccd9;font-weight:800;font-size:15px;padding:11px 20px;border-radius:11px;cursor:pointer;transition:.15s}
     .gen .mm-opt.on{background:var(--grad);color:#fff;border-color:transparent}
+    .gen .mm-or{color:var(--muted);font-weight:700;font-size:13px;align-self:center}
+    .gen .mm-custom{display:inline-flex;align-items:center;gap:4px;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:0 14px;font-weight:800;font-size:15px;color:#cfccd9}
+    .gen .mm-custom:focus-within{border-color:var(--g1)}
+    .gen .mm-custom input{width:120px;background:none;border:none;color:var(--ink);font:inherit;font-weight:800;padding:11px 0;outline:none}
+    .gen .mm-custom input::placeholder{color:#6f6b7e;font-weight:600}
     .gen .mm-tiers{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
     @media(max-width:680px){.gen .mm-tiers{grid-template-columns:1fr}}
     .gen .mm-tier{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
@@ -341,15 +346,25 @@
     document.querySelectorAll(".gen .mrow-head").forEach((h) =>
       h.addEventListener("click", () => h.parentElement.classList.toggle("open")));
     // money model value selector
+    const setPer = (v, fromCustom) => {
+      v = Math.max(0, Math.round(v) || 0);
+      DATA.money.perCustomer = v;
+      document.querySelectorAll("#mmTiers .mm-rev").forEach((r) =>
+        r.textContent = usd(v * Number(r.getAttribute("data-c"))));
+      document.querySelectorAll(".mm-opt").forEach((o) =>
+        o.classList.toggle("on", !fromCustom && Number(o.getAttribute("data-v")) === v));
+    };
     const opts = document.getElementById("mmOpts");
     if (opts) opts.addEventListener("click", (e) => {
       const b = e.target.closest(".mm-opt"); if (!b) return;
-      const v = Number(b.getAttribute("data-v"));
-      opts.querySelectorAll(".mm-opt").forEach((o) => o.classList.toggle("on", o === b));
-      DATA.money.perCustomer = v;
-      document.querySelectorAll("#mmTiers .mm-rev").forEach((r) => {
-        r.textContent = usd(v * Number(r.getAttribute("data-c")));
-      });
+      const ci = document.getElementById("mmCustom"); if (ci) ci.value = "";
+      setPer(Number(b.getAttribute("data-v")), false);
+    });
+    const customInput = document.getElementById("mmCustom");
+    if (customInput) customInput.addEventListener("input", () => {
+      if (customInput.value === "") return;
+      const v = parseFloat(customInput.value);
+      setPer(isFinite(v) ? v : 0, true);
     });
     // sidebar scrollspy
     const nav = document.getElementById("gnav");

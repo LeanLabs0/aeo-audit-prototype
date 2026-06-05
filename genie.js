@@ -124,9 +124,9 @@
       `<a class="gpill" href="#gen-scores"><div class="gpd-wrap">${donut(s.val)}</div>
         <div class="gpname">${esc(s.name)}</div></a>`).join("");
     return `<div class="ghead">
-      <div class="g-eyebrow">AEO Genie &middot; your playbook</div>
-      <h1 class="g-title">Your 10 "Genius" moves</h1>
-      <p class="g-sub">The exact plays to get <b>${esc(DATA.brand)}</b> cited, recommended and named first by the AI answer engines your buyers trust. Built from your baseline of <b>${DATA.score}/100</b> for <span class="catq">"${esc(DATA.category)}"</span>.</p>
+      <div class="g-eyebrow">AEO Genie &middot; output</div>
+      <h1 class="g-title">10 "Genius" moves to get<br>recommended by LLMs</h1>
+      <p class="g-sub">The exact plays to get <b>${esc(DATA.brand)}</b> cited, recommended, and named first across the AI answer engines your buyers already trust.</p>
       <div class="ghero-pills">${pills}</div>
       <div class="g-note">Grounding, then corroboration, then prominence. Off-site is roughly 90% of the game.</div>
     </div>`;

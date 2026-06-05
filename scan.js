@@ -1167,7 +1167,7 @@
   const ENGINES2 = [["chatgpt", "ChatGPT"], ["claude", "Claude"], ["gemini", "Gemini"]];
   const CAT_LABELS = {
     crawler_access: ["Can AI read your site?", "Crawler access"],
-    structured_data: ["Structured data", "Schema markup"],
+    structured_data: ["Structured Data", "Schema markup"],
     entity: ["Does AI know who you are?", "Entity and authority"],
     content: ["Answer-ready content", "Extractability"],
   };
@@ -1465,7 +1465,52 @@
   Object.assign(CAT_LABELS, {
     content_geo: ["Answer-ready content", "Content extractability"],
     citation_footprint: ["Where AI gets answers", "AI source mix"],
+    // Kevin's 4 levers (the shared Baseline + Genie vocabulary). The audit + hero
+    // donuts regroup the granular subchecks into these for display.
+    grounding_pages: ["Grounding Pages", "Authoritative content"],
+    corroboration: ["Corroboration", "Off-site verification"],
+    prominence: ["Prominence", "How often AI surfaces you"],
   });
+
+  // Map every subcheck key -> one of Kevin's 4 levers (phase order: grounding ->
+  // corroboration -> prominence). structured_data reused as the lever key.
+  const LEVERS = [
+    { key: "structured_data", name: "Structured Data",
+      subKeys: ["organization_schema", "page_schema", "jsonld_coverage",
+                "bot_gptbot", "bot_claudebot", "bot_perplexitybot", "bot_google_extended",
+                "robots_ai", "ssr", "llms_txt"] },
+    { key: "grounding_pages", name: "Grounding Pages",
+      subKeys: ["answer_first", "atomic_paragraphs", "question_headings", "faq_schema",
+                "stats_density", "citations_quotes", "lists_tables", "heading_hierarchy",
+                "readability", "def_comparison", "freshness", "authors"] },
+    { key: "corroboration", name: "Corroboration",
+      subKeys: ["wikidata", "sameas", "authority_sources", "source_mix"] },
+    { key: "prominence", name: "Prominence",
+      subKeys: ["share_of_voice", "sentiment"] },
+  ];
+  const SUBCHECK_LEVER = {};
+  LEVERS.forEach((lv) => lv.subKeys.forEach((k) => { SUBCHECK_LEVER[k] = lv.key; }));
+
+  // Regroup the backend's granular pillar cards into 4 lever cards (same shape as
+  // a pillar card: {key, name, score, subchecks}) so heroPillarsHtml/scorecardHtml/
+  // subCard render them unchanged. Prominence score = the AEO visibility rate.
+  function toLevers(checks, rate) {
+    const bucket = {};
+    LEVERS.forEach((lv) => { bucket[lv.key] = []; });
+    (checks || []).forEach((c) => (c.subchecks || []).forEach((s) => {
+      const lk = SUBCHECK_LEVER[s.key];
+      if (lk) bucket[lk].push(s);
+      else { bucket.grounding_pages.push(s); try { console.warn("unmapped subcheck:", s.key); } catch (_) {} }
+    }));
+    return LEVERS.map((lv) => {
+      const subs = bucket[lv.key];
+      const pass = subs.filter((s) => s.status === "pass").length;
+      const score = lv.key === "prominence"
+        ? Math.round((rate || 0) * 100)
+        : (subs.length ? Math.round((pass / subs.length) * 100) : 0);
+      return { key: lv.key, name: lv.name, score, subchecks: subs };
+    }).filter((lv) => lv.subchecks.length || lv.key === "prominence");
+  }
   Object.assign(CHECK_GUIDE, {
     authority_sources: { how_to: "Earn placements on the domains AI answer engines cite most for B2B: get listed/reviewed on G2, Capterra and TrustRadius; build an authoritative Wikipedia/Wikidata entity; participate in relevant Reddit and LinkedIn discussions; and publish to YouTube. AI engines disproportionately cite Reddit, YouTube, LinkedIn and review platforms, so a presence there is a direct path into generated answers in your category.", resources: [{ label: "Search Engine Land - AI search engines cite Reddit, YouTube and LinkedIn most", url: "https://searchengineland.com/ai-search-engines-cite-reddit-youtube-and-linkedin-most-study-473138" }, { label: "Peec AI - Top domains cited by AI search (30M sources)", url: "https://peec.ai/blog/top-domains-cited-by-ai-search-analysis-based-on-30m-sources" }] },
     share_of_voice: { how_to: "Share of voice is your brand mentions divided by all brand mentions (you + competitors) across the AI answers. Lift it by winning the buyer-intent prompts where competitors currently dominate: publish comparison and best-X-for-Y assets, strengthen the on-page answer-ready content for those queries, and earn third-party citations on the sources those answers pull from.", resources: [{ label: "HubSpot AEO Grader - Share of Voice", url: "https://www.hubspot.com/aeo-grader/share-of-voice" }] },
@@ -1588,15 +1633,16 @@
     _lastData = data;
     const allGreen = score >= 75 && rate >= 0.8;
     injectAeoStyles();
+    const leverChecks = toLevers(checks, rate);
     report.innerHTML =
       `<div class="aeo2">` +
-        heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, checks) +
+        heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, leverChecks) +
         detectBoxHtml(category, icp) +
         (allGreen ? allGreenHtml(brand) : "") +
         (comps.length ? compHtml(comps, brand, compStats, true, undefined, category) : "") +
         engineHtml(engCount) +
         matrixHtml(prompts, cited, false) +
-        scorecardHtml(checks, true, true) +
+        scorecardHtml(leverChecks, true, true) +
         nextStepHtml() +
       `</div>`;
     wireAeo(brand);
@@ -1653,12 +1699,13 @@
     injectAeoStyles();
     const host = document.getElementById("report");
     host.removeAttribute("hidden");
+    const leverChecks = toLevers(checks, rate);
     // One ordered registry of full-report sections. Filter out empties, number
     // the survivors 01..N in document order, and feed BOTH the body and the
     // floating sidebar from the same list so the numbering can never drift.
     const defs = [
       { id: "sec-visibility", label: "AEO Visibility Score", on: true,
-        render: (n) => heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, checks, { hideUrlEyebrow: true, num: n }) },
+        render: (n) => heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, leverChecks, { hideUrlEyebrow: true, num: n }) },
       { id: "sec-engines", label: "How often AI names you", on: true,
         render: (n) => engineHtml(engCount, n) },
       { id: "sec-competitors", label: "Who AI recommends", on: comps.length > 0,
@@ -1668,7 +1715,7 @@
       { id: "sec-questions", label: "Buyer questions", on: prompts.length > 0,
         render: (n) => matrixHtml(prompts, cited, true, n) },
       { id: "sec-content", label: "Content Authority Audit", on: true,
-        render: (n) => scorecardHtml(checks, false, false, n) },
+        render: (n) => scorecardHtml(leverChecks, false, false, n) },
       { id: "sec-gap", label: "Where rivals beat you", on: true,
         render: (n) => citationGapHtml(ev, compStats, n) },
       { id: "sec-query", label: "Questions to win first", on: prompts.length > 0,

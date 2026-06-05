@@ -128,31 +128,42 @@
     </div>`;
   }
 
-  function moveCard(m, n) {
-    const onside = m.side === "on-site";
-    return `<div class="movecard ${onside ? "on" : "off"}">
-      <div class="mc-top"><span class="mc-num">${String(n).padStart(2, "0")}</span>
-        <span class="mc-tag ${onside ? "on" : "off"}">${esc(m.side)}</span>
-        <span class="mc-lever">${esc(m.lever)}</span></div>
-      <div class="mc-name">${esc(m.name)}</div>
-      <div class="mc-asset">${esc(m.asset)}</div>
-      <div class="mc-why"><b>Why:</b> ${esc(m.why)}</div>
-      <div class="mc-foot"><span class="mc-impact">${esc(m.impact)}</span><span class="mc-effort">${esc(m.effort)}</span></div>
+  const PHASES = [
+    { lever: "Grounding", side: "on-site", tag: "the foundation" },
+    { lever: "Corroboration", side: "off-site", tag: "the bigger game" },
+    { lever: "Prominence", side: "off-site", tag: "win the category" },
+  ];
+
+  function moveRow(m, n, side, open) {
+    return `<div class="mrow${open ? " open" : ""}">
+      <button class="mrow-head" type="button">
+        <span class="mrow-n">${String(n).padStart(2, "0")}</span>
+        <span class="mrow-name">${esc(m.name)}</span>
+        <span class="mrow-impact">${esc(m.impact)}</span>
+        <span class="mrow-chev">&#9662;</span>
+      </button>
+      <div class="mrow-body">
+        <div class="mrow-asset">${esc(m.asset)}</div>
+        <div class="mrow-why"><b>Why:</b> ${esc(m.why)}</div>
+        <div class="mrow-foot"><span class="mc-tag ${side === "on-site" ? "on" : "off"}">${esc(side)}</span><span class="mc-effort">${esc(m.effort)}</span></div>
+      </div>
     </div>`;
   }
 
   function movesHtml() {
-    const on = MOVES.filter((m) => m.side === "on-site");
-    const off = MOVES.filter((m) => m.side === "off-site");
     let n = 0;
-    const onCards = on.map((m) => moveCard(m, ++n)).join("");
-    const offCards = off.map((m) => moveCard(m, ++n)).join("");
+    const blocks = PHASES.map((ph, pi) => {
+      const rows = MOVES.filter((m) => m.lever === ph.lever)
+        .map((m) => moveRow(m, ++n, ph.side, n === 1)).join("");
+      return `<div class="mphase">
+        <div class="mphase-h"><span class="mphase-n">Phase ${pi + 1}</span>
+          <span class="mphase-lever">${esc(ph.lever)}</span>
+          <span class="mphase-tag">${esc(ph.side)} &middot; ${esc(ph.tag)}</span></div>
+        <div class="mphase-rows">${rows}</div></div>`;
+    }).join("");
     return `<div class="gsec"><h2 id="gen-moves" class="g-h2"><span class="g-n">01</span>Your 10 "Genius" moves</h2>
-      <p class="g-h2sub">The highest-leverage plays, ranked by impact and ordered grounding to prominence. Figures are illustrative.</p>
-      <div class="mgroup"><div class="mgroup-h">On-site &middot; grounding <span class="mgroup-c">${on.length} moves</span></div>
-        <div class="mgrid">${onCards}</div></div>
-      <div class="mgroup"><div class="mgroup-h">Off-site &middot; corroboration + prominence <span class="mgroup-c">${off.length} moves</span></div>
-        <div class="mgrid">${offCards}</div></div></div>`;
+      <p class="g-h2sub">Ordered the way AI rewards it: grounding first, then corroboration, then prominence. Tap a move to see the exact play. Figures are illustrative.</p>
+      ${blocks}</div>`;
   }
 
   function stackHtml() {
@@ -247,25 +258,30 @@
     .gen .g-h2{font-size:clamp(22px,2.6vw,28px);font-weight:800;letter-spacing:-.02em;margin:0 0 6px;display:flex;align-items:center}
     .gen .g-n{display:inline-flex;align-items:center;justify-content:center;min-width:1.7em;height:1.7em;padding:0 .45em;margin-right:.5em;border-radius:8px;background:rgba(118,18,250,.14);border:1px solid rgba(118,18,250,.35);color:var(--g1);font-size:.6em;font-weight:800;font-variant-numeric:tabular-nums}
     .gen .g-h2sub{margin:0 0 20px;color:var(--muted);font-size:14.5px;line-height:1.5;max-width:680px}
-    /* moves */
-    .gen .mgroup{margin-bottom:26px}
-    .gen .mgroup-h{font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:#cfccd9;margin:0 2px 14px;display:flex;align-items:center;gap:10px}
-    .gen .mgroup-c{font-size:12px;font-weight:700;color:var(--muted);text-transform:none;letter-spacing:0}
-    .gen .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    @media(max-width:720px){.gen .mgrid{grid-template-columns:1fr}}
-    .gen .movecard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shs);position:relative;overflow:hidden}
-    .gen .movecard.on{border-left:3px solid #7612fa}.gen .movecard.off{border-left:3px solid #ff6221}
-    .gen .mc-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-    .gen .mc-num{font-size:13px;font-weight:800;color:var(--g1);font-variant-numeric:tabular-nums}
+    /* moves: phased roadmap of expandable rows */
+    .gen .mphase{margin-bottom:26px}
+    .gen .mphase-h{display:flex;align-items:baseline;gap:10px;margin:0 2px 12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+    .gen .mphase-n{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--g1)}
+    .gen .mphase-lever{font-size:18px;font-weight:800;letter-spacing:-.01em}
+    .gen .mphase-tag{font-size:12.5px;color:var(--muted);font-weight:600;margin-left:auto}
+    .gen .mphase-rows{display:flex;flex-direction:column;gap:8px}
+    .gen .mrow{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shs);transition:border-color .15s}
+    .gen .mrow:hover{border-color:#3a3a44}
+    .gen .mrow-head{display:flex;align-items:center;gap:14px;width:100%;background:none;border:none;color:var(--ink);text-align:left;cursor:pointer;padding:15px 18px;font-family:inherit}
+    .gen .mrow-n{font-size:13px;font-weight:800;color:var(--g1);font-variant-numeric:tabular-nums;flex:0 0 auto}
+    .gen .mrow-name{font-size:15.5px;font-weight:800;flex:1;letter-spacing:-.01em}
+    .gen .mrow-impact{font-size:12px;font-weight:800;color:var(--ok);background:rgba(52,201,138,.12);padding:4px 10px;border-radius:8px;white-space:nowrap}
+    .gen .mrow-chev{color:var(--muted);font-size:13px;transition:transform .15s;flex:0 0 auto}
+    .gen .mrow.open .mrow-chev{transform:rotate(180deg)}
+    .gen .mrow-body{display:none;padding:0 18px 18px 46px}
+    .gen .mrow.open .mrow-body{display:block}
+    .gen .mrow-asset{font-size:14px;line-height:1.55;color:#cfccd9}
+    .gen .mrow-why{font-size:13px;line-height:1.5;color:var(--muted);margin-top:10px}.gen .mrow-why b{color:#cfccd9}
+    .gen .mrow-foot{display:flex;align-items:center;gap:10px;margin-top:14px}
     .gen .mc-tag{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:7px}
     .gen .mc-tag.on{color:#c9a6ff;background:rgba(118,18,250,.16)}.gen .mc-tag.off{color:#ffb38a;background:rgba(255,98,33,.14)}
-    .gen .mc-lever{font-size:11px;font-weight:700;color:var(--muted);margin-left:auto}
-    .gen .mc-name{font-size:17px;font-weight:800;letter-spacing:-.01em;margin-bottom:8px}
-    .gen .mc-asset{font-size:14px;line-height:1.5;color:#cfccd9}
-    .gen .mc-why{font-size:13px;line-height:1.5;color:var(--muted);margin-top:10px}.gen .mc-why b{color:#cfccd9}
-    .gen .mc-foot{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);flex-wrap:wrap}
-    .gen .mc-impact{font-size:12.5px;font-weight:800;color:var(--ok);background:rgba(52,201,138,.12);padding:4px 10px;border-radius:8px}
     .gen .mc-effort{font-size:12px;color:var(--muted);font-weight:700;margin-left:auto}
+    @media(max-width:480px){.gen .mrow-impact{display:none}}
     /* citation stack */
     .gen .cs-wrap{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:8px 22px 18px;box-shadow:var(--shs)}
     .gen .cs-table{width:100%;border-collapse:collapse}
@@ -321,6 +337,9 @@
 
   // ── wiring ───────────────────────────────────────────────────────────────
   function wire() {
+    // move rows: click head to expand/collapse
+    document.querySelectorAll(".gen .mrow-head").forEach((h) =>
+      h.addEventListener("click", () => h.parentElement.classList.toggle("open")));
     // money model value selector
     const opts = document.getElementById("mmOpts");
     if (opts) opts.addEventListener("click", (e) => {

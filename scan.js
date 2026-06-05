@@ -1387,7 +1387,7 @@
   // bar, because share-of-voice in a crowded field is naturally low for the leader
   // -- being the biggest slice of 15 brands still reads as ~17%, which looks bad
   // as a bare number but is clearly winning as a ranked bar.
-  function shareOfAnswerHtml(ev, brand, compStats, num, citedCells) {
+  function shareOfAnswerHtml(ev, brand, compStats, num, citedCells, bare) {
     const runs = (ev && ev.runs) || [];
     if (!runs.length) return "";
     const stats = (compStats || []).filter((s) => s && s.name);
@@ -1419,14 +1419,16 @@
     const lead = rank === 1
       ? `You own the largest share of AI answers: <b>${sov}%</b> of every brand AI named${runnerUp ? `, ahead of ${esc(runnerUp.name)} at ${pct(runnerUp.count)}%` : ""}.`
       : `You hold <b>${sov}%</b> of every brand AI named. ${esc(leader.name)} leads at ${pct(leader.count)}%.`;
-    return `<div class="sec2"><h2 id="sec-share">${secNum(num)}Your Share of AI Recommendations</h2>
-      <p class="sc-sub">Your slice of every brand AI named across your ${stats.length} competitors.</p>
-      <div class="comp">
+    const inner = `<div class="comp">
         <div class="soa"><div class="soa-num t-${cls}">#${rank}<span class="soa-of">of ${nBrands}</span></div>
           <div class="soa-txt">${lead}</div></div>
         <div class="soabar">${bar}</div>
         <div class="soalegend">${legend}</div>
-      </div></div>`;
+      </div>`;
+    if (bare) return inner;
+    return `<div class="sec2"><h2 id="sec-share">${secNum(num)}Your Share of AI Recommendations</h2>
+      <p class="sc-sub">Your slice of every brand AI named across your ${stats.length} competitors.</p>
+      ${inner}</div>`;
   }
   // "Get Your AEO Baseline" summary - the 6 named elements from the boss mockup.
   // The "Get Your AEO Baseline" section is now a floating, clickable section
@@ -1702,25 +1704,19 @@
     // One ordered registry of full-report sections. Filter out empties, number
     // the survivors 01..N in document order, and feed BOTH the body and the
     // floating sidebar from the same list so the numbering can never drift.
+    // Shortened + merged per Kevin: platforms+questions are one section, who+share
+    // are one, query-map and benchmark dropped, the audit moved to the bottom.
     const defs = [
       { id: "sec-visibility", label: "AEO Visibility Score", on: true,
         render: (n) => heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, leverChecks, { hideUrlEyebrow: true, num: n }) },
       { id: "sec-engines", label: "Performance by platform", on: true,
-        render: (n) => engineHtml(engCount, n) },
+        render: (n) => platformsHtml(engCount, prompts, cited, n) },
       { id: "sec-competitors", label: "Who AI recommends", on: comps.length > 0,
-        render: (n) => compHtml(comps, brand, compStats, false, n, category) },
-      { id: "sec-share", label: "Share of recommendations", on: runs.length > 0,
-        render: (n) => shareOfAnswerHtml(ev, brand, compStats, n, citedCells) },
-      { id: "sec-questions", label: "Questions customers ask", on: prompts.length > 0,
-        render: (n) => matrixHtml(prompts, cited, true, n) },
-      { id: "sec-content", label: "Content Authority Audit", on: true,
-        render: (n) => scorecardHtml(leverChecks, false, false, n) },
+        render: (n) => recommendsHtml(comps, brand, compStats, n, category, ev, citedCells) },
       { id: "sec-gap", label: "Where rivals beat you", on: true,
         render: (n) => citationGapHtml(ev, compStats, n) },
-      { id: "sec-query", label: "Questions to win first", on: prompts.length > 0,
-        render: (n) => queryMapHtml(ev, n) },
-      { id: "sec-benchmark", label: "Your rank vs rivals", on: true,
-        render: (n) => benchmarkHtml(citedCells, totalCells, brand, compStats, n) },
+      { id: "sec-content", label: "Content Authority Audit", on: true,
+        render: (n) => scorecardHtml(leverChecks, false, false, n) },
     ];
     const live = defs.filter((d) => d.on);
     live.forEach((d, i) => { d.num = String(i + 1).padStart(2, "0"); });
@@ -1736,12 +1732,8 @@
         (allGreen ? allGreenHtml(brand) : "") +
         (sec["sec-engines"] || "") +
         (sec["sec-competitors"] || "") +
-        (sec["sec-share"] || "") +
-        (sec["sec-questions"] || "") +
-        (sec["sec-content"] || "") +
         (sec["sec-gap"] || "") +
-        (sec["sec-query"] || "") +
-        (sec["sec-benchmark"] || "") +
+        (sec["sec-content"] || "") +
         blueprintCtaHtml() +
       `</div>`;
     wireAeo(brand);
@@ -1771,16 +1763,16 @@
         <div class="num"><b class="t-${st}">${pct}</b><span class="of">%</span></div>
       </div>
       <h1 class="hverdict">You show up in <b>${citedCells} of ${totalCells}</b> AI answers <span class="hpct">(${pct}%)</span></h1>
-      <div class="hsupport">Across ChatGPT, Claude and Gemini for <span class="catq">"${esc(category)}"</span>.</div>
+      <div class="hsupport">Your AI visibility for <span class="catq">"${esc(category)}"</span>. This is where you stand.</div>
     </div>`;
     if (!numbered) return heroBox;
     return `<div class="sec2"><h2 id="sec-visibility">${secNum(opts.num)}AEO Visibility Score</h2>
-      <p class="sc-sub">How often AI engines recommend you across buyer searches.</p>
+      <p class="sc-sub">We asked AI the questions your buyers ask, across ChatGPT, Claude and Gemini.</p>
       ${heroBox}</div>`;
   }
   // gated=true (preview): show the top 3 competitors, blur/lock the rest, + the
   // email box. gated=false (full report): show the whole list.
-  function compHtml(comps, brand, stats, gated, num, category) {
+  function compHtml(comps, brand, stats, gated, num, category, bare) {
     const ranked = (stats && stats.length) ? stats : null;
     const total = ranked && ranked[0] ? ranked[0].total : 0;
     const list = ranked
@@ -1806,13 +1798,12 @@
           <div class="cbox-row"><input id="compEmail" type="email" placeholder="you@company.com">
           <button class="btn-fill" id="compEmailBtn">Unlock full details</button></div></div>`
       : "";
+    const innerComp = `<div class="comp"><div class="chips">${chips}</div>${emailBox}</div>`;
+    if (bare) return `<div class="mx-label">Every brand AI recommends, by mention count</div>${innerComp}`;
     const heading = category ? `Who AI recommends for <span class="catq">"${esc(category)}"</span>` : "Who AI recommends";
     return `<div class="sec2"><h2 id="sec-competitors">${secNum(num)}${heading}</h2>
       <p class="sc-sub">${esc(subTxt)}</p>
-      <div class="comp">
-        <div class="chips">${chips}</div>
-        ${emailBox}
-      </div></div>`;
+      ${innerComp}</div>`;
   }
   function engineHtml(engCount, num) {
     const cards = ENGINES2.map(([k, label]) => {
@@ -1824,6 +1815,34 @@
     return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}Performance on Major Platforms</h2>
       <p class="sc-sub">How many buyer questions each engine recommends you for.</p>
       <div class="engines">${cards}</div></div>`;
+  }
+  // Merged "Performance + Questions" section (Kevin: the platform scores come from
+  // the questions, keep them together). Donuts (summary) + the questions matrix.
+  function platformsHtml(engCount, prompts, cited, num) {
+    const cards = ENGINES2.map(([k, label]) => {
+      const c = engCount[k], [cls, v] = engTone(c.cited, c.total);
+      return `<div class="eng ${cls}"><div class="ename">${label}</div>
+        <div class="edwrap">${engineDonut(c.cited, c.total, cls)}</div>
+        <div class="ev2">${v}</div><div class="erate">${c.cited} of ${c.total} questions</div></div>`;
+    }).join("");
+    const head = `<tr><th class="q">Question</th><th>ChatGPT</th><th>Claude</th><th>Gemini</th><th></th></tr>`;
+    const legend = `<div class="legend"><span><i class="y"></i>Recommended you</span><span><i class="n"></i>Did not mention you</span></div>`;
+    const rows = prompts.map((p, i) => matrixRow(p, i, cited)).join("");
+    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}Performance on Major Platforms</h2>
+      <p class="sc-sub">We asked AI the questions your buyers ask. Here is how each engine answered, and the exact questions behind it.</p>
+      <div class="engines">${cards}</div>
+      <div class="mx-label">The questions we asked, across each engine</div>
+      <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${rows}</tbody></table>${legend}</div></div>`;
+  }
+  // Merged "Who AI recommends + Share" section (Kevin: 3 and 4 are one thing -
+  // your share of voice + who is leading).
+  function recommendsHtml(comps, brand, compStats, num, category, ev, citedCells) {
+    const share = shareOfAnswerHtml(ev, brand, compStats, "", citedCells, true);
+    const chips = compHtml(comps, brand, compStats, false, "", category, true);
+    const heading = category ? `Who AI recommends for <span class="catq">"${esc(category)}"</span>` : "Who AI recommends";
+    return `<div class="sec2"><h2 id="sec-competitors">${secNum(num)}${heading}</h2>
+      <p class="sc-sub">Your share of voice, and every brand AI recommends in your space, ranked.</p>
+      ${share}${chips}</div>`;
   }
   function matrixRow(p, i, cited) {
     const dots = ENGINES2.map(([k]) =>
@@ -2208,6 +2227,7 @@
     .aeo2 .ev2{font-weight:800;font-size:15px}
     .aeo2 .eng.bad .ev2{color:var(--bad)}.aeo2 .eng.warn .ev2{color:var(--warn)}.aeo2 .eng.ok .ev2{color:var(--ok)}
     .aeo2 .erate{color:var(--muted);font-size:13px;margin-top:3px}
+    .aeo2 .mx-label{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:22px 0 12px}
     .aeo2 .matrix{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:8px 24px 22px;box-shadow:var(--shs)}
     .aeo2 table.mx{width:100%;border-collapse:collapse}
     .aeo2 table.mx th{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:14px 6px;text-align:center}

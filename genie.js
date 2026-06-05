@@ -44,7 +44,7 @@
       asset: "Add sameAs JSON-LD linking your site to G2, LinkedIn, Crunchbase and your HubSpot partner listing. State plainly who you are and who you are not.",
       why: "AI can't confirm Lean Labs is a distinct, credible entity, which is what your Corroboration score depends on. Validate it first.",
       impact: "Unlocks corroboration", effort: "1-2 days" },
-    { side: "on-site", lever: "Grounding", name: "Answer the 9 questions you lose",
+    { side: "on-site", lever: "Grounding", name: "Answer these 9 priority questions",
       asset: "Build grounding answers for the exact prompts you're invisible on: \"Best AI marketing agencies for Series A startup CMOs\", \"Best HubSpot marketing agencies with AI automation\", \"AI marketing agencies for early-stage founders\" (plus 6 more).",
       why: "AI named a competitor and not you on 9 of 12 buyer questions.",
       impact: "Up to 9 query placements", effort: "1 week" },
@@ -129,9 +129,9 @@
   }
 
   const PHASES = [
-    { lever: "Grounding", side: "on-site", tag: "the foundation" },
-    { lever: "Corroboration", side: "off-site", tag: "the bigger game" },
-    { lever: "Prominence", side: "off-site", tag: "win the category" },
+    { lever: "Grounding", title: "Easy on-site wins", side: "on-site", tag: "grounding" },
+    { lever: "Corroboration", title: "Win with off-site sources", side: "off-site", tag: "corroboration" },
+    { lever: "Prominence", title: "Win with brand mentions", side: "off-site", tag: "prominence" },
   ];
 
   function moveRow(m, n, side, open) {
@@ -143,8 +143,8 @@
         <span class="mrow-chev">&#9662;</span>
       </button>
       <div class="mrow-body">
-        <div class="mrow-asset">${esc(m.asset)}</div>
-        <div class="mrow-why"><b>Why:</b> ${esc(m.why)}</div>
+        <div class="mrow-line"><span class="mrow-lbl why">Why</span><span>${esc(m.why)}</span></div>
+        <div class="mrow-line"><span class="mrow-lbl how">How</span><span>${esc(m.asset)}</span></div>
         <div class="mrow-foot"><span class="mc-tag ${side === "on-site" ? "on" : "off"}">${esc(side)}</span></div>
       </div>
     </div>`;
@@ -157,7 +157,7 @@
         .map((m) => moveRow(m, ++n, ph.side, n === 1)).join("");
       return `<div class="mphase">
         <div class="mphase-h"><span class="mphase-n">Phase ${pi + 1}</span>
-          <span class="mphase-lever">${esc(ph.lever)}</span>
+          <span class="mphase-lever">${esc(ph.title)}</span>
           <span class="mphase-tag">${esc(ph.side)} &middot; ${esc(ph.tag)}</span></div>
         <div class="mphase-rows">${rows}</div></div>`;
     }).join("");
@@ -172,8 +172,8 @@
       `<tr><td class="cs-src">${esc(s.src)}<small>${esc(s.kind)}</small></td>
         <td class="cs-bar"><span class="cs-track"><i style="width:${Math.round((s.n / max) * 100)}%"></i></span><b>${s.n}x</b></td>
         <td class="cs-you"><span class="cs-no">Not in it</span></td></tr>`).join("");
-    return `<div class="gsec"><h2 id="gen-stack" class="g-h2"><span class="g-n">02</span>The Citation Stack</h2>
-      <p class="g-h2sub">The sources AI actually cites when buyers ask about your category, ranked by how many of your queries each shows up in. You are in none of them yet. Get into the top ones first.</p>
+    return `<div class="gsec"><h2 id="gen-stack" class="g-h2"><span class="g-n">02</span>Your biggest off-site opportunity</h2>
+      <p class="g-h2sub">From our research, the single biggest lever is off-site citations. These are the sources AI actually cites when buyers ask about your category, ranked by how many of your queries each shows up in. You're in none of them yet, so get into the top ones first.</p>
       <div class="cs-wrap"><table class="cs-table"><thead><tr><th>Source</th><th>Cited in your queries</th><th>You</th></tr></thead>
         <tbody>${rows}</tbody></table></div></div>`;
   }
@@ -190,8 +190,8 @@
     }).join("");
     const demand = DATA.demand.map((d) =>
       `<div class="mm-d"><div class="mm-dnum">${esc(d[0])}</div><div class="mm-dlabel">${esc(d[1])}</div><div class="mm-ddesc">${esc(d[2])}</div></div>`).join("");
-    return `<div class="gsec"><h2 id="gen-money" class="g-h2"><span class="g-n">03</span>The Money Model</h2>
-      <p class="g-h2sub">What becoming the AEO authority for <span class="catq">"${esc(DATA.category)}"</span> is worth to ${esc(DATA.brand)}.</p>
+    return `<div class="gsec"><h2 id="gen-money" class="g-h2"><span class="g-n">03</span>Now, the profitability</h2>
+      <p class="g-h2sub">We did some research for you. Here is what becoming the AEO authority for <span class="catq">"${esc(DATA.category)}"</span> is worth to ${esc(DATA.brand)}.</p>
       <div class="mm-card">
         <div class="mm-q">What's one new customer worth to you?</div>
         <div class="mm-opts" id="mmOpts">${opts}<span class="mm-or">or</span><span class="mm-custom">$<input id="mmCustom" type="number" min="0" step="1000" placeholder="your number"></span></div>
@@ -202,20 +202,35 @@
   }
 
   function scoresHtml() {
-    const cards = DATA.scores.map((s) =>
-      `<div class="sc-card"><div class="sc-donut">${donut(s.val)}</div>
-        <div class="sc-name">${esc(s.name)}</div><div class="sc-note">${esc(s.note)}</div>
-        <div class="sc-lever ${s.lever === "grounding" ? "g" : "o"}">${s.lever === "grounding" ? "Grounding" : "Off-site"}</div></div>`).join("");
+    const cards = DATA.scores.map((s, i) =>
+      `<div class="sc-card"><div class="sc-rank">${i + 1}</div><div class="sc-donut">${donut(s.val)}</div>
+        <div class="sc-name">${esc(s.name)}</div><div class="sc-note">${esc(s.note)}</div></div>`).join("");
     return `<div class="gsec"><h2 id="gen-scores" class="g-h2"><span class="g-n">04</span>The Bottom Line</h2>
-      <p class="g-h2sub">Improve these four scores, in this order, to displace your competition and become the AEO authority in your space. Every one is fixable, and the moves above are how.</p>
+      <p class="g-h2sub">Improve these four scores, in this order. Every one is fixable, and the moves above are how.</p>
       <div class="sc-grid">${cards}</div></div>`;
   }
 
   function ctaHtml() {
-    return `<div class="gcta"><div class="gcta-eyebrow">Ready to run the playbook?</div>
-      <h3>You've got the 10 moves. We build them for you.</h3>
-      <p>This is the plan. The hard part is execution. Book a call and we'll turn these moves into your AEO Blueprint, prioritized and done with you.</p>
-      <a class="gcta-btn" href="#">Book an AEO Strategy Call</a></div>`;
+    return `<div class="gnext">
+      <div class="gnext-done"><span class="gnext-check">&#10003;</span> You've run the AEO Genie. You've got your 10 moves.</div>
+      <h3 class="gnext-h">Now execute. Two ways to do it.</h3>
+      <div class="gnext-cards">
+        <div class="gnext-card">
+          <div class="gnext-eyebrow">Save on AEO</div>
+          <div class="gnext-title">Join the AEO Accelerator</div>
+          <p>A live working session with a few seats. Walk the playbook, unlock extra insights, save with HubSpot and Lean Labs.</p>
+          <div class="gnext-when">Next: Tuesday 2pm ET</div>
+          <a class="gnext-btn" href="#">Start with AEO</a>
+        </div>
+        <div class="gnext-card">
+          <div class="gnext-eyebrow">Want it done for you</div>
+          <div class="gnext-title">Request an AEO Blueprint</div>
+          <p>Book a meeting. We turn these 10 moves into your prioritized plan and build them with you.</p>
+          <div class="gnext-when">&nbsp;</div>
+          <a class="gnext-btn alt" href="#">Book a meeting</a>
+        </div>
+      </div>
+    </div>`;
   }
 
   // ── styles ───────────────────────────────────────────────────────────────
@@ -269,14 +284,15 @@
     .gen .mrow:hover{border-color:#3a3a44}
     .gen .mrow-head{display:flex;align-items:center;gap:14px;width:100%;background:none;border:none;color:var(--ink);text-align:left;cursor:pointer;padding:15px 18px;font-family:inherit}
     .gen .mrow-n{font-size:13px;font-weight:800;color:var(--g1);font-variant-numeric:tabular-nums;flex:0 0 auto}
-    .gen .mrow-name{font-size:15.5px;font-weight:800;flex:1;letter-spacing:-.01em}
+    .gen .mrow-name{font-size:15.5px;font-weight:700;flex:1;letter-spacing:-.01em}
     .gen .mrow-impact{font-size:12px;font-weight:800;color:var(--ok);background:rgba(52,201,138,.12);padding:4px 10px;border-radius:8px;white-space:nowrap}
     .gen .mrow-chev{color:var(--muted);font-size:13px;transition:transform .15s;flex:0 0 auto}
     .gen .mrow.open .mrow-chev{transform:rotate(180deg)}
     .gen .mrow-body{display:none;padding:0 18px 18px 46px}
     .gen .mrow.open .mrow-body{display:block}
-    .gen .mrow-asset{font-size:14px;line-height:1.55;color:#cfccd9}
-    .gen .mrow-why{font-size:13px;line-height:1.5;color:var(--muted);margin-top:10px}.gen .mrow-why b{color:#cfccd9}
+    .gen .mrow-line{display:flex;gap:12px;font-size:13.5px;line-height:1.55;color:#cfccd9;margin-bottom:10px}
+    .gen .mrow-lbl{flex:0 0 34px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
+    .gen .mrow-lbl.why{color:var(--g1)}.gen .mrow-lbl.how{color:#7ee8b6}
     .gen .mrow-foot{display:flex;align-items:center;gap:10px;margin-top:14px}
     .gen .mc-tag{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:7px}
     .gen .mc-tag.on{color:#c9a6ff;background:rgba(118,18,250,.16)}.gen .mc-tag.off{color:#ffb38a;background:rgba(255,98,33,.14)}
@@ -322,19 +338,28 @@
     /* scores */
     .gen .sc-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
     @media(max-width:760px){.gen .sc-grid{grid-template-columns:1fr 1fr}}
-    .gen .sc-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 18px;text-align:center;box-shadow:var(--shs)}
+    .gen .sc-card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 18px;text-align:center;box-shadow:var(--shs)}
+    .gen .sc-rank{position:absolute;top:12px;left:14px;width:22px;height:22px;border-radius:7px;background:rgba(118,18,250,.14);border:1px solid rgba(118,18,250,.35);color:var(--g1);font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center}
     .gen .sc-donut{width:56px;margin:0 auto 10px}
     .gen .sc-name{font-weight:800;font-size:15px}
     .gen .sc-note{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.45;min-height:54px}
     .gen .sc-lever{display:inline-block;margin-top:8px;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:7px}
     .gen .sc-lever.g{color:#c9a6ff;background:rgba(118,18,250,.16)}.gen .sc-lever.o{color:#ffb38a;background:rgba(255,98,33,.14)}
     /* cta */
-    .gen .gcta{margin-top:44px;background:var(--grad);border-radius:22px;padding:42px;text-align:center;color:#fff;box-shadow:0 26px 54px -22px rgba(193,9,175,.6)}
-    .gen .gcta-eyebrow{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;opacity:.9}
-    .gen .gcta h3{font-size:26px;margin:8px 0;font-weight:800;letter-spacing:-.01em}
-    .gen .gcta p{margin:0 auto 22px;max-width:520px;opacity:.95;line-height:1.55}
-    .gen .gcta-btn{display:inline-block;background:#fff;color:#7612fa;font-weight:800;padding:15px 30px;border-radius:12px;text-decoration:none;transition:transform .15s}
-    .gen .gcta-btn:hover{transform:translateY(-2px)}`;
+    .gen .gnext{margin-top:44px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:34px;box-shadow:var(--sh)}
+    .gen .gnext-done{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ok);background:rgba(52,201,138,.12);border:1px solid rgba(52,201,138,.3);border-radius:999px;padding:7px 14px}
+    .gen .gnext-h{font-size:24px;font-weight:800;letter-spacing:-.01em;margin:16px 0 20px}
+    .gen .gnext-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media(max-width:680px){.gen .gnext-cards{grid-template-columns:1fr}}
+    .gen .gnext-card{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column}
+    .gen .gnext-card:first-child{border-color:rgba(118,18,250,.4)}
+    .gen .gnext-eyebrow{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--g1)}
+    .gen .gnext-title{font-size:18px;font-weight:800;margin:6px 0 8px;letter-spacing:-.01em}
+    .gen .gnext-card p{font-size:13.5px;color:#cfccd9;line-height:1.5;margin:0 0 14px;flex:1}
+    .gen .gnext-when{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:14px}
+    .gen .gnext-btn{display:inline-block;text-align:center;background:var(--grad);color:#fff;font-weight:800;padding:13px 22px;border-radius:11px;text-decoration:none;transition:transform .15s}
+    .gen .gnext-btn.alt{background:var(--card);border:1px solid var(--line)}
+    .gen .gnext-btn:hover{transform:translateY(-2px)}`;
     const el = document.createElement("style");
     el.id = "genie-style"; el.textContent = css;
     document.head.appendChild(el);

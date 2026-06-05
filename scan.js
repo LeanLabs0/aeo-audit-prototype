@@ -1227,8 +1227,7 @@
         <div class="hpname">${esc(name)}</div>
         <div class="hpratio">${pass}/${subs.length} checks</div></a>`;
     }).join("");
-    return `<div class="hero-pillars">${cells}</div>
-      <a class="pill-jump" href="#sec-content">See what passed and what to fix</a>`;
+    return `<div class="hero-pillars">${cells}</div>`;
   }
   function detectBoxHtml(category, icp) {
     return `<div class="sec2"><div class="detectbox">
@@ -1420,7 +1419,7 @@
     const lead = rank === 1
       ? `You own the largest share of AI answers: <b>${sov}%</b> of every brand AI named${runnerUp ? `, ahead of ${esc(runnerUp.name)} at ${pct(runnerUp.count)}%` : ""}.`
       : `You hold <b>${sov}%</b> of every brand AI named. ${esc(leader.name)} leads at ${pct(leader.count)}%.`;
-    return `<div class="sec2"><h2 id="sec-share">${secNum(num)}Share of Answer</h2>
+    return `<div class="sec2"><h2 id="sec-share">${secNum(num)}Your Share of AI Recommendations</h2>
       <p class="sc-sub">Your slice of every brand AI named across your ${stats.length} competitors.</p>
       <div class="comp">
         <div class="soa"><div class="soa-num t-${cls}">#${rank}<span class="soa-of">of ${nBrands}</span></div>
@@ -1706,13 +1705,13 @@
     const defs = [
       { id: "sec-visibility", label: "AEO Visibility Score", on: true,
         render: (n) => heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, leverChecks, { hideUrlEyebrow: true, num: n }) },
-      { id: "sec-engines", label: "How often AI names you", on: true,
+      { id: "sec-engines", label: "Performance by platform", on: true,
         render: (n) => engineHtml(engCount, n) },
       { id: "sec-competitors", label: "Who AI recommends", on: comps.length > 0,
         render: (n) => compHtml(comps, brand, compStats, false, n, category) },
-      { id: "sec-share", label: "Share of Answer", on: runs.length > 0,
+      { id: "sec-share", label: "Share of recommendations", on: runs.length > 0,
         render: (n) => shareOfAnswerHtml(ev, brand, compStats, n, citedCells) },
-      { id: "sec-questions", label: "Buyer questions", on: prompts.length > 0,
+      { id: "sec-questions", label: "Questions customers ask", on: prompts.length > 0,
         render: (n) => matrixHtml(prompts, cited, true, n) },
       { id: "sec-content", label: "Content Authority Audit", on: true,
         render: (n) => scorecardHtml(leverChecks, false, false, n) },
@@ -1751,9 +1750,11 @@
 
   function heroHtml(score, lvl, verdict, citedCells, totalCells, url, category, icp, checks, opts) {
     opts = opts || {};
-    const off = 100 - Math.max(0, Math.min(100, score));
+    // The gauge IS brand visibility: how often you're mentioned across the tracked
+    // answers (citedCells / totalCells), the same % as the headline below it.
     const pct = totalCells ? Math.round((citedCells / totalCells) * 100) : 0;
-    const st = lvl.cls; // bad/orange/warn/ok -> color score + level by the 4-level scale
+    const off = 100 - Math.max(0, Math.min(100, pct));
+    const st = tone(pct); // color by visibility rate
     // Full report (opts.num set): heading + sub sit OUTSIDE the box, like every
     // other section. Preview (no num): keep the centered eyebrow label inside.
     const numbered = !!opts.num;
@@ -1767,11 +1768,10 @@
         </linearGradient></defs>
         <path d="M10,100 A90,90 0 0 1 190,100" fill="none" stroke="var(--track)" stroke-width="16" stroke-linecap="round"/>
         <path class="arc" d="M10,100 A90,90 0 0 1 190,100" fill="none" stroke="url(#aeoG)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="100" style="--off:${off}" stroke-dashoffset="${off}"/></svg>
-        <div class="num"><b class="t-${st}">${score}</b><span class="of">/100</span></div>
+        <div class="num"><b class="t-${st}">${pct}</b><span class="of">%</span></div>
       </div>
       <h1 class="hverdict">You show up in <b>${citedCells} of ${totalCells}</b> AI answers <span class="hpct">(${pct}%)</span></h1>
       <div class="hsupport">Across ChatGPT, Claude and Gemini for <span class="catq">"${esc(category)}"</span>.</div>
-      ${heroPillarsHtml(checks)}
     </div>`;
     if (!numbered) return heroBox;
     return `<div class="sec2"><h2 id="sec-visibility">${secNum(opts.num)}AEO Visibility Score</h2>
@@ -1821,7 +1821,7 @@
         <div class="edwrap">${engineDonut(c.cited, c.total, cls)}</div>
         <div class="ev2">${v}</div><div class="erate">${c.cited} of ${c.total} questions</div></div>`;
     }).join("");
-    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}How often each AI names you</h2>
+    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}Performance on Major Platforms</h2>
       <p class="sc-sub">How many buyer questions each engine recommends you for.</p>
       <div class="engines">${cards}</div></div>`;
   }
@@ -1836,7 +1836,7 @@
     const legend = `<div class="legend"><span><i class="y"></i>Recommended you</span><span><i class="n"></i>Did not mention you</span></div>`;
     if (full) {
       const rows = prompts.map((p, i) => matrixRow(p, i, cited)).join("");
-      return `<div class="sec2"><h2 id="sec-questions">${secNum(num)}The questions buyers ask</h2>
+      return `<div class="sec2"><h2 id="sec-questions">${secNum(num)}Questions your customers ask AI</h2>
         <p class="sc-sub">Every buyer prompt we ran, and which engines named you.</p>
         <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${rows}</tbody></table>
         ${legend}</div></div>`;
@@ -1848,7 +1848,7 @@
       <p>Enter your email to unlock all the questions and see exactly where you are missing</p>
       <div class="mx-grow"><input id="matrixEmail" type="email" placeholder="you@company.com">
       <button class="btn-fill" id="matrixRevealBtn">Unlock full details</button></div></div>` : "";
-    return `<div class="sec2"><h2>The real questions your buyers ask AI</h2>
+    return `<div class="sec2"><h2>Questions your customers ask AI</h2>
       <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${open}</tbody>${restBody}</table>
       ${legend}${reveal}</div></div>`;
   }
@@ -1893,6 +1893,7 @@
       return `<div class="sec2"><div class="scgate">
         <h2>Content Authority Audit</h2>
         <p class="sc-sub">The pillars AI graded you on. Unlock to see every check and exactly where you are missing.</p>
+        ${heroPillarsHtml(checks)}
         <div class="pillrows">${rows}</div>
         <div class="mx-grow"><input id="scoreEmail" type="email" placeholder="you@company.com">
           <button class="btn-fill" id="scoreUnlockBtn">Unlock full details</button></div>
@@ -1908,7 +1909,7 @@
         <div class="cards2">${subs.map((s) => subCard(s, stripFix)).join("")}</div></div>`;
     }).join("");
     return `<div class="sec2"><h2 id="sec-content">${secNum(num)}Content Authority Audit</h2>
-      <p class="sc-sub">Where your pages fall short of what AI answer engines trust.</p>${groups}</div>`;
+      <p class="sc-sub">Where your pages fall short of what AI answer engines trust.</p>${heroPillarsHtml(checks)}${groups}</div>`;
   }
   // Unlock gate card (replaces the open scorecard in the preview).
   function gateCardHtml(score, lvl) {

@@ -1711,8 +1711,8 @@
         render: (n) => heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, leverChecks, { hideUrlEyebrow: true, num: n }) },
       { id: "sec-engines", label: "Performance by platform", on: true,
         render: (n) => platformsHtml(engCount, prompts, cited, n) },
-      { id: "sec-gap", label: "Where rivals beat you", on: true,
-        render: (n) => citationGapHtml(ev, compStats, n) },
+      { id: "sec-competitors", label: "Who AI recommends", on: comps.length > 0,
+        render: (n) => recommendsHtml(comps, brand, compStats, n, category, ev, citedCells) },
       { id: "sec-content", label: "Content Authority Audit", on: true,
         render: (n) => scorecardHtml(leverChecks, false, false, n) },
     ];
@@ -1729,7 +1729,7 @@
         detectBoxHtml(category, icp) +
         (allGreen ? allGreenHtml(brand) : "") +
         (sec["sec-engines"] || "") +
-        (sec["sec-gap"] || "") +
+        (sec["sec-competitors"] || "") +
         (sec["sec-content"] || "") +
         blueprintCtaHtml() +
       `</div>`;

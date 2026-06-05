@@ -1371,12 +1371,16 @@
     return `<div class="sec2"><h2 id="sec-query">${secNum(num)}Buyer questions to win first</h2><p class="sc-sub">Your highest-value questions, ranked by how much they matter.</p>
       <div class="matrix"><table class="mx"><thead><tr><th class="q">Question</th><th>Intent</th><th>You</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
   }
-  function benchmarkHtml(citedCells, totalCells, brand, compStats, num) {
+  function benchmarkHtml(citedCells, totalCells, brand, compStats, num, bare) {
     const you = { name: brand, count: citedCells, you: true };
     const rivals = (compStats || []).map((c) => ({ name: c.name, count: c.count }));
     const rows = [you, ...rivals].sort((a, b) => b.count - a.count);
     const max = Math.max(1, ...rows.map((r) => r.count));
     const bars = rows.map((r) => `<div class="bmrow ${r.you ? "you" : ""}"><span class="bmname">${esc(r.name)}</span><span class="bmbar"><i style="width:${Math.round((r.count / max) * 100)}%"></i></span><span class="bmnum">${r.count}</span></div>`).join("");
+    // bare: just the label + ranked bars, for embedding inside recommendsHtml.
+    // The brand itself is row 0 of the sort and gets .bmrow.you (gradient bar +
+    // bold name) so YOU are highlighted in the field, not the leader.
+    if (bare) return `<div class="mx-label">Every brand AI recommends, by mention count</div><div class="comp">${bars}</div>`;
     return `<div class="sec2"><h2 id="sec-benchmark">${secNum(num)}Where you rank against competitors</h2>
       <p class="sc-sub">Every brand ranked by how many of the ${totalCells} AI answers named it.</p>
       <div class="comp">${bars}</div></div>`;
@@ -1712,7 +1716,7 @@
       { id: "sec-engines", label: "Performance by platform", on: true,
         render: (n) => platformsHtml(engCount, prompts, cited, n) },
       { id: "sec-competitors", label: "Who AI recommends", on: comps.length > 0,
-        render: (n) => recommendsHtml(comps, brand, compStats, n, category, ev, citedCells) },
+        render: (n) => recommendsHtml(comps, brand, compStats, n, category, ev, citedCells, totalCells) },
       { id: "sec-content", label: "Content Authority Audit", on: true,
         render: (n) => scorecardHtml(leverChecks, false, false, n) },
     ];
@@ -1833,13 +1837,15 @@
   }
   // Merged "Who AI recommends + Share" section (Kevin: 3 and 4 are one thing -
   // your share of voice + who is leading).
-  function recommendsHtml(comps, brand, compStats, num, category, ev, citedCells) {
+  function recommendsHtml(comps, brand, compStats, num, category, ev, citedCells, totalCells) {
     const share = shareOfAnswerHtml(ev, brand, compStats, "", citedCells, true);
-    const chips = compHtml(comps, brand, compStats, false, "", category, true);
+    // Benchmark bars (you highlighted, in the field) instead of competitor-only
+    // chips — the assessed brand must appear, not just rivals.
+    const bench = benchmarkHtml(citedCells, totalCells, brand, compStats, "", true);
     const heading = category ? `Who AI recommends for <span class="catq">"${esc(category)}"</span>` : "Who AI recommends";
     return `<div class="sec2"><h2 id="sec-competitors">${secNum(num)}${heading}</h2>
       <p class="sc-sub">Your share of voice, and every brand AI recommends in your space, ranked.</p>
-      ${share}${chips}</div>`;
+      ${share}${bench}</div>`;
   }
   function matrixRow(p, i, cited) {
     const dots = ENGINES2.map(([k]) =>

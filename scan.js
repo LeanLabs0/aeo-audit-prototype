@@ -2000,9 +2000,24 @@
     if (rescan) rescan.addEventListener("click", () => {
       const cat = ($$("#catIn") && $$("#catIn").value || "").trim();
       const ic = ($$("#icpIn") && $$("#icpIn").value || "").trim();
-      const input = $("#scanUrl");
-      const parsed = parseScanInput((input && input.value) || "");
-      if (!parsed.ok) { showInputError(parsed.error); return; }
+      const onFullReport = document.body.hasAttribute("data-full-report") || !document.getElementById("scanState");
+      // Full report has no #scanUrl input; recover the scanned URL from the data.
+      let url = ($("#scanUrl") && $("#scanUrl").value) || "";
+      if (!url) {
+        const sol = (_lastData && (_lastData.solutions || [])[0]) || {};
+        url = sol.url || (_lastData && _lastData.url) || "";
+        if (!url) { try { const d = JSON.parse(sessionStorage.getItem("aeo_full") || "null"); url = (d && ((d.solutions || [])[0] || {}).url) || (d && d.url) || ""; } catch (_) {} }
+      }
+      const parsed = parseScanInput(url);
+      if (!parsed.ok) { if (typeof showInputError === "function" && document.getElementById("scanUrlError")) showInputError(parsed.error); return; }
+      if (onFullReport) {
+        const host = document.getElementById("report");
+        if (host) host.innerHTML = `<div style="padding:90px 20px;text-align:center;color:#9b97a8">Re-scanning <b style="color:#f3f2f6">${esc(parsed.solution_url)}</b> for <b style="color:#c47bff">${esc(cat || "your category")}</b>. Usually 60-90s.</div>`;
+        runLiveScan(parsed, () => {}, { category: cat, icp: ic })
+          .then((d) => { try { sessionStorage.setItem("aeo_full", JSON.stringify(d)); } catch (_) {} renderFullReport(d); })
+          .catch((e) => { if (host) host.innerHTML = `<div style="padding:90px 20px;text-align:center;color:#e5484d">Re-scan failed: ${esc(String(e && e.message || e))}</div>`; });
+        return;
+      }
       showLoading(hostOf(parsed.solution_url));
       runLiveScan(parsed, updateLoadingProgress, { category: cat, icp: ic })
         .then(renderFull).catch((e) => renderGenericError(String(e && e.message || e)));

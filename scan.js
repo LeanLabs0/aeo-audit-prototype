@@ -1217,20 +1217,23 @@
   }
   function heroPillarsHtml(checks) {
     if (!checks || !checks.length) return "";
+    // Each pillar links down to its group in the Content Authority Audit, so the
+    // top-line score connects to the actual passed/failed checks behind it.
     const cells = checks.map((c) => {
       const [name] = CAT_LABELS[c.key] || [c.name || c.key];
       const subs = c.subchecks || [];
       const pass = subs.filter((s) => s.status === "pass").length;
-      return `<div class="hpill">${pillarDonut(c.score)}
+      return `<a class="hpill" href="#cat-${esc(c.key)}">${pillarDonut(c.score)}
         <div class="hpname">${esc(name)}</div>
-        <div class="hpratio">${pass}/${subs.length}</div></div>`;
+        <div class="hpratio">${pass}/${subs.length} checks</div></a>`;
     }).join("");
-    return `<div class="hero-pillars">${cells}</div>`;
+    return `<div class="hero-pillars">${cells}</div>
+      <a class="pill-jump" href="#sec-content">See what passed and what to fix</a>`;
   }
   function detectBoxHtml(category, icp) {
     return `<div class="sec2"><div class="detectbox">
-      <div class="detected">Detected: <b id="detCat">${esc(category)}</b> for <b id="detIcp">${esc(icp)}</b>
-        &nbsp;&middot;&nbsp; <span class="link2" id="refineLink">Refine</span></div>
+      <div class="db-h">What we tested you for</div>
+      <div class="detected">We checked how AI answers when buyers search for <b id="detCat">${esc(category)}</b> (for <b id="detIcp">${esc(icp)}</b>). Not what you want to rank for? <span class="link2" id="refineLink">Refine</span></div>
       <div class="refine-form" id="refineForm">
         <input id="catIn" value="${esc(category)}" placeholder="Category">
         <input id="icpIn" value="${esc(icp)}" placeholder="Ideal customer (ICP)">
@@ -1356,7 +1359,7 @@
     const body = g.length
       ? `<div class="matrix"><table class="mx"><thead><tr><th class="q">Buyer question</th><th class="lcol">Missed on</th><th class="lcol">AI recommended instead</th></tr></thead><tbody>${rows}</tbody></table></div>`
       : `<div class="gap-empty">No citation gaps found. Wherever a competitor gets cited, you do too.</div>`;
-    return `<div class="sec2"><h2 id="sec-gap">${secNum(num)}Citation Gap Analysis</h2><p class="sc-sub">Buyer questions where rivals get named and you do not, and who wins instead.</p>
+    return `<div class="sec2"><h2 id="sec-gap">${secNum(num)}Questions where rivals are named and you're not</h2><p class="sc-sub">Where AI recommends a competitor instead of you, and who.</p>
       ${body}</div>`;
   }
   function queryMapHtml(ev, num) {
@@ -1366,7 +1369,7 @@
     const rows = prompts.map((p) => ({ q: p.prompt, intent: p.intent || "Question", won: !!cited[p.id], w: (cited[p.id] ? 0 : 10) + (INTENT_WEIGHT[p.intent] || 1) }))
       .sort((a, b) => b.w - a.w)
       .map((x) => `<tr><td class="q">${esc(x.q)}</td><td><span class="chip sm">${esc(x.intent)}</span></td><td class="cell"><span class="cdot ${x.won ? "yes" : "no"}"></span></td></tr>`).join("");
-    return `<div class="sec2"><h2 id="sec-query">${secNum(num)}High-Intent Query Map</h2><p class="sc-sub">The buyer questions you should be winning first, ranked by intent.</p>
+    return `<div class="sec2"><h2 id="sec-query">${secNum(num)}Buyer questions to win first</h2><p class="sc-sub">Your highest-value questions, ranked by how much they matter.</p>
       <div class="matrix"><table class="mx"><thead><tr><th class="q">Question</th><th>Intent</th><th>You</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
   }
   function benchmarkHtml(citedCells, totalCells, brand, compStats, num) {
@@ -1375,8 +1378,8 @@
     const rows = [you, ...rivals].sort((a, b) => b.count - a.count);
     const max = Math.max(1, ...rows.map((r) => r.count));
     const bars = rows.map((r) => `<div class="bmrow ${r.you ? "you" : ""}"><span class="bmname">${esc(r.name)}</span><span class="bmbar"><i style="width:${Math.round((r.count / max) * 100)}%"></i></span><span class="bmnum">${r.count}</span></div>`).join("");
-    return `<div class="sec2"><h2 id="sec-benchmark">${secNum(num)}Competitor Benchmark</h2>
-      <p class="sc-sub">Head-to-head mention counts across all ${totalCells} answers.</p>
+    return `<div class="sec2"><h2 id="sec-benchmark">${secNum(num)}Where you rank against competitors</h2>
+      <p class="sc-sub">Every brand ranked by how many of the ${totalCells} AI answers named it.</p>
       <div class="comp">${bars}</div></div>`;
   }
   // Share of Answer. Uses the SAME per-answer counts as the Competitor Benchmark
@@ -1656,7 +1659,7 @@
     const defs = [
       { id: "sec-visibility", label: "AEO Visibility Score", on: true,
         render: (n) => heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, checks, { hideUrlEyebrow: true, num: n }) },
-      { id: "sec-engines", label: "Breakdown by AI engine", on: true,
+      { id: "sec-engines", label: "How often AI names you", on: true,
         render: (n) => engineHtml(engCount, n) },
       { id: "sec-competitors", label: "Who AI recommends", on: comps.length > 0,
         render: (n) => compHtml(comps, brand, compStats, false, n, category) },
@@ -1666,11 +1669,11 @@
         render: (n) => matrixHtml(prompts, cited, true, n) },
       { id: "sec-content", label: "Content Authority Audit", on: true,
         render: (n) => scorecardHtml(checks, false, false, n) },
-      { id: "sec-gap", label: "Citation Gap Analysis", on: true,
+      { id: "sec-gap", label: "Where rivals beat you", on: true,
         render: (n) => citationGapHtml(ev, compStats, n) },
-      { id: "sec-query", label: "High-Intent Query Map", on: prompts.length > 0,
+      { id: "sec-query", label: "Questions to win first", on: prompts.length > 0,
         render: (n) => queryMapHtml(ev, n) },
-      { id: "sec-benchmark", label: "Competitor Benchmark", on: true,
+      { id: "sec-benchmark", label: "Your rank vs rivals", on: true,
         render: (n) => benchmarkHtml(citedCells, totalCells, brand, compStats, n) },
     ];
     const live = defs.filter((d) => d.on);
@@ -1720,7 +1723,7 @@
         <div class="num"><b class="t-${st}">${score}</b><span class="of">/100</span></div>
       </div>
       <h1 class="hverdict">You show up in <b>${citedCells} of ${totalCells}</b> AI answers <span class="hpct">(${pct}%)</span></h1>
-      <div class="hsupport">Across ChatGPT, Claude and Gemini for ${esc(category)}.</div>
+      <div class="hsupport">Across ChatGPT, Claude and Gemini for <span class="catq">"${esc(category)}"</span>.</div>
       ${heroPillarsHtml(checks)}
     </div>`;
     if (!numbered) return heroBox;
@@ -1741,8 +1744,10 @@
       `<span class="chip${locked ? " locked" : ""}"${s.count != null ? ` title="Named in ${s.count} of ${total} AI answers"` : ""}>${esc(s.name)}${s.count != null ? `<b class="cct">${s.count}x</b>` : ""}</span>`;
     let chips;
     if (gated && list.length > SHOWN) {
+      const lockedN = list.length - SHOWN;
       chips = list.slice(0, SHOWN).map((s) => chip(s, false)).join("")
-            + list.slice(SHOWN).map((s) => chip(s, true)).join("");
+            + list.slice(SHOWN).map((s) => chip(s, true)).join("")
+            + `<span class="chip morelock">+${lockedN} more locked</span>`;
     } else {
       chips = list.map((s) => chip(s, false)).join("");
     }
@@ -1754,7 +1759,7 @@
           <div class="cbox-row"><input id="compEmail" type="email" placeholder="you@company.com">
           <button class="btn-fill" id="compEmailBtn">Unlock full details</button></div></div>`
       : "";
-    const heading = category ? `Who AI recommends for ${esc(category)}` : "Who AI recommends";
+    const heading = category ? `Who AI recommends for <span class="catq">"${esc(category)}"</span>` : "Who AI recommends";
     return `<div class="sec2"><h2 id="sec-competitors">${secNum(num)}${heading}</h2>
       <p class="sc-sub">${esc(subTxt)}</p>
       <div class="comp">
@@ -1769,8 +1774,8 @@
         <div class="edwrap">${engineDonut(c.cited, c.total, cls)}</div>
         <div class="ev2">${v}</div><div class="erate">${c.cited} of ${c.total} questions</div></div>`;
     }).join("");
-    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}Breakdown by AI engine</h2>
-      <p class="sc-sub">How often each AI engine names you across the buyer prompts.</p>
+    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}How often each AI names you</h2>
+      <p class="sc-sub">How many buyer questions each engine recommends you for.</p>
       <div class="engines">${cards}</div></div>`;
   }
   function matrixRow(p, i, cited) {
@@ -1832,7 +1837,7 @@
         const subs = c.subchecks || [];
         const pass = subs.filter((s) => s.status === "pass").length;
         const tease = subs.map((s) => s.name || s.key).filter(Boolean).join("  ·  ");
-        return `<div class="pillitem">
+        return `<div class="pillitem" id="cat-${esc(c.key)}">
           <div class="pillrow"><span class="pillname">${esc(name)}</span>
             <span class="cgf ${tone(c.score)}">${pass}/${subs.length}</span></div>
           ${tease ? `<div class="pilltease blur">${esc(tease)}</div>` : ""}
@@ -1851,7 +1856,7 @@
       const [name] = CAT_LABELS[c.key] || [c.name || c.key];
       const subs = c.subchecks || [];
       const pass = subs.filter((s) => s.status === "pass").length;
-      return `<div class="cgroup"><div class="cgh"><span class="cgn">${esc(name)}</span>
+      return `<div class="cgroup" id="cat-${esc(c.key)}"><div class="cgh"><span class="cgn">${esc(name)}</span>
         <span class="cgf ${tone(c.score)}">${pass}/${subs.length}</span></div>
         <div class="cards2">${subs.map((s) => subCard(s, stripFix)).join("")}</div></div>`;
     }).join("");
@@ -2050,15 +2055,21 @@
     .aeo2 .hverdict b{color:var(--ink)}
     .aeo2 .hpct{color:var(--muted);font-weight:800}
     .aeo2 .hsupport{position:relative;font-size:15px;margin-top:12px;color:#cfccd9}
-    .aeo2 .detected{position:relative;margin-top:24px;font-size:14px;color:var(--muted)}.aeo2 .detected b{color:var(--ink)}
-    .aeo2 .hero-pillars{position:relative;display:flex;justify-content:center;flex-wrap:wrap;gap:26px;margin-top:30px;padding-top:26px;border-top:1px solid var(--line)}
-    .aeo2 .hpill{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:96px}
+    .aeo2 .catq{color:var(--g1);font-weight:800}
+    .aeo2 [id^="cat-"]{scroll-margin-top:80px}
+    .aeo2 .detected{position:relative;margin-top:8px;font-size:14px;color:var(--muted)}.aeo2 .detected b{color:var(--ink)}
+    .aeo2 .hero-pillars{position:relative;display:flex;justify-content:center;flex-wrap:wrap;gap:18px;margin-top:30px;padding-top:26px;border-top:1px solid var(--line)}
+    .aeo2 .hpill{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:96px;text-decoration:none;color:inherit;cursor:pointer;border-radius:12px;padding:8px 6px;transition:background .15s,transform .15s}
+    .aeo2 .hpill:hover{background:var(--card2);transform:translateY(-2px)}
     .aeo2 .hpd{width:56px;height:56px}
     .aeo2 .hpd.bad{color:var(--bad)}.aeo2 .hpd.warn{color:var(--warn)}.aeo2 .hpd.ok{color:var(--ok)}
     .aeo2 .hpn{font-size:16px;font-weight:800;fill:var(--ink)}
     .aeo2 .hpname{font-weight:700;font-size:13px;text-align:center;max-width:120px;line-height:1.2}
     .aeo2 .hpratio{font-size:12px;color:var(--muted);font-weight:700}
+    .aeo2 .pill-jump{position:relative;display:inline-block;margin-top:18px;color:var(--g1);font-weight:700;font-size:13.5px;text-decoration:none}
+    .aeo2 .pill-jump:hover{text-decoration:underline}
     .aeo2 .detectbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 22px;box-shadow:var(--shs);text-align:center}
+    .aeo2 .db-h{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--g1)}
     .aeo2 .detectbox .detected{margin:0}
     .aeo2 .detectbox .refine-form{margin-top:14px}
     .aeo2 .metric-eyebrow{position:relative;font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--g1);margin-top:2px}
@@ -2230,6 +2241,7 @@
     .aeo2 .t-ok{color:var(--ok)}.aeo2 .t-warn{color:var(--warn)}.aeo2 .t-orange{color:var(--orange)}.aeo2 .t-bad{color:var(--bad)}
     /* gated competitors + matrix reveal + next-step ascension */
     .aeo2 .chip.locked{filter:blur(5px);user-select:none;pointer-events:none}
+    .aeo2 .chip.morelock{background:rgba(118,18,250,.12);border:1px solid rgba(118,18,250,.35);color:var(--g1);font-weight:800}
     .aeo2 .scgate{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px 28px;box-shadow:var(--shs)}
     .aeo2 .scgate h2{margin:0 0 4px;font-size:22px}
     .aeo2 .scgate .sc-sub{margin:0 0 16px}

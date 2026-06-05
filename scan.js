@@ -1901,9 +1901,9 @@
       <a class="btn2" href="#" id="ctaUnlock">Unlock full details</a></div>`;
   }
   function blueprintCtaHtml() {
-    return `<div class="cta2"><h3>Don't know where to start?</h3>
-      <p>This report is your problem list. Book a call and we will turn it into your AEO Blueprint, the exact plan to get AI recommending you.</p>
-      <a class="btn2" href="#book">Book my call</a></div>`;
+    return `<div class="cta2"><h3>You've seen the problems. Here's how to fix them.</h3>
+      <p>The baseline is your diagnosis. The AEO Genie turns it into your 10 specific moves, the exact plays to get AI recommending you instead of your competitors.</p>
+      <a class="btn2" href="genie.html">Run the AEO Genie</a></div>`;
   }
 
   // Conversion: capture email (best-effort POST), stash the scan response, then

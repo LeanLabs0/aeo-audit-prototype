@@ -8,8 +8,11 @@
 (function () {
   "use strict";
 
-  // ── REAL DATA (Lean Labs scan) ───────────────────────────────────────────
-  const DATA = {
+  // ── DATA ─────────────────────────────────────────────────────────────────
+  // Seed values are the Lean Labs preview (Phase 0). When a Baseline scan is in
+  // sessionStorage, boot() fetches the live /aeo-genie moves and overwrites DATA +
+  // MOVES with the real per-brand result (see loadDynamic / applyGenieResponse).
+  let DATA = {
     brand: "Lean Labs",
     category: "AI-powered marketing agency for startups",
     url: "https://www.leanlabs.com/solutions/loop-marketing",
@@ -37,51 +40,66 @@
     demand: [["120+", "buyer questions in play", "distinct prompts your buyers ask AI about your category"], ["8,400+", "monthly AI-driven searches", "buyers researching your category across ChatGPT, Claude, Gemini and Perplexity"], ["+78%", "demand growth, YoY", "year-over-year rise in AI-driven research for your category"]],
   };
 
-  // The 10 Genius Moves, grounded in the real scan. Ordered grounding -> corroboration -> prominence.
-  const MOVES = [
-    // ON-SITE (grounding)
-    { side: "on-site", lever: "Grounding", name: "Fix your entity record",
-      asset: "Add sameAs JSON-LD linking your site to G2, LinkedIn, Crunchbase and your HubSpot partner listing. State plainly who you are and who you are not.",
-      why: "AI can't confirm Lean Labs is a distinct, credible entity, which is what your Corroboration score depends on. Validate it first.",
-      impact: "Unlocks corroboration", effort: "1-2 days" },
-    { side: "on-site", lever: "Grounding", name: "Answer these 9 priority questions",
-      asset: "Build grounding answers for the exact prompts you're invisible on: \"Best AI marketing agencies for Series A startup CMOs\", \"Best HubSpot marketing agencies with AI automation\", \"AI marketing agencies for early-stage founders\" (plus 6 more).",
-      why: "AI named a competitor and not you on 9 of 12 buyer questions.",
-      impact: "Up to 9 query placements", effort: "1 week" },
-    { side: "on-site", lever: "Grounding", name: "Publish the honest comparison",
-      asset: "Write \"Lean Labs vs SmartBug Media vs GrowthSpree\", a fair comparison naming the competitors AI recommends instead of you.",
-      why: "SmartBug (11x) and GrowthSpree (9x) win the best/alternatives answers. Under 20% of agencies name competitors; doing it helps AI place you.",
-      impact: "Win vs + alternatives queries", effort: "2-3 days" },
-    { side: "on-site", lever: "Grounding", name: "Build the AI-marketing grounding hub",
-      asset: "Cluster a definitive \"What is AI-powered marketing for startups\" pillar plus supporting pages so AI sees topical depth, not one-offs.",
-      why: "Grounding Pages scored 38/100. Thin authoritative content for AI to cite.",
-      impact: "Grounding 38 to 80+", effort: "2-3 weeks" },
-    { side: "on-site", lever: "Grounding", name: "Add the schema + llms.txt layer",
-      asset: "Ship FAQ + HowTo + Organization schema and an llms.txt so models can read and quote you token-efficiently.",
-      why: "Structured Data is 90/100, nearly there. Close the gap so models can read and quote you cleanly.",
-      impact: "Structured data 90 to 95", effort: "2-3 days" },
-    // OFF-SITE (corroboration)
-    { side: "off-site", lever: "Corroboration", name: "Get into the articles AI already cites",
-      asset: "You're absent from every top-cited source for your queries. Highest-frequency first: rzlt.io (4x), tripledart.com (3x), blendb2b.com (2x), pitchkitchen.com (2x). Pitch for inclusion.",
-      why: "You're in none of the sources AI cites for your queries. These are the exact pages LLMs pull from when buyers ask about your category. See the Citation Stack below.",
-      impact: "Corroborates you across each source's queries", effort: "ongoing" },
-    { side: "off-site", lever: "Corroboration", name: "Claim your Wikipedia / Wikidata entity",
-      asset: "en.wikipedia.org is cited in 4 of your queries. Establish a Wikidata entity with notable references so AI has a canonical record of you.",
-      why: "Anchors corroboration and entity at the source AI trusts most.",
-      impact: "Canonical entity", effort: "1-2 weeks" },
-    { side: "off-site", lever: "Corroboration", name: "Win the review insights game",
-      asset: "Get 5+ G2/Clutch reviews that name the solution, the buyer, the outcome and the decision factors, not just stars. (Reputation Rocket.)",
-      why: "Review sites drive AI sentiment, and a specific review can get cited within a day of posting.",
-      impact: "Sentiment + corroboration", effort: "2-4 weeks" },
-    // OFF-SITE (prominence)
-    { side: "off-site", lever: "Prominence", name: "Get mentioned where buyers talk",
-      asset: "reddit.com shows in 4 of your queries (Reddit appears in 10-21% of AI answers). Run a mention monitor on the marketing and HubSpot subreddits and join threads authentically.",
-      why: "Prominence scored 11/100. AI rarely surfaces you; mentions in cited communities lift it fastest.",
-      impact: "Raises prominence", effort: "ongoing" },
-    { side: "off-site", lever: "Prominence", name: "Run the case-study co-marketing loop",
-      asset: "Tie a modest discount to a recent client posting results on their site, a review site and a relevant Reddit thread. You write it, they approve.",
-      why: "The cheapest way to manufacture corroborated prominence from happy clients.",
-      impact: "Compounding mentions", effort: "per client" },
+  // The 10 moves. DYNAMIC by design: which moves surface, in what order, and the
+  // numbers inside them are driven by the brand's own scan (weaknesses first). This
+  // Phase 0 preview hardcodes Lean Labs values pulled from DATA above. Copy per Ryan
+  // (evens) + Jonathan (odds): lead with the VALUE so the collapsed card sells the
+  // move before the user opens it (Kevin: "the closed accordion is the most important
+  // view"). Each move = name (the play) + hook (the so-what, shown collapsed) + why
+  // (the reason) + how (the exact, executable steps).
+  let MOVES = [
+    // ── ON-SITE: 5 moves on your own site ──────────────────────────────────
+    { side: "on-site", name: "Create better corroboration",
+      hook: "Make AI trust you instantly with made-for-AI identity links.",
+      why: "AI can't easily confirm the identity and credibility of your business. Linking out proves it, and corroboration is what AI weighs most.",
+      how: "Add made-for-AI links (\"sameAs\" JSON-LD) to your site that let AI understand the most important aspects of your business in seconds, and tie that data to review sites like G2, Crunchbase and LinkedIn so what you claim is substantiated.",
+      impact: "Instant AI trust" },
+    { side: "on-site", name: "Create content answering these 10 questions",
+      hook: "AI named a competitor, not you, on 9 of 12 buyer questions.",
+      why: "Out of the most common questions your buyers ask, AI named your competitors and not you 9 out of 12 times.",
+      how: "Create AI-optimized content addressing the exact questions you're invisible on: \"What are the best AI marketing agencies for Series A startups?\", \"Best HubSpot marketing agencies with AI automation\", \"Top AI marketing agencies for early-stage founders\" (plus more).",
+      impact: "Up to 10 query placements" },
+    { side: "on-site", name: "Tell customers why they'd choose a competitor",
+      hook: "Naming rivals where they win makes AI trust you more.",
+      why: "Unbiased content that names competitors for the specific areas where they perform better actually helps you show up in AI answers.",
+      how: "Publish content naming a relevant competitor as the leader for a particular service or product, with your brand as #2 or #3. The impartial stance increases AI's trust in you.",
+      impact: "Win vs/alternatives queries" },
+    { side: "on-site", name: "Build an AI-marketing grounding foundation",
+      hook: "Your site is too thin for AI to cite. Grounding score: 38/100.",
+      why: "Your grounding content scored only 38/100. That means your site content is too thin for AI to consider it authoritative enough to cite.",
+      how: "Create a cluster of pillar and supporting pages around your core topic so AI comes to see topical depth and expertise, not one-off posts.",
+      impact: "Grounding 38 to 80+" },
+    { side: "on-site", name: "Structure your data so AI can read it",
+      hook: "Schema lets AI understand and quote you correctly.",
+      why: "AI-readable language called \"schema\" lets AI engines understand your pages and quote you correctly in their recommendations.",
+      how: "Select the right schema for your site and each key page, then deploy it with an llms.txt file built for AI that optimizes token usage for easy ingestion.",
+      impact: "Structured data 90 to 95" },
+    // ── OFF-SITE: 5 moves across the web (~90% of the game) ─────────────────
+    { side: "off-site", name: "Leverage external content AI already loves",
+      hook: "You're in none of the sources AI cites. Get into them.",
+      why: "You're in none of the sources AI cites for your most relevant queries. It's faster to gain authority by getting into the content AI already cites than to build it from scratch.",
+      how: "See the Citation Stack below. Contact the publishers, highest-frequency first: rzlt.io (4x), tripledart.com (3x), blendb2b.com (2x), pitchkitchen.com (2x). Pitch your solution as a relevant inclusion.",
+      impact: "Corroboration across cited queries" },
+    { side: "off-site", name: "Claim your reputation",
+      hook: "Anchor to a 3rd-party source of truth AI already trusts.",
+      why: "Claiming your Wikipedia and creating a Wikidata entity anchors your business to a third-party source of trust, adding further credibility and corroboration.",
+      how: "Wikipedia was cited in 4 of your queries. Create a company Wikidata entity to give AI engines a canonical source of truth about you.",
+      impact: "Canonical entity" },
+    { side: "off-site", name: "Get reviews on external websites (no longer optional)",
+      hook: "Reviews drive AI sentiment, with a fast time-to-effect.",
+      why: "Reputable review sites are powerful at driving AI sentiment. Reviews build brand authority and act fast on AI platforms.",
+      how: "Get 5+ G2/Clutch reviews that name the solution, the buyer, the outcome and the decision factors, not just stars. (Reputation Rocket.)",
+      impact: "Sentiment + authority" },
+    { side: "off-site", name: "When buyers talk, it should be about you",
+      hook: "AI weighs what customers say about you in the wild.",
+      why: "AI cares not just about what you say about your business, but what any collective group of customers says in online forums or communities.",
+      how: "Set up and maintain a system to monitor where your business is mentioned online and what is being said. AI reads these as a measure of your prominence.",
+      impact: "Raises prominence" },
+    { side: "off-site", name: "Build a case-study co-marketing loop",
+      hook: "Turn happy clients into corroborated prominence, cheaply.",
+      why: "The closest experts on your value are your customers. Case studies are an inexpensive way to manufacture the corroborated prominence AI holds in high regard.",
+      how: "Tie a modest discount to a recent client posting results on their site, a review site and a relevant Reddit thread. You can write it, they must approve it.",
+      impact: "Compounding mentions" },
   ];
 
   const SECTIONS = [
@@ -121,7 +139,7 @@
 
   function heroHtml() {
     return `<div class="ghead">
-      <div class="g-eyebrow">AEO Genie &middot; output</div>
+      <div class="g-eyebrow">AEO Genie</div>
       <h1 class="g-title">10 "Genius" moves to get<br>recommended by LLMs</h1>
       <p class="g-sub">The exact plays to get <b>${esc(DATA.brand)}</b> cited, recommended, and named first across the AI answer engines your buyers already trust.</p>
       <div class="g-note">Grounding, then corroboration, then prominence. Off-site is roughly 90% of the game.</div>
@@ -129,40 +147,46 @@
   }
 
   const PHASES = [
-    { lever: "Grounding", title: "Easy on-site wins", side: "on-site", tag: "grounding" },
-    { lever: "Corroboration", title: "Win with off-site sources", side: "off-site", tag: "corroboration" },
-    { lever: "Prominence", title: "Win with brand mentions", side: "off-site", tag: "prominence" },
+    { side: "on-site", title: "On-site moves", tag: "your website",
+      lift: "Lifts your Grounding and Structured Data scores." },
+    { side: "off-site", title: "Off-site moves", tag: "across the web",
+      lift: "Lifts your Corroboration and Prominence scores. This is roughly 90% of the game." },
   ];
 
   function moveRow(m, n, side, open) {
+    // Collapsed view leads with name + hook (the so-what) so the user wants to open.
     return `<div class="mrow${open ? " open" : ""}">
       <button class="mrow-head" type="button">
         <span class="mrow-n">${String(n).padStart(2, "0")}</span>
-        <span class="mrow-name">${esc(m.name)}</span>
-        <span class="mrow-impact">${esc(m.impact)}</span>
+        <span class="mrow-headtext">
+          <span class="mrow-name">${esc(m.name)}</span>
+          <span class="mrow-hook">${esc(m.hook)}</span>
+        </span>
+        ${m.impact ? `<span class="mrow-impact">${esc(m.impact)}</span>` : ""}
         <span class="mrow-chev">&#9662;</span>
       </button>
       <div class="mrow-body">
         <div class="mrow-line"><span class="mrow-lbl why">Why</span><span>${esc(m.why)}</span></div>
-        <div class="mrow-line"><span class="mrow-lbl how">How</span><span>${esc(m.asset)}</span></div>
-        <div class="mrow-foot"><span class="mc-tag ${side === "on-site" ? "on" : "off"}">${esc(side)}</span></div>
+        <div class="mrow-line"><span class="mrow-lbl how">How</span><span>${esc(m.how)}</span></div>
       </div>
     </div>`;
   }
 
   function movesHtml() {
     let n = 0;
-    const blocks = PHASES.map((ph, pi) => {
-      const rows = MOVES.filter((m) => m.lever === ph.lever)
+    const blocks = PHASES.map((ph) => {
+      const rows = MOVES.filter((m) => m.side === ph.side)
         .map((m) => moveRow(m, ++n, ph.side, n === 1)).join("");
       return `<div class="mphase">
-        <div class="mphase-h"><span class="mphase-n">Phase ${pi + 1}</span>
+        <div class="mphase-h">
           <span class="mphase-lever">${esc(ph.title)}</span>
-          <span class="mphase-tag">${esc(ph.side)} &middot; ${esc(ph.tag)}</span></div>
+          <span class="mphase-tag ${ph.side === "on-site" ? "on" : "off"}">${esc(ph.tag)}</span>
+          <div class="mphase-lift">${esc(ph.lift)}</div>
+        </div>
         <div class="mphase-rows">${rows}</div></div>`;
     }).join("");
-    return `<div class="gsec"><h2 id="gen-moves" class="g-h2"><span class="g-n">01</span>Your 10 "Genius" moves</h2>
-      <p class="g-h2sub">Ordered the way AI rewards it: grounding first, then corroboration, then prominence. Tap a move to see the exact play. Figures are illustrative.</p>
+    return `<div class="gsec"><h2 id="gen-moves" class="g-h2"><span class="g-n">01</span>Your 10 moves</h2>
+      <p class="g-h2sub">Ten specific plays to get ${esc(DATA.brand)} recommended by AI, drawn from your scan and ordered by impact. Each one names the move, why it matters, and exactly how to do it. Tap any move.</p>
       ${blocks}</div>`;
   }
 
@@ -244,6 +268,12 @@
     .gen *{box-sizing:border-box}
     html{scroll-behavior:smooth}.gen [id^="gen-"]{scroll-margin-top:24px}
     .gen .catq{color:var(--g1);font-weight:800}
+    /* loading */
+    .gen .g-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:60vh;padding:40px 20px}
+    .gen .g-spin{width:44px;height:44px;border-radius:50%;border:4px solid var(--card2);border-top-color:var(--g1);animation:gspin .9s linear infinite}
+    @keyframes gspin{to{transform:rotate(360deg)}}
+    .gen .g-load-h{font-size:22px;font-weight:800;margin-top:22px;letter-spacing:-.01em}
+    .gen .g-load-sub{font-size:14.5px;color:var(--muted);margin-top:8px;max-width:420px;line-height:1.5}
     /* sidebar */
     .gen .gnav{display:none;position:fixed;left:16px;top:50%;transform:translateY(-50%);width:184px;z-index:40;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 14px;box-shadow:var(--sh)}
     .gen .gnav-h{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--g1);line-height:1.25;margin:2px 4px 12px}
@@ -275,16 +305,19 @@
     .gen .g-h2sub{margin:0 0 20px;color:var(--muted);font-size:14.5px;line-height:1.5;max-width:680px}
     /* moves: phased roadmap of expandable rows */
     .gen .mphase{margin-bottom:26px}
-    .gen .mphase-h{display:flex;align-items:baseline;gap:10px;margin:0 2px 12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
-    .gen .mphase-n{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--g1)}
+    .gen .mphase-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:10px;margin:0 2px 12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
     .gen .mphase-lever{font-size:18px;font-weight:800;letter-spacing:-.01em}
-    .gen .mphase-tag{font-size:12.5px;color:var(--muted);font-weight:600;margin-left:auto}
+    .gen .mphase-tag{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:3px 9px;border-radius:7px;margin-left:auto}
+    .gen .mphase-tag.on{color:#c9a6ff;background:rgba(118,18,250,.16)}.gen .mphase-tag.off{color:#ffb38a;background:rgba(255,98,33,.14)}
+    .gen .mphase-lift{flex-basis:100%;margin-top:2px;font-size:13px;color:var(--muted);line-height:1.45}
     .gen .mphase-rows{display:flex;flex-direction:column;gap:8px}
     .gen .mrow{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shs);transition:border-color .15s}
     .gen .mrow:hover{border-color:#3a3a44}
-    .gen .mrow-head{display:flex;align-items:center;gap:14px;width:100%;background:none;border:none;color:var(--ink);text-align:left;cursor:pointer;padding:15px 18px;font-family:inherit}
-    .gen .mrow-n{font-size:13px;font-weight:800;color:var(--g1);font-variant-numeric:tabular-nums;flex:0 0 auto}
-    .gen .mrow-name{font-size:15.5px;font-weight:700;flex:1;letter-spacing:-.01em}
+    .gen .mrow-head{display:flex;align-items:flex-start;gap:14px;width:100%;background:none;border:none;color:var(--ink);text-align:left;cursor:pointer;padding:15px 18px;font-family:inherit}
+    .gen .mrow-n{font-size:13px;font-weight:800;color:var(--g1);font-variant-numeric:tabular-nums;flex:0 0 auto;padding-top:2px}
+    .gen .mrow-headtext{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+    .gen .mrow-name{font-size:15.5px;font-weight:700;letter-spacing:-.01em;line-height:1.3}
+    .gen .mrow-hook{font-size:13px;color:var(--muted);line-height:1.4}
     .gen .mrow-impact{font-size:12px;font-weight:800;color:var(--ok);background:rgba(52,201,138,.12);padding:4px 10px;border-radius:8px;white-space:nowrap}
     .gen .mrow-chev{color:var(--muted);font-size:13px;transition:transform .15s;flex:0 0 auto}
     .gen .mrow.open .mrow-chev{transform:rotate(180deg)}
@@ -411,10 +444,71 @@
     targets.forEach((t) => io.observe(t));
   }
 
-  function boot() {
+  // ── dynamic data: fetch the live per-brand moves ─────────────────────────
+  const API = {
+    url: "https://factor8-agent-sdk.fly.dev/api/v1/brand-slug/public-scanner/aeo-genie",
+    key: "594aa935e360c9bf28f97437c1dddea9",
+  };
+
+  // Map the /aeo-genie response onto DATA + MOVES. Money + demand stay as the
+  // preview defaults (not measured by the scan).
+  function applyGenieResponse(d) {
+    const noteByKey = {
+      structured_data: "Machine-readable signals that tell AI what you offer.",
+      grounding_pages: "Authoritative pages AI can cite as its source.",
+      corroboration: "Third-party sources that verify your claims.",
+      prominence: "How often you surface in AI answers for your space.",
+    };
+    const leverSide = { structured_data: "grounding", grounding_pages: "grounding", corroboration: "off-site", prominence: "off-site" };
+    if (d.brand) DATA.brand = d.brand;
+    if (d.category) DATA.category = d.category;
+    if (typeof d.visibility_pct === "number") DATA.score = d.visibility_pct;
+    if (Array.isArray(d.levers) && d.levers.length)
+      DATA.scores = d.levers.map((lv) => ({ key: lv.key, name: lv.name, lever: leverSide[lv.key] || "grounding", val: lv.score, note: noteByKey[lv.key] || "" }));
+    if (Array.isArray(d.citation_stack) && d.citation_stack.length)
+      DATA.citationStack = d.citation_stack.map((s) => ({ src: s.src, n: s.n, you: !!s.you, kind: s.kind || "" }));
+    if (Array.isArray(d.competitors) && d.competitors.length)
+      DATA.competitors = d.competitors.map((c) => [c.name, c.count]);
+    if (Array.isArray(d.moves) && d.moves.length)
+      MOVES = d.moves.map((m) => ({ side: m.side, name: m.title, hook: m.hook, why: m.why, how: m.how, impact: "" }));
+  }
+
+  function loadingHtml() {
+    return `<div class="gen"><div class="g-loading">
+      <div class="g-spin"></div>
+      <div class="g-load-h">Writing your 10 moves</div>
+      <div class="g-load-sub">Reading your scan and building the exact plays to get you recommended by AI. About a minute.</div>
+    </div></div>`;
+  }
+
+  // Returns true if it rendered live data; false to fall back to the preview.
+  async function loadDynamic(host) {
+    let scan = null;
+    try { scan = JSON.parse(sessionStorage.getItem("aeo_full") || "null"); } catch (_) {}
+    if (!scan) return false; // no Baseline scan in this session -> preview fallback
+    injectStyles();
+    host.innerHTML = loadingHtml();
+    try {
+      const r = await fetch(API.url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-API-Key": API.key },
+        body: JSON.stringify({ scan_result: scan }),
+      });
+      if (!r.ok) throw new Error("genie " + r.status);
+      const d = await r.json();
+      applyGenieResponse(d);
+      return true;
+    } catch (e) {
+      try { console.error("genie load failed, using preview:", e); } catch (_) {}
+      return false;
+    }
+  }
+
+  async function boot() {
     injectStyles();
     const host = document.getElementById("genie");
     if (!host) return;
+    await loadDynamic(host); // overwrites DATA/MOVES with live data when available
     host.innerHTML = `<div class="gen">` +
       sidebarHtml() + heroHtml() + movesHtml() + stackHtml() + moneyHtml() + scoresHtml() + ctaHtml() +
       `</div>`;

@@ -1410,14 +1410,31 @@
     const TOP = 6;
     const shown = entries.slice(0, TOP);
     const otherCount = entries.slice(TOP).reduce((n, e) => n + e.count, 0);
-    const seg = (name, count, kind) =>
-      `<span class="soaseg ${kind}" style="width:${(count / total * 100).toFixed(1)}%" title="${esc(name)}: named in ${count} of ${total} (${pct(count)}%)"></span>`;
-    const bar = shown.map((e) => seg(e.name, e.count, e.you ? "you" : "")).join("")
-              + (otherCount ? seg("Other brands", otherCount, "other") : "");
-    const leg = (name, count, kind) =>
-      `<span class="soaleg ${kind}"><i></i>${esc(name)} ${pct(count)}%</span>`;
-    const legend = shown.map((e) => leg(e.name, e.count, e.you ? "you" : "")).join("")
-                 + (otherCount ? leg("Others", otherCount, "other") : "");
+    // Pie ("pizza") of share of AI recommendations. YOU = vivid brand magenta so
+    // you pop even as a thin slice; rivals = muted grey ramp; leftover = darkest.
+    // The SAME conic stops drive both the pie and the legend swatches so they match.
+    const YOU = "#c109af";
+    const RAMP = ["#8b8794", "#6f6b79", "#56525f", "#403d48", "#2e2c34", "#211f2a"];
+    const OTHER = "#1b1922";
+    let ri = 0;
+    let acc = 0;
+    const stops = [];
+    const slices = [];
+    shown.forEach((e) => {
+      const color = e.you ? YOU : RAMP[ri++ % RAMP.length];
+      const p = e.count / total * 100;
+      stops.push(`${color} ${acc.toFixed(2)}% ${(acc + p).toFixed(2)}%`);
+      acc += p;
+      slices.push({ name: e.name, count: e.count, color, you: e.you });
+    });
+    if (otherCount) {
+      stops.push(`${OTHER} ${acc.toFixed(2)}% 100%`);
+      slices.push({ name: "Others", count: otherCount, color: OTHER, you: false });
+    }
+    const pie = `<div class="soapie" style="background:conic-gradient(${stops.join(",")})" role="img" aria-label="Share of AI recommendations"></div>`;
+    const legend = slices.map((s) =>
+      `<span class="soaleg ${s.you ? "you" : ""}" title="${esc(s.name)}: named in ${s.count} of ${total} (${pct(s.count)}%)"><i style="background:${s.color}"></i>${esc(s.name)} ${pct(s.count)}%</span>`
+    ).join("");
     const runnerUp = entries[0] && entries[0].you ? entries[1] : null;
     const leader = entries[0];
     const lead = rank === 1
@@ -1426,8 +1443,7 @@
     const inner = `<div class="comp">
         <div class="soa"><div class="soa-num t-${cls}">#${rank}<span class="soa-of">of ${nBrands}</span></div>
           <div class="soa-txt">${lead}</div></div>
-        <div class="soabar">${bar}</div>
-        <div class="soalegend">${legend}</div>
+        <div class="soa-chart">${pie}<div class="soalegend">${legend}</div></div>
       </div>`;
     if (bare) return inner;
     return `<div class="sec2"><h2 id="sec-share">${secNum(num)}Your Share of AI Recommendations</h2>
@@ -2196,6 +2212,9 @@
     .aeo2 .soaseg{height:100%;background:#3a3a44;box-shadow:inset -1px 0 0 var(--card)}
     .aeo2 .soaseg.you{background:var(--grad)}
     .aeo2 .soaseg.other{background:#26262c}
+    .aeo2 .soa-chart{display:flex;align-items:center;gap:28px;margin-top:20px;flex-wrap:wrap}
+    .aeo2 .soapie{width:172px;height:172px;border-radius:50%;flex:0 0 auto;border:3px solid var(--card);box-shadow:0 8px 24px -10px rgba(0,0,0,.55)}
+    .aeo2 .soa-chart .soalegend{margin-top:0;flex:1;min-width:200px;gap:11px 18px;font-size:13px}
     .aeo2 .soalegend{display:flex;flex-wrap:wrap;gap:14px;margin-top:13px;font-size:12.5px;color:var(--muted)}
     .aeo2 .soaleg{display:inline-flex;align-items:center;gap:6px}
     .aeo2 .soaleg i{width:10px;height:10px;border-radius:3px;background:#3a3a44;display:inline-block}

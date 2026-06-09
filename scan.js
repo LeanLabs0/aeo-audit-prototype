@@ -1513,19 +1513,20 @@
 
   // Map every subcheck key -> one of Kevin's 4 levers (phase order: grounding ->
   // corroboration -> prominence). structured_data reused as the lever key.
+  // Off-site first (Kevin: off-site ~90%). Vanity Structured Data last so the report
+  // leads with the real drivers, not a flattering 90 that hides the problem.
   const LEVERS = [
-    { key: "structured_data", name: "Structured Data",
-      subKeys: ["organization_schema", "page_schema", "jsonld_coverage",
-                "bot_gptbot", "bot_claudebot", "bot_perplexitybot", "bot_google_extended",
-                "robots_ai", "ssr", "llms_txt"] },
+    { key: "prominence", name: "Prominence",
+      subKeys: ["share_of_voice", "sentiment"] },
+    { key: "corroboration", name: "Corroboration",
+      subKeys: ["wikidata", "sameas", "authority_sources", "source_mix"] },
     { key: "grounding_pages", name: "Grounding Pages",
       subKeys: ["answer_first", "atomic_paragraphs", "question_headings", "faq_schema",
                 "stats_density", "citations_quotes", "lists_tables", "heading_hierarchy",
                 "readability", "def_comparison", "freshness", "authors"] },
-    { key: "corroboration", name: "Corroboration",
-      subKeys: ["wikidata", "sameas", "authority_sources", "source_mix"] },
-    { key: "prominence", name: "Prominence",
-      subKeys: ["share_of_voice", "sentiment"] },
+    { key: "structured_data", name: "Structured Data",
+      subKeys: ["organization_schema", "page_schema", "jsonld_coverage",
+                "ai_crawlers", "robots_ai", "ssr", "llms_txt"] },
   ];
   const SUBCHECK_LEVER = {};
   LEVERS.forEach((lv) => lv.subKeys.forEach((k) => { SUBCHECK_LEVER[k] = lv.key; }));
@@ -1584,6 +1585,7 @@
     bot_claudebot: "If ClaudeBot cannot reach your site, Claude cannot read or recommend you. You are invisible on that engine no matter how good your content is.",
     bot_perplexitybot: "If PerplexityBot is blocked, Perplexity cannot index or cite you, handing those answers to reachable competitors.",
     bot_google_extended: "Google-Extended controls whether Gemini and AI Overviews can use your content. Blocked, you forfeit visibility across Google's AI surfaces.",
+    ai_crawlers: "If GPTBot, ClaudeBot, PerplexityBot or Google-Extended can't reach you, that engine can never cite you. One blocked crawler is one whole engine you're invisible on.",
     robots_ai: "A robots.txt that disallows AI crawlers quietly locks you out of the engines. It is the single fastest way to be absent from every answer.",
     ssr: "AI crawlers often do not run JavaScript. If your content only appears after JS, the engine sees a blank page and has nothing to cite.",
     llms_txt: "llms.txt is a direct map of your key pages for AI agents. Without it, engines have to guess what matters on your site, and often guess wrong.",

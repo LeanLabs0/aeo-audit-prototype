@@ -1749,7 +1749,7 @@
     const defs = [
       { id: "sec-visibility", label: "AEO Visibility Score", on: true,
         render: (n) => heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, leverChecks, { hideUrlEyebrow: true, num: n }) },
-      { id: "sec-engines", label: "Performance by platform", on: true,
+      { id: "sec-engines", label: "Performance on LLMs", on: true,
         render: (n) => platformsHtml(engCount, prompts, cited, n) },
       { id: "sec-competitors", label: "Who AI recommends", on: comps.length > 0,
         render: (n) => recommendsHtml(comps, brand, compStats, n, category, ev, citedCells, totalCells) },
@@ -1850,7 +1850,7 @@
         <div class="edwrap">${engineDonut(c.cited, c.total, cls)}</div>
         <div class="ev2">${v}</div><div class="erate">${c.cited} of ${c.total} questions</div></div>`;
     }).join("");
-    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}Performance on Major Platforms</h2>
+    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}Performance on Major LLMs</h2>
       <p class="sc-sub">How many buyer questions each engine recommends you for.</p>
       <div class="engines">${cards}</div></div>`;
   }
@@ -1866,7 +1866,7 @@
     const head = `<tr><th class="q">Question</th><th>ChatGPT</th><th>Claude</th><th>Gemini</th><th></th></tr>`;
     const legend = `<div class="legend"><span><i class="y"></i>Recommended you</span><span><i class="n"></i>Did not mention you</span></div>`;
     const rows = prompts.map((p, i) => matrixRow(p, i, cited)).join("");
-    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}Performance on Major Platforms</h2>
+    return `<div class="sec2"><h2 id="sec-engines">${secNum(num)}Performance on Major LLMs</h2>
       <p class="sc-sub">We asked AI the questions your buyers ask. Here is how each engine answered, and the exact questions behind it.</p>
       <div class="engines">${cards}</div>
       <div class="mx-label">The questions we asked, across each engine</div>

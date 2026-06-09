@@ -500,6 +500,11 @@
 
   // Returns true if it rendered live data; false to fall back to the preview.
   async function loadDynamic(host) {
+    // Prefetched result ready (cooked while the user read the report)? Render instantly.
+    try {
+      const pre = JSON.parse(sessionStorage.getItem("aeo_genie_result") || "null");
+      if (pre && pre.moves && pre.moves.length) { applyGenieResponse(pre); return true; }
+    } catch (_) {}
     let scan = null;
     try { scan = JSON.parse(sessionStorage.getItem("aeo_full") || "null"); } catch (_) {}
     if (!scan) return false; // no Baseline scan in this session -> preview fallback

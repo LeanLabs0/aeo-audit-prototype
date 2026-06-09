@@ -280,6 +280,24 @@
     url: "https://factor8-agent-sdk.fly.dev/api/v1/brand-slug/public-scanner/aeo-visibility-scan",
     key: "594aa935e360c9bf28f97437c1dddea9",
   };
+  const GENIE_PREFETCH_URL = "https://factor8-agent-sdk.fly.dev/api/v1/brand-slug/public-scanner/aeo-genie";
+
+  // Start writing the Genie moves in the BACKGROUND the moment the full report renders,
+  // so they are cooking (server-side, ~1 min) while the user reads. The server dedups,
+  // so the later CTA click joins the same run. If it finishes before they click, we
+  // stash the result for an instant Genie.
+  function prefetchGenie(data) {
+    try {
+      sessionStorage.removeItem("aeo_genie_result");
+      fetch(GENIE_PREFETCH_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-API-Key": API.key },
+        body: JSON.stringify({ scan_result: data }),
+      }).then((r) => (r.ok ? r.json() : null))
+        .then((d) => { if (d && d.moves) { try { sessionStorage.setItem("aeo_genie_result", JSON.stringify(d)); } catch (_) {} } })
+        .catch(() => {});
+    } catch (_) {}
+  }
 
   // ── Small DOM helpers ─────────────────────────────────────────────────
   const $ = (sel) => document.querySelector(sel);
@@ -1754,6 +1772,7 @@
         blueprintCtaHtml() +
       `</div>`;
     wireAeo(brand);
+    prefetchGenie(data); // warm the Genie moves while the user reads this report
     window.scrollTo({ top: 0 });
   }
 

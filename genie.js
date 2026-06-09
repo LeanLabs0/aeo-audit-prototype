@@ -54,11 +54,18 @@
       why: "AI can't easily confirm the identity and credibility of your business. Linking out proves it, and corroboration is what AI weighs most.",
       how: "Add made-for-AI links (\"sameAs\" JSON-LD) to your site that let AI understand the most important aspects of your business in seconds, and tie that data to review sites like G2, Crunchbase and LinkedIn so what you claim is substantiated.",
       impact: "Instant AI trust" },
-    { side: "on-site", name: "Create content answering these 10 questions",
+    { side: "on-site", name: "Create content answering these 5 questions",
       hook: "AI named a competitor, not you, on 9 of 12 buyer questions.",
       why: "Out of the most common questions your buyers ask, AI named your competitors and not you 9 out of 12 times.",
-      how: "Create AI-optimized content addressing the exact questions you're invisible on: \"What are the best AI marketing agencies for Series A startups?\", \"Best HubSpot marketing agencies with AI automation\", \"Top AI marketing agencies for early-stage founders\" (plus more).",
-      impact: "Up to 10 query placements" },
+      how: "Create AI-optimized content answering the exact buyer questions you're invisible on:",
+      how_items: [
+        "What are the best AI marketing agencies for Series A startups?",
+        "Best HubSpot marketing agencies with AI automation",
+        "Top AI marketing agencies for early-stage founders",
+        "Who are the best growth marketing agencies for SaaS?",
+        "Most trusted HubSpot partner agencies for startup CMOs",
+      ],
+      impact: "Up to 5 query placements" },
     { side: "on-site", name: "Tell customers why they'd choose a competitor",
       hook: "Naming rivals where they win makes AI trust you more.",
       why: "Unbiased content that names competitors for the specific areas where they perform better actually helps you show up in AI answers.",
@@ -78,7 +85,13 @@
     { side: "off-site", name: "Leverage external content AI already loves",
       hook: "You're in none of the sources AI cites. Get into them.",
       why: "You're in none of the sources AI cites for your most relevant queries. It's faster to gain authority by getting into the content AI already cites than to build it from scratch.",
-      how: "See the Citation Stack below. Contact the publishers, highest-frequency first: rzlt.io (4x), tripledart.com (3x), blendb2b.com (2x), pitchkitchen.com (2x). Pitch your solution as a relevant inclusion.",
+      how: "Contact these publishers, highest-frequency first, and pitch your solution as a relevant inclusion:",
+      how_items: [
+        "rzlt.io (cited in 4 of your queries)",
+        "tripledart.com (cited in 3)",
+        "blendb2b.com (cited in 2)",
+        "pitchkitchen.com (cited in 2)",
+      ],
       impact: "Corroboration across cited queries" },
     { side: "off-site", name: "Claim your reputation",
       hook: "Anchor to a 3rd-party source of truth AI already trusts.",
@@ -167,7 +180,7 @@
       </button>
       <div class="mrow-body">
         <div class="mrow-line"><span class="mrow-lbl why">Why</span><span>${esc(m.why)}</span></div>
-        <div class="mrow-line"><span class="mrow-lbl how">How</span><span>${esc(m.how)}</span></div>
+        <div class="mrow-line"><span class="mrow-lbl how">How</span><span>${esc(m.how)}${(m.how_items && m.how_items.length) ? `<ul class="mrow-items">${m.how_items.map((it) => `<li>${esc(it)}</li>`).join("")}</ul>` : ""}</span></div>
       </div>
     </div>`;
   }
@@ -326,6 +339,9 @@
     .gen .mrow-line{display:flex;gap:12px;font-size:13.5px;line-height:1.55;color:#cfccd9;margin-bottom:10px}
     .gen .mrow-lbl{flex:0 0 34px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
     .gen .mrow-lbl.why{color:var(--g1)}.gen .mrow-lbl.how{color:#7ee8b6}
+    .gen .mrow-items{list-style:none;margin:10px 0 2px;padding:0;display:flex;flex-direction:column;gap:7px}
+    .gen .mrow-items li{position:relative;padding:9px 12px 9px 30px;background:var(--card2);border:1px solid var(--line);border-radius:9px;font-size:13px;line-height:1.4;color:var(--ink)}
+    .gen .mrow-items li::before{content:"";position:absolute;left:12px;top:14px;width:6px;height:6px;border-radius:50%;background:var(--g1)}
     .gen .mrow-foot{display:flex;align-items:center;gap:10px;margin-top:14px}
     .gen .mc-tag{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:7px}
     .gen .mc-tag.on{color:#c9a6ff;background:rgba(118,18,250,.16)}.gen .mc-tag.off{color:#ffb38a;background:rgba(255,98,33,.14)}
@@ -470,7 +486,7 @@
     if (Array.isArray(d.competitors) && d.competitors.length)
       DATA.competitors = d.competitors.map((c) => [c.name, c.count]);
     if (Array.isArray(d.moves) && d.moves.length)
-      MOVES = d.moves.map((m) => ({ side: m.side, name: m.title, hook: m.hook, why: m.why, how: m.how, impact: "" }));
+      MOVES = d.moves.map((m) => ({ side: m.side, name: m.title, hook: m.hook, why: m.why, how: m.how, how_items: m.how_items || [], impact: "" }));
   }
 
   function loadingHtml() {

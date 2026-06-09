@@ -1963,9 +1963,11 @@
       const [name] = CAT_LABELS[c.key] || [c.name || c.key];
       const subs = c.subchecks || [];
       const pass = subs.filter((s) => s.status === "pass").length;
+      // Failures first: the user came to see what's broken, not scroll past passes.
+      const ordered = [...subs].sort((a, b) => (a.status === "pass" ? 1 : 0) - (b.status === "pass" ? 1 : 0));
       return `<div class="cgroup" id="cat-${esc(c.key)}"><div class="cgh"><span class="cgn">${esc(name)}</span>
         <span class="cgf ${tone(c.score)}">${pass}/${subs.length}</span></div>
-        <div class="cards2">${subs.map((s) => subCard(s, stripFix)).join("")}</div></div>`;
+        <div class="cards2">${ordered.map((s) => subCard(s, stripFix)).join("")}</div></div>`;
     }).join("");
     return `<div class="sec2"><h2 id="sec-content">${secNum(num)}Content Authority Audit</h2>
       <p class="sc-sub">Where your pages fall short of what AI answer engines trust.</p>${heroPillarsHtml(checks)}${groups}</div>`;

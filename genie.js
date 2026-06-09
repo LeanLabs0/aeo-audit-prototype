@@ -337,6 +337,7 @@
     .gen .mrow-body{display:none;padding:0 18px 18px 46px}
     .gen .mrow.open .mrow-body{display:block}
     .gen .mrow-line{display:flex;gap:12px;font-size:13.5px;line-height:1.55;color:#cfccd9;margin-bottom:10px}
+    .gen .mrow-line>span:last-child{white-space:pre-line}
     .gen .mrow-lbl{flex:0 0 34px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
     .gen .mrow-lbl.why{color:var(--g1)}.gen .mrow-lbl.how{color:#7ee8b6}
     .gen .mrow-items{list-style:none;margin:10px 0 2px;padding:0;display:flex;flex-direction:column;gap:7px}

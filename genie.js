@@ -116,7 +116,7 @@
   ];
 
   const SECTIONS = [
-    { id: "gen-moves", label: "Your 10 moves" },
+    { id: "gen-moves", label: "Your moves" },
     { id: "gen-stack", label: "Citation Stack" },
     { id: "gen-money", label: "Money Model" },
     { id: "gen-scores", label: "The Bottom Line" },
@@ -145,7 +145,7 @@
   // ── sections ─────────────────────────────────────────────────────────────
   function sidebarHtml() {
     const links = SECTIONS.map((s, i) =>
-      `<a class="gnav-link" href="#${s.id}" data-target="#${s.id}"><span class="gnav-n">${String(i + 1).padStart(2, "0")}</span><span class="gnav-t">${esc(s.label)}</span></a>`).join("");
+      `<a class="gnav-link" href="#${s.id}" data-target="#${s.id}"><span class="gnav-t">${esc(s.id === "gen-moves" ? `Your ${MOVES.length} moves` : s.label)}</span></a>`).join("");
     return `<nav class="gnav" id="gnav" aria-label="Genie sections">
       <div class="gnav-h">Your<br>AEO Genie</div><div class="gnav-links">${links}</div></nav>`;
   }
@@ -153,7 +153,7 @@
   function heroHtml() {
     return `<div class="ghead">
       <div class="g-eyebrow">AEO Genie</div>
-      <h1 class="g-title">10 "Genius" moves to get<br>recommended by LLMs</h1>
+      <h1 class="g-title">${MOVES.length} "Genius" moves to get<br>recommended by LLMs</h1>
       <p class="g-sub">The exact plays to get <b>${esc(DATA.brand)}</b> cited, recommended, and named first across the AI answer engines your buyers already trust.</p>
       <div class="g-note">Grounding, then corroboration, then prominence. Off-site is roughly 90% of the game.</div>
     </div>`;
@@ -198,8 +198,8 @@
         </div>
         <div class="mphase-rows">${rows}</div></div>`;
     }).join("");
-    return `<div class="gsec"><h2 id="gen-moves" class="g-h2"><span class="g-n">01</span>Your 10 moves</h2>
-      <p class="g-h2sub">Ten specific plays to get ${esc(DATA.brand)} recommended by AI, drawn from your scan and ordered by impact. Each one names the move, why it matters, and exactly how to do it. Tap any move.</p>
+    return `<div class="gsec"><h2 id="gen-moves" class="g-h2">Your ${MOVES.length} moves</h2>
+      <p class="g-h2sub">${MOVES.length} specific plays to get ${esc(DATA.brand)} recommended by AI, drawn from your scan and ordered by impact. Each one names the move, why it matters, and exactly how to do it. Tap any move.</p>
       ${blocks}</div>`;
   }
 
@@ -209,7 +209,7 @@
       `<tr><td class="cs-src">${esc(s.src)}<small>${esc(s.kind)}</small></td>
         <td class="cs-bar"><span class="cs-track"><i style="width:${Math.round((s.n / max) * 100)}%"></i></span><b>${s.n}x</b></td>
         <td class="cs-you"><span class="cs-no">Not in it</span></td></tr>`).join("");
-    return `<div class="gsec"><h2 id="gen-stack" class="g-h2"><span class="g-n">02</span>Your biggest off-site opportunity</h2>
+    return `<div class="gsec"><h2 id="gen-stack" class="g-h2">Your biggest off-site opportunity</h2>
       <p class="g-h2sub">From our research, the single biggest lever is off-site citations. These are the sources AI actually cites when buyers ask about your category, ranked by how many of your queries each shows up in. You're in none of them yet, so get into the top ones first.</p>
       <div class="cs-wrap"><table class="cs-table"><thead><tr><th>Source</th><th>Cited in your queries</th><th>You</th></tr></thead>
         <tbody>${rows}</tbody></table></div></div>`;
@@ -227,7 +227,7 @@
     }).join("");
     const demand = DATA.demand.map((d) =>
       `<div class="mm-d"><div class="mm-dnum">${esc(d[0])}</div><div class="mm-dlabel">${esc(d[1])}</div><div class="mm-ddesc">${esc(d[2])}</div></div>`).join("");
-    return `<div class="gsec"><h2 id="gen-money" class="g-h2"><span class="g-n">03</span>Now, the profitability</h2>
+    return `<div class="gsec"><h2 id="gen-money" class="g-h2">Now, the profitability</h2>
       <p class="g-h2sub">We did some research for you. Here is what becoming the AEO authority for <span class="catq">"${esc(DATA.category)}"</span> is worth to ${esc(DATA.brand)}.</p>
       <div class="mm-card">
         <div class="mm-q">What's one new customer worth to you?</div>
@@ -240,9 +240,9 @@
 
   function scoresHtml() {
     const cards = DATA.scores.map((s, i) =>
-      `<div class="sc-card"><div class="sc-rank">${i + 1}</div><div class="sc-donut">${donut(s.val)}</div>
+      `<div class="sc-card"><div class="sc-donut">${donut(s.val)}</div>
         <div class="sc-name">${esc(s.name)}</div><div class="sc-note">${esc(s.note)}</div></div>`).join("");
-    return `<div class="gsec"><h2 id="gen-scores" class="g-h2"><span class="g-n">04</span>The Bottom Line</h2>
+    return `<div class="gsec"><h2 id="gen-scores" class="g-h2">The Bottom Line</h2>
       <p class="g-h2sub">Improve these four scores, in this order. Every one is fixable, and the moves above are how.</p>
       <div class="sc-grid">${cards}</div></div>`;
   }

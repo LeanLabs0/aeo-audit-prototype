@@ -130,6 +130,21 @@
       .replace(/"/g, "&quot;");
   }
   const tone = (v) => (v >= 70 ? "ok" : v >= 40 ? "warn" : "bad");
+  // Render text with [anchor](url) markdown links; any bare URL that slips through
+  // becomes a contextual "this article" link (Kevin: naked URLs say "move on").
+  function linky(str) {
+    const stash = [];
+    let h = esc(str);
+    h = h.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, (m, t, u) => {
+      stash.push(`<a href="${u}" target="_blank" rel="noopener">${t}</a>`);
+      return `\u0000${stash.length - 1}\u0000`;
+    });
+    h = h.replace(/(^|[\s(>])(https?:\/\/[^\s<)]+)/g, (m, pre, u) => {
+      stash.push(`<a href="${u}" target="_blank" rel="noopener">this article</a>`);
+      return `${pre}\u0000${stash.length - 1}\u0000`;
+    });
+    return h.replace(/\u0000(\d+)\u0000/g, (m, i) => stash[+i]);
+  }
   const usd = (n) => "$" + (n >= 1e6 ? (n / 1e6).toFixed(n % 1e6 ? 1 : 0) + "M" : Math.round(n / 1000) + "K");
 
   function donut(val) {
@@ -145,17 +160,24 @@
   // ── sections ─────────────────────────────────────────────────────────────
   function sidebarHtml() {
     const links = SECTIONS.map((s, i) =>
-      `<a class="gnav-link" href="#${s.id}" data-target="#${s.id}"><span class="gnav-t">${esc(s.id === "gen-moves" ? `Your ${MOVES.length} moves` : s.label)}</span></a>`).join("");
+      `<a class="gnav-link" href="#${s.id}" data-target="#${s.id}"><span class="gnav-t">${esc(s.id === "gen-moves" ? `Your ${MOVES.length} genius moves` : s.label)}</span></a>`).join("");
     return `<nav class="gnav" id="gnav" aria-label="Genie sections">
       <div class="gnav-h">Your<br>AEO Genie</div><div class="gnav-links">${links}</div></nav>`;
   }
 
   function heroHtml() {
+    // Kevin's "3 wishes" top: the hero sells the WHOLE report (clickable wishes jump
+    // to their sections); the moves get introduced ONCE, in section 1, not twice.
+    const wishes = [
+      { n: 1, t: `${MOVES.length} genius moves to make now`, h: "#gen-moves" },
+      { n: 2, t: "A genius citation strategy", h: "#gen-stack" },
+      { n: 3, t: "A genius AEO money model", h: "#gen-money" },
+    ].map((w) => `<a class="gwish" href="${w.h}"><span class="gwish-n">${w.n}</span><span class="gwish-t">${esc(w.t)}</span><span class="gwish-go">&darr;</span></a>`).join("");
     return `<div class="ghead">
       <div class="g-eyebrow">AEO Genie</div>
-      <h1 class="g-title">${MOVES.length} "Genius" moves to get<br>recommended by LLMs</h1>
-      <p class="g-sub">The exact plays to get <b>${esc(DATA.brand)}</b> cited, recommended, and named first across the AI answer engines your buyers already trust.</p>
-      <div class="g-note">Grounding, then corroboration, then prominence. Off-site is roughly 90% of the game.</div>
+      <h1 class="g-title">The AEO Genie granted you<br>3 wishes</h1>
+      <p class="g-sub">Everything <b>${esc(DATA.brand)}</b> needs to get cited, recommended, and named first across the AI answer engines your buyers already trust.</p>
+      <div class="gwishes">${wishes}</div>
     </div>`;
   }
 
@@ -180,7 +202,7 @@
       </button>
       <div class="mrow-body">
         <div class="mrow-line"><span class="mrow-lbl why">Why</span><span>${esc(m.why)}</span></div>
-        <div class="mrow-line"><span class="mrow-lbl how">How</span><span>${esc(m.how)}${(m.how_items && m.how_items.length) ? `<ul class="mrow-items">${m.how_items.map((it) => `<li>${esc(it)}</li>`).join("")}</ul>` : ""}</span></div>
+        <div class="mrow-line"><span class="mrow-lbl how">How</span><span>${linky(m.how)}${(m.how_items && m.how_items.length) ? `<ul class="mrow-items">${m.how_items.map((it) => `<li>${linky(it)}</li>`).join("")}</ul>` : ""}</span></div>
       </div>
     </div>`;
   }
@@ -198,21 +220,25 @@
         </div>
         <div class="mphase-rows">${rows}</div></div>`;
     }).join("");
-    return `<div class="gsec"><h2 id="gen-moves" class="g-h2">Your ${MOVES.length} moves</h2>
+    return `<div class="gsec"><h2 id="gen-moves" class="g-h2">Your ${MOVES.length} genius moves</h2>
       <p class="g-h2sub">${MOVES.length} specific plays to get ${esc(DATA.brand)} recommended by AI, drawn from your scan and ordered by impact. Each one names the move, why it matters, and exactly how to do it. Tap any move.</p>
       ${blocks}</div>`;
   }
 
   function stackHtml() {
     const max = Math.max(...DATA.citationStack.map((s) => s.n));
-    const rows = DATA.citationStack.map((s) =>
-      `<tr><td class="cs-src">${esc(s.src)}<small>${esc(s.kind)}</small></td>
+    const SHOW = 10; // the table was "crazy long" -- top 10, rest behind Show all
+    const row = (s, hidden) =>
+      `<tr${hidden ? ' class="cs-more" hidden' : ""}><td class="cs-src">${esc(s.src)}<small>${esc(s.kind)}</small></td>
         <td class="cs-bar"><span class="cs-track"><i style="width:${Math.round((s.n / max) * 100)}%"></i></span><b>${s.n}x</b></td>
-        <td class="cs-you"><span class="cs-no">Not in it</span></td></tr>`).join("");
+        <td class="cs-you"><span class="cs-no">Not in it</span></td></tr>`;
+    const rows = DATA.citationStack.map((s, i) => row(s, i >= SHOW)).join("");
+    const more = DATA.citationStack.length > SHOW
+      ? `<div class="cs-morewrap"><button type="button" class="cs-morebtn" id="csMoreBtn">Show all ${DATA.citationStack.length} sources</button></div>` : "";
     return `<div class="gsec"><h2 id="gen-stack" class="g-h2">Your biggest off-site opportunity</h2>
       <p class="g-h2sub">From our research, the single biggest lever is off-site citations. These are the sources AI actually cites when buyers ask about your category, ranked by how many of your queries each shows up in. You're in none of them yet, so get into the top ones first.</p>
       <div class="cs-wrap"><table class="cs-table"><thead><tr><th>Source</th><th>Cited in your queries</th><th>You</th></tr></thead>
-        <tbody>${rows}</tbody></table></div></div>`;
+        <tbody>${rows}</tbody></table>${more}</div></div>`;
   }
 
   function moneyHtml() {
@@ -249,22 +275,22 @@
 
   function ctaHtml() {
     return `<div class="gnext">
-      <div class="gnext-done"><span class="gnext-check">&#10003;</span> You've run the AEO Genie. You've got your 10 moves.</div>
-      <h3 class="gnext-h">Now execute. Two ways to do it.</h3>
+      <div class="gnext-done"><span class="gnext-check">&#10003;</span> You've run the AEO Genie. Your wishes are granted.</div>
+      <h3 class="gnext-h">Ready to become the AEO Authority in your space?</h3>
       <div class="gnext-cards">
         <div class="gnext-card">
-          <div class="gnext-eyebrow">Save on AEO</div>
-          <div class="gnext-title">Join the AEO Accelerator</div>
+          <div class="gnext-eyebrow">Do it with us</div>
+          <div class="gnext-title">Accelerate your AI Dominance</div>
           <p>A live working session with a few seats. Walk the playbook, unlock extra insights, save with HubSpot and Lean Labs.</p>
           <div class="gnext-when">Next: Tuesday 2pm ET</div>
-          <a class="gnext-btn" href="#">Start with AEO</a>
+          <a class="gnext-btn" href="#">Save my seat</a>
         </div>
         <div class="gnext-card">
           <div class="gnext-eyebrow">Want it done for you</div>
-          <div class="gnext-title">Request an AEO Blueprint</div>
+          <div class="gnext-title">AEO Blueprint</div>
           <p>Book a meeting. We turn these 10 moves into your prioritized plan and build them with you.</p>
           <div class="gnext-when">&nbsp;</div>
-          <a class="gnext-btn alt" href="#">Book a meeting</a>
+          <a class="gnext-btn alt" href="#">Build my Blueprint</a>
         </div>
       </div>
     </div>`;
@@ -311,6 +337,17 @@
     .gen .gpn{font-size:16px;font-weight:800;fill:var(--ink)}
     .gen .gpname{font-weight:700;font-size:12.5px;text-align:center;max-width:110px;line-height:1.2;color:var(--muted)}
     .gen .g-note{position:relative;margin-top:18px;font-size:13px;color:var(--muted)}
+    /* hero wishes */
+    .gen .gwishes{position:relative;display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:26px;padding-top:24px;border-top:1px solid var(--line)}
+    .gen .gwish{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:13px 18px;font-weight:700;font-size:14px;transition:transform .15s,border-color .15s}
+    .gen .gwish:hover{transform:translateY(-2px);border-color:rgba(118,18,250,.5)}
+    .gen .gwish-n{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px;background:var(--grad);color:#fff;font-size:12px;font-weight:800;flex:0 0 auto}
+    .gen .gwish-go{color:var(--muted);font-size:13px}
+    .gen .mrow-line a,.gen .mrow-items a{color:var(--g1);font-weight:700;text-decoration:none;border-bottom:1px solid rgba(196,123,255,.4)}
+    .gen .mrow-line a:hover,.gen .mrow-items a:hover{border-bottom-color:var(--g1)}
+    .gen .cs-morewrap{text-align:center;padding:14px 0 6px}
+    .gen .cs-morebtn{background:var(--card2);border:1px solid var(--line);color:#cfccd9;font-weight:700;font-size:13px;padding:9px 18px;border-radius:10px;cursor:pointer}
+    .gen .cs-morebtn:hover{border-color:rgba(118,18,250,.5);color:var(--ink)}
     /* sections */
     .gen .gsec{margin-top:40px}
     .gen .g-h2{font-size:clamp(22px,2.6vw,28px);font-weight:800;letter-spacing:-.02em;margin:0 0 6px;display:flex;align-items:center}
@@ -417,6 +454,12 @@
 
   // ── wiring ───────────────────────────────────────────────────────────────
   function wire() {
+    // citation stack: Show all expander
+    const csBtn = document.getElementById("csMoreBtn");
+    if (csBtn) csBtn.addEventListener("click", () => {
+      document.querySelectorAll(".gen .cs-more").forEach((tr) => tr.removeAttribute("hidden"));
+      csBtn.parentElement.remove();
+    });
     // move rows: click head to expand/collapse
     document.querySelectorAll(".gen .mrow-head").forEach((h) =>
       h.addEventListener("click", () => h.parentElement.classList.toggle("open")));
@@ -493,8 +536,8 @@
   function loadingHtml() {
     return `<div class="gen"><div class="g-loading">
       <div class="g-spin"></div>
-      <div class="g-load-h">Writing your 10 moves</div>
-      <div class="g-load-sub">Reading your scan and building the exact plays to get you recommended by AI. About a minute.</div>
+      <div class="g-load-h">The Genie is granting your wishes</div>
+      <div class="g-load-sub">Reading your scan and writing your genius moves. About a minute.</div>
     </div></div>`;
   }
 

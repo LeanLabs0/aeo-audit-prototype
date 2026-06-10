@@ -174,6 +174,7 @@
       { n: 3, t: "A genius AEO money model", h: "#gen-money" },
     ].map((w) => `<a class="gwish" href="${w.h}"><span class="gwish-n">${w.n}</span><span class="gwish-t">${esc(w.t)}</span><span class="gwish-go">&darr;</span></a>`).join("");
     return `<div class="ghead">
+      <img class="g-genie" src="genie-img.png" alt="" aria-hidden="true">
       <div class="g-eyebrow">AEO Genie</div>
       <h1 class="g-title">The AEO Genie granted you<br>3 wishes</h1>
       <p class="g-sub">Everything <b>${esc(DATA.brand)}</b> needs to get cited, recommended, and named first across the AI answer engines your buyers already trust.</p>
@@ -325,7 +326,7 @@
     .gen .gnav-link.active::before{content:"";position:absolute;left:-14px;top:8px;bottom:8px;width:3px;border-radius:3px;background:var(--grad)}
     @media(min-width:1300px){.gen .gnav{display:block}}
     /* hero */
-    .gen .ghead{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:26px;padding:48px 40px 40px;margin-top:18px;text-align:center;box-shadow:var(--sh)}
+    .gen .ghead{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:26px;padding:236px 40px 40px;margin-top:18px;text-align:center;box-shadow:var(--sh)}
     .gen .ghead::before{content:"";position:absolute;left:-10%;right:30%;top:-50%;height:120%;background:radial-gradient(50% 60% at 40% 50%,rgba(118,18,250,.22),rgba(255,98,33,.10) 40%,transparent 70%);pointer-events:none}
     .gen .g-eyebrow{position:relative;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--g1)}
     .gen .g-title{position:relative;font-size:clamp(30px,4.4vw,46px);font-weight:800;letter-spacing:-.02em;margin:10px 0 0;line-height:1.05}
@@ -338,8 +339,11 @@
     .gen .gpname{font-weight:700;font-size:12.5px;text-align:center;max-width:110px;line-height:1.2;color:var(--muted)}
     .gen .g-note{position:relative;margin-top:18px;font-size:13px;color:var(--muted)}
     /* hero wishes */
-    .gen .gwishes{position:relative;display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:26px;padding-top:24px;border-top:1px solid var(--line)}
-    .gen .gwish{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:13px 18px;font-weight:700;font-size:14px;transition:transform .15s,border-color .15s}
+    .gen .g-genie{position:absolute;left:50%;top:-12px;transform:translateX(-50%);width:min(420px,80%);opacity:.5;mix-blend-mode:screen;pointer-events:none;user-select:none;animation:gfloat 6s ease-in-out infinite}
+    @keyframes gfloat{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-10px)}}
+    .gen .gwishes{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:26px;padding-top:24px;border-top:1px solid var(--line)}
+    .gen .gwish{display:flex;align-items:center;gap:11px;width:min(440px,100%);text-decoration:none;color:var(--ink);background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:13px 18px;font-weight:700;font-size:14px;transition:transform .15s,border-color .15s}
+    .gen .gwish .gwish-go{margin-left:auto}
     .gen .gwish:hover{transform:translateY(-2px);border-color:rgba(118,18,250,.5)}
     .gen .gwish-n{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px;background:var(--grad);color:#fff;font-size:12px;font-weight:800;flex:0 0 auto}
     .gen .gwish-go{color:var(--muted);font-size:13px}

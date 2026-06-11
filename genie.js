@@ -230,11 +230,7 @@
     // The brand's OWN site is never an outreach target: split it out of the table and
     // show it as a positive line instead (it was rendering as the #1 "source you're
     // not in", telling brands to pitch themselves).
-    const yours = DATA.citationStack.filter((s) => s.you);
     const others = DATA.citationStack.filter((s) => !s.you);
-    const yoursNote = yours.length
-      ? `<div class="cs-yours"><span class="cs-check">&#10003;</span> Good news: AI already cites your own site ${yours.map((s) => `<b>${esc(s.src)}</b> (${s.n} answers)`).join(", ")}. The list below is the third-party ground to win next.</div>`
-      : "";
     const max = Math.max(1, ...others.map((s) => s.n));
     const SHOW = 10; // the table was "crazy long" -- top 10, rest behind Show all
     const row = (s, hidden) =>
@@ -246,7 +242,6 @@
       ? `<div class="cs-morewrap"><button type="button" class="cs-morebtn" id="csMoreBtn">Show all ${others.length} sources</button></div>` : "";
     return `<div class="gsec"><h2 id="gen-stack" class="g-h2">Your Genius Citation Strategy</h2>
       <p class="g-h2sub">From our research, the single biggest lever is off-site citations. These are the third-party sources AI actually cites when buyers ask about your category, ranked by how many of your queries each shows up in. Get into the top ones first.</p>
-      ${yoursNote}
       <div class="cs-wrap"><table class="cs-table"><thead><tr><th>Source</th><th>Cited in your queries</th><th>You</th></tr></thead>
         <tbody>${rows}</tbody></table>${more}</div></div>`;
   }

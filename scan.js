@@ -1898,7 +1898,7 @@
     const rest = prompts.slice(4);
     const restBody = rest.length ? `<tbody class="locked blur open">${rest.map((p, i) => matrixRow(p, i, cited)).join("")}</tbody>` : "";
     const reveal = `<div class="mx-gate">
-      <p>Enter your email to unlock the full report, including your complete competitor list</p>
+      <p>Enter your email to unlock the full report</p>
       <div class="mx-grow"><input id="matrixEmail" type="email" placeholder="you@company.com">
       <button class="btn-fill" id="matrixRevealBtn">Unlock full details</button></div></div>`;
     return `<div class="sec2"><h2>Questions your customers ask AI</h2>

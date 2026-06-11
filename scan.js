@@ -1680,7 +1680,7 @@
         heroHtml(score, lvl, verdict, citedCells, totalCells, scannedUrl, category, icp, leverChecks) +
         detectBoxHtml(category, icp) +
         (allGreen ? allGreenHtml(brand) : "") +
-        (comps.length ? compHtml(comps, brand, compStats, true, undefined, category) : "") +
+        (comps.length ? compHtml(comps, brand, compStats, true, undefined, category, false, citedCells) : "") +
         engineHtml(engCount) +
         matrixHtml(prompts, cited, false) +
         scorecardHtml(leverChecks, true, true) +
@@ -1810,24 +1810,22 @@
   }
   // gated=true (preview): show the top 3 competitors, blur/lock the rest, + the
   // email box. gated=false (full report): show the whole list.
-  function compHtml(comps, brand, stats, gated, num, category, bare) {
+  function compHtml(comps, brand, stats, gated, num, category, bare, youCount) {
     const ranked = (stats && stats.length) ? stats : null;
     const total = ranked && ranked[0] ? ranked[0].total : 0;
-    const list = ranked
+    let list = ranked
       ? ranked.map((s) => ({ name: s.name, count: s.count }))
       : comps.map((c) => ({ name: c, count: null }));
-    const SHOWN = 3;
-    const chip = (s, locked) =>
-      `<span class="chip${locked ? " locked" : ""}"${s.count != null ? ` title="Named in ${s.count} of ${total} AI answers"` : ""}>${esc(s.name)}${s.count != null && total ? `<b class="cct">${Math.round(s.count / total * 100)}%</b>` : ""}</span>`;
-    let chips;
-    if (gated && list.length > SHOWN) {
-      const lockedN = list.length - SHOWN;
-      chips = list.slice(0, SHOWN).map((s) => chip(s, false)).join("")
-            + list.slice(SHOWN).map((s) => chip(s, true)).join("")
-            + `<span class="chip morelock">+${lockedN} more locked</span>`;
-    } else {
-      chips = list.map((s) => chip(s, false)).join("");
+    // Include the assessed brand in the field (highlighted), sorted by count like
+    // everyone else. Cap at 10 brands, all visible: no blur chips, no "+N more locked".
+    if (youCount != null) {
+      list = [{ name: brand, count: youCount, you: true }, ...list]
+        .sort((a, b) => (b.count || 0) - (a.count || 0));
     }
+    list = list.slice(0, 10);
+    const chip = (s) =>
+      `<span class="chip${s.you ? " you" : ""}"${s.count != null ? ` title="Named in ${s.count} of ${total} AI answers"` : ""}>${esc(s.name)}${s.count != null && total ? `<b class="cct">${Math.round(s.count / total * 100)}%</b>` : ""}</span>`;
+    const chips = list.map((s) => chip(s)).join("");
     const subTxt = total
       ? `Ranked by how many of the ${total} AI answers named each brand.`
       : `Ranked by how often each brand is named in AI answers.`;
@@ -2253,9 +2251,9 @@
     .aeo2 .chips{display:flex;flex-wrap:wrap;gap:10px}
     .aeo2 .chip{display:inline-flex;align-items:center;gap:9px;padding:9px 12px 9px 16px;border-radius:999px;background:var(--card2);border:1px solid var(--line);font-weight:700;font-size:15px;transition:transform .15s}
     .aeo2 .chip:hover{transform:translateY(-2px)}
-    .aeo2 .chips .chip:first-child{background:var(--grad);color:#fff;border:none;box-shadow:0 10px 22px -10px rgba(193,9,175,.6)}
+    .aeo2 .chips .chip.you{background:var(--grad);color:#fff;border:none;box-shadow:0 10px 22px -10px rgba(193,9,175,.6)}
     .aeo2 .cct{display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;padding:0 6px;border-radius:999px;background:var(--grad);color:#fff;font-size:12.5px;font-weight:800;line-height:1}
-    .aeo2 .chips .chip:first-child .cct{background:#fff;color:#c109af}
+    .aeo2 .chips .chip.you .cct{background:#fff;color:#c109af}
     .aeo2 .lead-sub{margin:-4px 0 16px;color:var(--muted);font-size:13.5px}
     .aeo2 .chip.sm{padding:5px 11px;font-size:13px;gap:6px}
     .aeo2 .bmrow{display:flex;align-items:center;gap:12px;padding:9px 0}

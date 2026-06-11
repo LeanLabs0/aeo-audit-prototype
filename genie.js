@@ -119,7 +119,7 @@
     { id: "gen-moves", label: "Your moves" },
     { id: "gen-stack", label: "Citation Stack" },
     { id: "gen-money", label: "Money Model" },
-    { id: "gen-scores", label: "The Bottom Line" },
+    { id: "gen-scores", label: "Four AEO Levers" },
   ];
 
   // ── helpers ──────────────────────────────────────────────────────────────
@@ -236,7 +236,7 @@
     const rows = DATA.citationStack.map((s, i) => row(s, i >= SHOW)).join("");
     const more = DATA.citationStack.length > SHOW
       ? `<div class="cs-morewrap"><button type="button" class="cs-morebtn" id="csMoreBtn">Show all ${DATA.citationStack.length} sources</button></div>` : "";
-    return `<div class="gsec"><h2 id="gen-stack" class="g-h2">Your biggest off-site opportunity</h2>
+    return `<div class="gsec"><h2 id="gen-stack" class="g-h2">Your Genius Citation Strategy</h2>
       <p class="g-h2sub">From our research, the single biggest lever is off-site citations. These are the sources AI actually cites when buyers ask about your category, ranked by how many of your queries each shows up in. You're in none of them yet, so get into the top ones first.</p>
       <div class="cs-wrap"><table class="cs-table"><thead><tr><th>Source</th><th>Cited in your queries</th><th>You</th></tr></thead>
         <tbody>${rows}</tbody></table>${more}</div></div>`;
@@ -254,7 +254,7 @@
     }).join("");
     const demand = DATA.demand.map((d) =>
       `<div class="mm-d"><div class="mm-dnum">${esc(d[0])}</div><div class="mm-dlabel">${esc(d[1])}</div><div class="mm-ddesc">${esc(d[2])}</div></div>`).join("");
-    return `<div class="gsec"><h2 id="gen-money" class="g-h2">Now, the profitability</h2>
+    return `<div class="gsec"><h2 id="gen-money" class="g-h2">Your Genius Money Model</h2>
       <p class="g-h2sub">We did some research for you. Here is what becoming the AEO authority for <span class="catq">"${esc(DATA.category)}"</span> is worth to ${esc(DATA.brand)}.</p>
       <div class="mm-card">
         <div class="mm-q">What's one new customer worth to you?</div>
@@ -269,8 +269,8 @@
     const cards = DATA.scores.map((s, i) =>
       `<div class="sc-card"><div class="sc-donut">${donut(s.val)}</div>
         <div class="sc-name">${esc(s.name)}</div><div class="sc-note">${esc(s.note)}</div></div>`).join("");
-    return `<div class="gsec"><h2 id="gen-scores" class="g-h2">The Bottom Line</h2>
-      <p class="g-h2sub">Improve these four scores, in this order. Every one is fixable, and the moves above are how.</p>
+    return `<div class="gsec"><h2 id="gen-scores" class="g-h2">Four AEO Levers</h2>
+      <p class="g-h2sub">Improve these four scores, in this order. Every lever is moveable, and the three wishes above are how it's done.</p>
       <div class="sc-grid">${cards}</div></div>`;
   }
 

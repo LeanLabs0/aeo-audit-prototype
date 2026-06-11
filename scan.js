@@ -2168,13 +2168,13 @@
     .aeo2 .hero{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:26px;padding:58px 40px 50px;margin-top:18px;text-align:center;box-shadow:var(--sh)}
     .aeo2 .hero::before{content:"";position:absolute;left:-10%;right:30%;top:-50%;height:120%;background:radial-gradient(50% 60% at 40% 50%,rgba(118,18,250,.22),rgba(255,98,33,.10) 40%,transparent 70%);pointer-events:none}
     .aeo2 .eyebrow{position:relative;font-size:11.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600}
-    .aeo2 .gauge2{position:relative;width:258px;margin:26px auto 0}
+    .aeo2 .gauge2{position:relative;width:330px;max-width:88vw;margin:26px auto 0}
     .aeo2 .gauge2 svg{width:100%;display:block}
     .aeo2 .gauge2 .arc{filter:drop-shadow(0 4px 14px rgba(245,130,31,.35));animation:aeoArc 1.15s cubic-bezier(.22,1,.36,1) .25s both}
     @keyframes aeoArc{from{stroke-dashoffset:100}to{stroke-dashoffset:var(--off)}}
     .aeo2 .gauge2 .num{position:absolute;left:0;right:0;top:52%;text-align:center}
-    .aeo2 .gauge2 .num b{font-size:58px;font-weight:800;letter-spacing:-.02em}
-    .aeo2 .gauge2 .num .of{font-size:16px;color:var(--muted);font-weight:600}
+    .aeo2 .gauge2 .num b{font-size:74px;font-weight:800;letter-spacing:-.02em}
+    .aeo2 .gauge2 .num .of{font-size:20px;color:var(--muted);font-weight:600}
     .aeo2 .level2{position:relative;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.08em;margin-top:14px}
     .aeo2 .hverdict{position:relative;font-size:clamp(26px,3.6vw,40px);line-height:1.18;font-weight:800;letter-spacing:-.015em;margin:22px auto 0;max-width:640px}
     .aeo2 .hverdict b{color:var(--ink)}

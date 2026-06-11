@@ -230,7 +230,8 @@
     // The brand's OWN site is never an outreach target: split it out of the table and
     // show it as a positive line instead (it was rendering as the #1 "source you're
     // not in", telling brands to pitch themselves).
-    const others = DATA.citationStack.filter((s) => !s.you);
+    // outreach table = neutral third-party only: not your site, not a rival's site
+    const others = DATA.citationStack.filter((s) => !s.you && !s.competitor);
     const max = Math.max(1, ...others.map((s) => s.n));
     const SHOW = 10; // the table was "crazy long" -- top 10, rest behind Show all
     const row = (s, hidden) =>
@@ -537,7 +538,7 @@
     if (Array.isArray(d.levers) && d.levers.length)
       DATA.scores = d.levers.map((lv) => ({ key: lv.key, name: lv.name, lever: leverSide[lv.key] || "grounding", val: lv.score, note: noteByKey[lv.key] || "" }));
     if (Array.isArray(d.citation_stack) && d.citation_stack.length)
-      DATA.citationStack = d.citation_stack.map((s) => ({ src: s.src, n: s.n, you: !!s.you, kind: s.kind || "" }));
+      DATA.citationStack = d.citation_stack.map((s) => ({ src: s.src, n: s.n, you: !!s.you, competitor: !!s.competitor, kind: s.kind || "" }));
     if (Array.isArray(d.competitors) && d.competitors.length)
       DATA.competitors = d.competitors.map((c) => [c.name, c.count]);
     if (Array.isArray(d.moves) && d.moves.length)

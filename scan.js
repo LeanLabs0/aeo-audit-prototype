@@ -1831,11 +1831,7 @@
     const subTxt = total
       ? `Ranked by how many of the ${total} AI answers named each brand.`
       : `Ranked by how often each brand is named in AI answers.`;
-    const emailBox = gated
-      ? `<div class="cbox"><p class="cbox-h">See every brand AI recommends in your space</p>
-          <div class="cbox-row"><input id="compEmail" type="email" placeholder="you@company.com">
-          <button class="btn-fill" id="compEmailBtn">Unlock full details</button></div></div>`
-      : "";
+    const emailBox = ""; // competitors box removed (Ralph): matrix + audit + bottom gates remain
     const innerComp = `<div class="comp"><div class="chips">${chips}</div>${emailBox}</div>`;
     if (bare) return `<div class="mx-label">Every brand AI recommends, by mention count</div>${innerComp}`;
     const heading = category ? `Who AI recommends for <span class="catq">"${esc(category)}"</span>` : "Who AI recommends";
@@ -1900,10 +1896,9 @@
         <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${rows}</tbody></table>
         ${legend}</div></div>`;
     }
-    // Questions are fully unlocked in the gated view (Jonathan). The email gate stays
-    // as the conversion point for the REST of the report (no scroll popup).
-    const open = prompts.map((p, i) => matrixRow(p, i, cited)).join("");
-    const restBody = "";
+    const open = prompts.slice(0, 4).map((p, i) => matrixRow(p, i, cited)).join("");
+    const rest = prompts.slice(4);
+    const restBody = rest.length ? `<tbody class="locked blur open">${rest.map((p, i) => matrixRow(p, i, cited)).join("")}</tbody>` : "";
     const reveal = `<div class="mx-gate">
       <p>Enter your email to unlock the full report, including your complete competitor list</p>
       <div class="mx-grow"><input id="matrixEmail" type="email" placeholder="you@company.com">
@@ -2066,8 +2061,6 @@
         .then(renderFull).catch((e) => renderGenericError(String(e && e.message || e)));
     });
     // Conversion points -> unlock the full report.
-    const compBtn = $$("#compEmailBtn");
-    if (compBtn) compBtn.addEventListener("click", () => unlockFull("compEmail"));
     const matrixReveal = $$("#matrixRevealBtn");
     if (matrixReveal) matrixReveal.addEventListener("click", () => unlockFull("matrixEmail"));
     const scoreUnlock = $$("#scoreUnlockBtn");

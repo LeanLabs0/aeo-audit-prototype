@@ -1818,7 +1818,7 @@
       : comps.map((c) => ({ name: c, count: null }));
     const SHOWN = 3;
     const chip = (s, locked) =>
-      `<span class="chip${locked ? " locked" : ""}"${s.count != null ? ` title="Named in ${s.count} of ${total} AI answers"` : ""}>${esc(s.name)}${s.count != null ? `<b class="cct">${s.count}x</b>` : ""}</span>`;
+      `<span class="chip${locked ? " locked" : ""}"${s.count != null ? ` title="Named in ${s.count} of ${total} AI answers"` : ""}>${esc(s.name)}${s.count != null && total ? `<b class="cct">${Math.round(s.count / total * 100)}%</b>` : ""}</span>`;
     let chips;
     if (gated && list.length > SHOWN) {
       const lockedN = list.length - SHOWN;
@@ -1900,13 +1900,14 @@
         <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${rows}</tbody></table>
         ${legend}</div></div>`;
     }
-    const open = prompts.slice(0, 4).map((p, i) => matrixRow(p, i, cited)).join("");
-    const rest = prompts.slice(4);
-    const restBody = rest.length ? `<tbody class="locked blur open">${rest.map((p, i) => matrixRow(p, i, cited)).join("")}</tbody>` : "";
-    const reveal = rest.length ? `<div class="mx-gate">
-      <p>Enter your email to unlock all the questions and see exactly where you are missing</p>
+    // Questions are fully unlocked in the gated view (Jonathan). The email gate stays
+    // as the conversion point for the REST of the report (no scroll popup).
+    const open = prompts.map((p, i) => matrixRow(p, i, cited)).join("");
+    const restBody = "";
+    const reveal = `<div class="mx-gate">
+      <p>Enter your email to unlock the full report, including your complete competitor list</p>
       <div class="mx-grow"><input id="matrixEmail" type="email" placeholder="you@company.com">
-      <button class="btn-fill" id="matrixRevealBtn">Unlock full details</button></div></div>` : "";
+      <button class="btn-fill" id="matrixRevealBtn">Unlock full details</button></div></div>`;
     return `<div class="sec2"><h2>Questions your customers ask AI</h2>
       <div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${open}</tbody>${restBody}</table>
       ${legend}${reveal}</div></div>`;

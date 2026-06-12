@@ -294,7 +294,7 @@
         headers: { "Content-Type": "application/json", "X-API-Key": API.key },
         body: JSON.stringify({ scan_result: data }),
       }).then((r) => (r.ok ? r.json() : null))
-        .then((d) => { if (d && d.moves) { try { sessionStorage.setItem("aeo_genie_result", JSON.stringify(d)); } catch (_) {} } })
+        .then((d) => { if (d && d.moves) { try { d.__scan_url = (data.solutions && data.solutions[0] && data.solutions[0].url) || data.url || ""; sessionStorage.setItem("aeo_genie_result", JSON.stringify(d)); } catch (_) {} } })
         .catch(() => {});
     } catch (_) {}
   }
@@ -2050,7 +2050,7 @@
         const host = document.getElementById("report");
         if (host) host.innerHTML = `<div style="padding:90px 20px;text-align:center;color:#9b97a8">Re-scanning <b style="color:#f3f2f6">${esc(parsed.solution_url)}</b> for <b style="color:#c47bff">${esc(cat || "your category")}</b>. Usually 60-90s.</div>`;
         runLiveScan(parsed, () => {}, { category: cat, icp: ic })
-          .then((d) => { try { sessionStorage.setItem("aeo_full", JSON.stringify(d)); } catch (_) {} renderFullReport(d); })
+          .then((d) => { try { sessionStorage.setItem("aeo_full", JSON.stringify(d)); sessionStorage.removeItem("aeo_genie_result"); } catch (_) {} renderFullReport(d); })
           .catch((e) => { if (host) host.innerHTML = `<div style="padding:90px 20px;text-align:center;color:#e5484d">Re-scan failed: ${esc(String(e && e.message || e))}</div>`; });
         return;
       }
@@ -2422,6 +2422,12 @@
       const data = await runLiveScan(parsed, (evt) => {
         if (typeof updateLoadingProgress === "function") updateLoadingProgress(evt);
       });
+      // Fresh scan = fresh session state. Without this, the Genie kept serving the
+      // LAST UNLOCKED brand (Kevin: "it gives the LL result regardless of page").
+      try {
+        sessionStorage.setItem("aeo_full", JSON.stringify(data));
+        sessionStorage.removeItem("aeo_genie_result");
+      } catch (_) {}
       renderFull(data);
     } catch (err) {
       stopLoading();

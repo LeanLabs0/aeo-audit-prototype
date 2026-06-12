@@ -563,12 +563,12 @@
   // Returns true if it rendered live data; false to fall back to the preview.
   async function loadDynamic(host) {
     let scan = null;
-    try { scan = JSON.parse(sessionStorage.getItem("aeo_full") || "null"); } catch (_) {}
+    try { scan = JSON.parse(localStorage.getItem("aeo_full") || "null"); } catch (_) {}
     const scanUrl = scan ? ((scan.solutions && scan.solutions[0] && scan.solutions[0].url) || scan.url || "") : "";
     // Prefetched result ready? Use it ONLY if it belongs to the CURRENT scan -- a stale
     // result from a previous brand must never win (Kevin's always-Lean-Labs bug).
     try {
-      const pre = JSON.parse(sessionStorage.getItem("aeo_genie_result") || "null");
+      const pre = JSON.parse(localStorage.getItem("aeo_genie_result") || "null");
       if (pre && pre.moves && pre.moves.length && (!pre.__scan_url || pre.__scan_url === scanUrl)) {
         applyGenieResponse(pre); return true;
       }

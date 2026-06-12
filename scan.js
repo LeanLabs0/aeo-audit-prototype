@@ -288,13 +288,13 @@
   // stash the result for an instant Genie.
   function prefetchGenie(data) {
     try {
-      sessionStorage.removeItem("aeo_genie_result");
+      localStorage.removeItem("aeo_genie_result");
       fetch(GENIE_PREFETCH_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-API-Key": API.key },
         body: JSON.stringify({ scan_result: data }),
       }).then((r) => (r.ok ? r.json() : null))
-        .then((d) => { if (d && d.moves) { try { d.__scan_url = (data.solutions && data.solutions[0] && data.solutions[0].url) || data.url || ""; sessionStorage.setItem("aeo_genie_result", JSON.stringify(d)); } catch (_) {} } })
+        .then((d) => { if (d && d.moves) { try { d.__scan_url = (data.solutions && data.solutions[0] && data.solutions[0].url) || data.url || ""; localStorage.setItem("aeo_genie_result", JSON.stringify(d)); } catch (_) {} } })
         .catch(() => {});
     } catch (_) {}
   }
@@ -2006,7 +2006,7 @@
   function blueprintCtaHtml() {
     return `<div class="cta2"><h3>You've seen the problems. Here's how to fix them.</h3>
       <p>The baseline is your diagnosis. The AEO Genie turns it into your 10 specific moves, the exact plays to get AI recommending you instead of your competitors.</p>
-      <a class="btn2" href="genie.html">Run the AEO Genie</a></div>`;
+      <a class="btn2" href="genie.html" target="_blank" rel="noopener">Run the AEO Genie</a></div>`;
   }
 
   // Conversion: capture email (best-effort POST), stash the scan response, then
@@ -2024,7 +2024,7 @@
         } catch (_) {}
       }
     }
-    try { sessionStorage.setItem("aeo_full", JSON.stringify(_lastData || {})); } catch (_) {}
+    try { localStorage.setItem("aeo_full", JSON.stringify(_lastData || {})); } catch (_) {}
     window.location.href = "full-report.html";
   }
 
@@ -2042,7 +2042,7 @@
       if (!url) {
         const sol = (_lastData && (_lastData.solutions || [])[0]) || {};
         url = sol.url || (_lastData && _lastData.url) || "";
-        if (!url) { try { const d = JSON.parse(sessionStorage.getItem("aeo_full") || "null"); url = (d && ((d.solutions || [])[0] || {}).url) || (d && d.url) || ""; } catch (_) {} }
+        if (!url) { try { const d = JSON.parse(localStorage.getItem("aeo_full") || "null"); url = (d && ((d.solutions || [])[0] || {}).url) || (d && d.url) || ""; } catch (_) {} }
       }
       const parsed = parseScanInput(url);
       if (!parsed.ok) { if (typeof showInputError === "function" && document.getElementById("scanUrlError")) showInputError(parsed.error); return; }
@@ -2050,7 +2050,7 @@
         const host = document.getElementById("report");
         if (host) host.innerHTML = `<div style="padding:90px 20px;text-align:center;color:#9b97a8">Re-scanning <b style="color:#f3f2f6">${esc(parsed.solution_url)}</b> for <b style="color:#c47bff">${esc(cat || "your category")}</b>. Usually 60-90s.</div>`;
         runLiveScan(parsed, () => {}, { category: cat, icp: ic })
-          .then((d) => { try { sessionStorage.setItem("aeo_full", JSON.stringify(d)); sessionStorage.removeItem("aeo_genie_result"); } catch (_) {} renderFullReport(d); })
+          .then((d) => { try { localStorage.setItem("aeo_full", JSON.stringify(d)); localStorage.removeItem("aeo_genie_result"); } catch (_) {} renderFullReport(d); })
           .catch((e) => { if (host) host.innerHTML = `<div style="padding:90px 20px;text-align:center;color:#e5484d">Re-scan failed: ${esc(String(e && e.message || e))}</div>`; });
         return;
       }
@@ -2425,8 +2425,8 @@
       // Fresh scan = fresh session state. Without this, the Genie kept serving the
       // LAST UNLOCKED brand (Kevin: "it gives the LL result regardless of page").
       try {
-        sessionStorage.setItem("aeo_full", JSON.stringify(data));
-        sessionStorage.removeItem("aeo_genie_result");
+        localStorage.setItem("aeo_full", JSON.stringify(data));
+        localStorage.removeItem("aeo_genie_result");
       } catch (_) {}
       renderFull(data);
     } catch (err) {
@@ -2451,7 +2451,7 @@
     // Full report page (report.html): render the stashed scan response, ungated.
     if (document.body.hasAttribute("data-full-report")) {
       let data = null;
-      try { data = JSON.parse(sessionStorage.getItem("aeo_full") || "null"); } catch (_) {}
+      try { data = JSON.parse(localStorage.getItem("aeo_full") || "null"); } catch (_) {}
       if (data && data.solutions) { renderFullReport(data); }
       else {
         const host = document.getElementById("report");

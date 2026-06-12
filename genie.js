@@ -343,6 +343,9 @@
     .gen .gpn{font-size:16px;font-weight:800;fill:var(--ink)}
     .gen .gpname{font-weight:700;font-size:12.5px;text-align:center;max-width:110px;line-height:1.2;color:var(--muted)}
     .gen .g-note{position:relative;margin-top:18px;font-size:13px;color:var(--muted)}
+    .gen .g-sample{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.4);border-radius:13px;padding:13px 18px;margin-top:14px;font-size:13.5px;color:#f0d9b0;line-height:1.5}
+    .gen .g-sample b{color:var(--warn)}
+    .gen .g-sample a{color:var(--g1);font-weight:800;text-decoration:none;margin-left:6px;white-space:nowrap}
     /* hero wishes */
     .gen .g-genie{position:absolute;left:50%;top:-12px;transform:translateX(-50%);width:min(420px,80%);opacity:.5;mix-blend-mode:screen;pointer-events:none;user-select:none;animation:gfloat 6s ease-in-out infinite}
     @keyframes gfloat{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-10px)}}
@@ -589,8 +592,12 @@
     injectStyles();
     const host = document.getElementById("genie");
     if (!host) return;
-    await loadDynamic(host); // overwrites DATA/MOVES with live data when available
-    host.innerHTML = `<div class="gen">` +
+    const live = await loadDynamic(host); // overwrites DATA/MOVES with live data when available
+    const sampleBanner = live ? "" : `<div class="g-sample">
+      <b>You're viewing a sample report</b> (Lean Labs). To generate yours, run a free
+      Baseline scan first, then hit "Run the AEO Genie" at the bottom of your report.
+      <a href="scan.html">Run my scan &rarr;</a></div>`;
+    host.innerHTML = `<div class="gen">` + sampleBanner +
       sidebarHtml() + heroHtml() + movesHtml() + stackHtml() + moneyHtml() + scoresHtml() + ctaHtml() +
       `</div>`;
     wire();

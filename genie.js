@@ -179,6 +179,7 @@
       <h1 class="g-title">The AEO Genie granted you<br>3 wishes</h1>
       <p class="g-sub">Everything <b>${esc(DATA.brand)}</b> needs to get cited, recommended, and named first across the AI answer engines your buyers already trust.</p>
       <div class="gwishes">${wishes}</div>
+      ${DATA.url ? `<div class="g-runfor">Run for <b>${esc(String(DATA.url).replace(/^https?:\/\//, ""))}</b></div>` : ""}
     </div>`;
   }
 
@@ -227,24 +228,38 @@
   }
 
   function stackHtml() {
-    // The brand's OWN site is never an outreach target: split it out of the table and
-    // show it as a positive line instead (it was rendering as the #1 "source you're
-    // not in", telling brands to pitch themselves).
-    // outreach table = neutral third-party only: not your site, not a rival's site
-    const others = DATA.citationStack.filter((s) => !s.you && !s.competitor);
-    const max = Math.max(1, ...others.map((s) => s.n));
-    const SHOW = 10; // the table was "crazy long" -- top 10, rest behind Show all
-    const row = (s, hidden) =>
-      `<tr${hidden ? ' class="cs-more" hidden' : ""}><td class="cs-src"><a class="cs-link" href="${esc((s.urls && s.urls[0]) || ("https://" + s.src))}" target="_blank" rel="noopener">${esc(s.src)}<span class="cs-ext">&#8599;</span></a><small>${esc(s.kind)}</small></td>
-        <td class="cs-bar"><span class="cs-track"><i style="width:${Math.round((s.n / max) * 100)}%"></i></span><b>${s.n}x</b></td>
-        <td class="cs-you"><span class="cs-no">Not in it</span></td></tr>`;
-    const rows = others.map((s, i) => row(s, i >= SHOW)).join("");
-    const more = others.length > SHOW
-      ? `<div class="cs-morewrap"><button type="button" class="cs-morebtn" id="csMoreBtn">Show all ${others.length} sources</button></div>` : "";
+    // Truth-first stack: own site excluded; competitor domains excluded; the rest
+    // split by VERIFIED presence (we fetch and read each cited page server-side):
+    //   mentioned===true  -> "Already citing you" (Kevin's congrats view)
+    //   mentioned===false -> verified absent -> the outreach list
+    //   mentioned===null  -> shown in the list with an honest "unverified" tag
+    const pool = DATA.citationStack.filter((s) => !s.you && !s.competitor);
+    const inIt = pool.filter((s) => s.mentioned === true);
+    const out = pool.filter((s) => s.mentioned !== true);
+    const max = Math.max(1, ...pool.map((s) => s.n));
+    const bar = (s) => `<td class="cs-bar"><span class="cs-track"><i style="width:${Math.round((s.n / max) * 100)}%"></i></span><b>${s.n}x</b></td>`;
+    const srcCell = (s) => `<td class="cs-src"><a class="cs-link" href="${esc((s.urls && s.urls[0]) || ("https://" + s.src))}" target="_blank" rel="noopener">${esc(s.src)}<span class="cs-ext">&#8599;</span></a><small>${esc(s.kind)}</small></td>`;
+    const inRows = inIt.map((s) =>
+      `<tr>${srcCell(s)}${bar(s)}<td class="cs-you"><span class="cs-yes">&#10003; Cites you</span></td></tr>`).join("");
+    const inBlock = inIt.length ? `
+      <h3 class="cs-subhead in">Already citing you</h3>
+      <div class="cs-wrap"><table class="cs-table"><thead><tr><th>Source</th><th>Cited in your queries</th><th></th></tr></thead>
+        <tbody>${inRows}</tbody></table></div>` : "";
+    const SHOW = 10;
+    const outRow = (s, hidden) =>
+      `<tr${hidden ? ' class="cs-more" hidden' : ""}>${srcCell(s)}${bar(s)}<td class="cs-you">${s.mentioned === false ? '<span class="cs-no">Not in it</span>' : '<span class="cs-unk">Unverified</span>'}</td></tr>`;
+    const outRows = out.map((s, i) => outRow(s, i >= SHOW)).join("");
+    const more = out.length > SHOW
+      ? `<div class="cs-morewrap"><button type="button" class="cs-morebtn" id="csMoreBtn">Show all ${out.length} sources</button></div>` : "";
+    const summary = inIt.length
+      ? `AI cites ${pool.length} third-party sources when buyers ask about your category. You're already in ${inIt.length} of them. Below are the ones to win next, ranked by how many of your queries each shows up in.`
+      : `These are the third-party sources AI actually cites when buyers ask about your category, ranked by how many of your queries each shows up in. Get into the top ones first.`;
     return `<div class="gsec"><h2 id="gen-stack" class="g-h2">Your Genius Citation Strategy</h2>
-      <p class="g-h2sub">From our research, the single biggest lever is off-site citations. These are the third-party sources AI actually cites when buyers ask about your category, ranked by how many of your queries each shows up in. Get into the top ones first.</p>
+      <p class="g-h2sub">From our research, the single biggest lever is off-site citations. ${summary}</p>
+      ${inBlock}
+      ${inIt.length ? '<h3 class="cs-subhead out">The ones to win next</h3>' : ""}
       <div class="cs-wrap"><table class="cs-table"><thead><tr><th>Source</th><th>Cited in your queries</th><th>You</th></tr></thead>
-        <tbody>${rows}</tbody></table>${more}</div></div>`;
+        <tbody>${outRows}</tbody></table>${more}</div></div>`;
   }
 
   function moneyHtml() {
@@ -364,6 +379,13 @@
     .gen .cs-link:hover{color:var(--g1);border-bottom-color:rgba(196,123,255,.5)}
     .gen .cs-ext{font-size:11px;color:var(--muted);margin-left:5px;vertical-align:super}
     .gen .cs-link:hover .cs-ext{color:var(--g1)}
+    .gen .cs-subhead{font-size:15px;font-weight:800;margin:18px 2px 10px;letter-spacing:-.01em}
+    .gen .cs-subhead.in{color:var(--ok)}
+    .gen .cs-subhead.out{color:var(--ink)}
+    .gen .cs-yes{font-size:12px;font-weight:800;color:var(--ok);background:rgba(52,201,138,.12);border:1px solid rgba(52,201,138,.3);border-radius:7px;padding:3px 9px;white-space:nowrap}
+    .gen .cs-unk{font-size:12px;font-weight:700;color:var(--muted);background:var(--card2);border:1px solid var(--line);border-radius:7px;padding:3px 9px;white-space:nowrap}
+    .gen .g-runfor{position:relative;margin-top:16px;font-size:13px;color:var(--muted)}
+    .gen .g-runfor b{color:#cfccd9}
     .gen .cs-morewrap{text-align:center;padding:14px 0 6px}
     .gen .cs-morebtn{background:var(--card2);border:1px solid var(--line);color:#cfccd9;font-weight:700;font-size:13px;padding:9px 18px;border-radius:10px;cursor:pointer}
     .gen .cs-morebtn:hover{border-color:rgba(118,18,250,.5);color:var(--ink)}
@@ -545,7 +567,8 @@
     if (Array.isArray(d.levers) && d.levers.length)
       DATA.scores = d.levers.map((lv) => ({ key: lv.key, name: lv.name, lever: leverSide[lv.key] || "grounding", val: lv.score, note: noteByKey[lv.key] || "" }));
     if (Array.isArray(d.citation_stack) && d.citation_stack.length)
-      DATA.citationStack = d.citation_stack.map((s) => ({ src: s.src, n: s.n, you: !!s.you, competitor: !!s.competitor, kind: s.kind || "", urls: s.urls || [] }));
+      DATA.citationStack = d.citation_stack.map((s) => ({ src: s.src, n: s.n, you: !!s.you, competitor: !!s.competitor, mentioned: (s.mentioned === true ? true : s.mentioned === false ? false : null), kind: s.kind || "", urls: s.urls || [] }));
+    if (d.scan_url) DATA.url = d.scan_url;
     if (Array.isArray(d.competitors) && d.competitors.length)
       DATA.competitors = d.competitors.map((c) => [c.name, c.count]);
     if (Array.isArray(d.moves) && d.moves.length)

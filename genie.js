@@ -235,7 +235,7 @@
     const max = Math.max(1, ...others.map((s) => s.n));
     const SHOW = 10; // the table was "crazy long" -- top 10, rest behind Show all
     const row = (s, hidden) =>
-      `<tr${hidden ? ' class="cs-more" hidden' : ""}><td class="cs-src">${esc(s.src)}<small>${esc(s.kind)}</small></td>
+      `<tr${hidden ? ' class="cs-more" hidden' : ""}><td class="cs-src"><a class="cs-link" href="${esc((s.urls && s.urls[0]) || ("https://" + s.src))}" target="_blank" rel="noopener">${esc(s.src)}<span class="cs-ext">&#8599;</span></a><small>${esc(s.kind)}</small></td>
         <td class="cs-bar"><span class="cs-track"><i style="width:${Math.round((s.n / max) * 100)}%"></i></span><b>${s.n}x</b></td>
         <td class="cs-you"><span class="cs-no">Not in it</span></td></tr>`;
     const rows = others.map((s, i) => row(s, i >= SHOW)).join("");
@@ -357,6 +357,10 @@
     .gen .cs-yours{display:flex;align-items:flex-start;gap:10px;background:rgba(52,201,138,.08);border:1px solid rgba(52,201,138,.3);border-radius:12px;padding:13px 16px;margin-bottom:14px;font-size:13.5px;color:#cfe9dc;line-height:1.5}
     .gen .cs-yours b{color:var(--ink)}
     .gen .cs-check{color:var(--ok);font-weight:800;flex:0 0 auto}
+    .gen .cs-link{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent}
+    .gen .cs-link:hover{color:var(--g1);border-bottom-color:rgba(196,123,255,.5)}
+    .gen .cs-ext{font-size:11px;color:var(--muted);margin-left:5px;vertical-align:super}
+    .gen .cs-link:hover .cs-ext{color:var(--g1)}
     .gen .cs-morewrap{text-align:center;padding:14px 0 6px}
     .gen .cs-morebtn{background:var(--card2);border:1px solid var(--line);color:#cfccd9;font-weight:700;font-size:13px;padding:9px 18px;border-radius:10px;cursor:pointer}
     .gen .cs-morebtn:hover{border-color:rgba(118,18,250,.5);color:var(--ink)}
@@ -538,7 +542,7 @@
     if (Array.isArray(d.levers) && d.levers.length)
       DATA.scores = d.levers.map((lv) => ({ key: lv.key, name: lv.name, lever: leverSide[lv.key] || "grounding", val: lv.score, note: noteByKey[lv.key] || "" }));
     if (Array.isArray(d.citation_stack) && d.citation_stack.length)
-      DATA.citationStack = d.citation_stack.map((s) => ({ src: s.src, n: s.n, you: !!s.you, competitor: !!s.competitor, kind: s.kind || "" }));
+      DATA.citationStack = d.citation_stack.map((s) => ({ src: s.src, n: s.n, you: !!s.you, competitor: !!s.competitor, kind: s.kind || "", urls: s.urls || [] }));
     if (Array.isArray(d.competitors) && d.competitors.length)
       DATA.competitors = d.competitors.map((c) => [c.name, c.count]);
     if (Array.isArray(d.moves) && d.moves.length)

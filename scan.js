@@ -1989,25 +1989,20 @@
       <button class="btn-fill" id="agScanBtn">Scan another solution</button>
     </div></div>`;
   }
-  // The ascension after the baseline gates: a single Next-step card.
-  function nextStepHtml() {
-    return `
-      <div class="sec2"><div class="nextstep">
-        <div class="ns-eyebrow">Next step</div>
-        <h3>Let us score your AEO foundation and build you the plan to become the AEO authority.</h3>
-        <button class="btn2" id="startBpBtn">Start my AEO Blueprint</button>
-      </div></div>`;
+  // Bottom CTA for both the short (locked) and full baseline report: drive to the
+  // AEO Genie. Copy mirrors the Genie opt-in page.
+  function genieCtaHtml() {
+    return `<div class="cta2"><h3>Get recommended by ChatGPT, Claude &amp; Gemini</h3>
+      <p>Your 10 AEO Quick Wins, on-site and off-site fixes, plus a Competitor AEO Battle Card.</p>
+      <a class="btn2" href="genie.html" target="_blank" rel="noopener">Get the AEO Genie's Strategy &rarr;</a></div>`;
   }
+  function nextStepHtml() { return genieCtaHtml(); }
   function ctaHtml() {
     return `<div class="cta2"><h3>Get recommended by AI, not your competitors.</h3>
       <p>Unlock your full baseline report and see exactly where you are losing to competitors.</p>
       <a class="btn2" href="#" id="ctaUnlock">Unlock full details</a></div>`;
   }
-  function blueprintCtaHtml() {
-    return `<div class="cta2"><h3>You've seen the problems. Here's how to fix them.</h3>
-      <p>The baseline is your diagnosis. The AEO Genie turns it into your 10 specific moves, the exact plays to get AI recommending you instead of your competitors.</p>
-      <a class="btn2" href="genie.html" target="_blank" rel="noopener">Run the AEO Genie</a></div>`;
-  }
+  function blueprintCtaHtml() { return genieCtaHtml(); }
 
   // Conversion: capture email (best-effort POST), stash the scan response, then
   // redirect to the full report. Email delivery of a PDF is a later phase.

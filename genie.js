@@ -308,7 +308,7 @@
             <li>Discounts with HubSpot, Google and Lean Labs</li>
           </ul>
           <div class="gnext-when">Free to attend live &middot; capped at 5 brands/week</div>
-          <p class="gnext-who"><b>Who is this for:</b> Marketers who want to learn AEO from the source and build their own plan.</p>
+          <p class="gnext-who"><b>Who is this for:</b> Anyone who wants to learn AEO and run the plays themselves.</p>
           <a class="gnext-btn" href="#">Save my seat</a>
         </div>
         <div class="gnext-card">
@@ -320,7 +320,7 @@
             <li>The fastest path to becoming the authority</li>
           </ul>
           <div class="gnext-when">Free &middot; 30 minutes on Google Meet</div>
-          <p class="gnext-who"><b>Who is this for:</b> Marketers who want a direct, personalized read on their next move.</p>
+          <p class="gnext-who"><b>Who is this for:</b> Founders and leaders who want a personalized read before they invest.</p>
           <a class="gnext-btn alt" href="#">Book an AEO Strategy Call</a>
         </div>
       </div>

@@ -321,7 +321,7 @@
             <li>The fastest path to becoming the authority</li>
           </ul>
           <div class="gnext-when">Free &middot; 30 minutes on Google Meet</div>
-          <p class="gnext-who"><b>Who is this for:</b> Leaders who want a personalized read before they invest.</p>
+          <p class="gnext-who"><b>Who is this for:</b> Leaders who'd rather have our team run it for them.</p>
           <a class="gnext-btn alt" href="#">Book an AEO Strategy Call</a>
         </div>
       </div>

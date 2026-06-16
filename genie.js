@@ -308,12 +308,12 @@
           <a class="gnext-btn" href="#">Save my seat</a>
         </div>
         <div class="gnext-card">
-          <div class="gnext-eyebrow">AEO Blueprint</div>
-          <div class="gnext-title">Book a call to get your custom AEO Blueprint.</div>
-          <p>Book a call and our team turns these 10 moves into a prioritized roadmap, then builds them for you, end to end.</p>
-          <div class="gnext-when">&nbsp;</div>
-          <p class="gnext-who"><b>Who is this for:</b> Teams who'd rather hand it off and have it built for them.</p>
-          <a class="gnext-btn alt" href="#">Build my Blueprint</a>
+          <div class="gnext-eyebrow">AEO Strategy Call</div>
+          <div class="gnext-title">Book a 30-minute call with our Head of AI Growth.</div>
+          <p>Talk one-to-one with Kevin Barber. See where you stand in AI answers, your biggest opportunities, and the fastest path to the authority.</p>
+          <div class="gnext-when">Free &middot; 30 minutes on Google Meet</div>
+          <p class="gnext-who"><b>Who is this for:</b> Marketers who want a direct, personalized read on their next move.</p>
+          <a class="gnext-btn alt" href="#">Book an AEO Strategy Call</a>
         </div>
       </div>
     </div>`;

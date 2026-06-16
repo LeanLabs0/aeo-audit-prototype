@@ -1992,9 +1992,34 @@
   // Bottom CTA for both the short (locked) and full baseline report: drive to the
   // AEO Genie. Copy mirrors the Genie opt-in page.
   function genieCtaHtml() {
-    return `<div class="cta2"><h3>Get recommended by ChatGPT, Claude &amp; Gemini</h3>
-      <p>Your 10 AEO Quick Wins, on-site and off-site fixes, plus a Competitor AEO Battle Card.</p>
-      <a class="btn2" href="genie.html" target="_blank" rel="noopener">Get the AEO Genie's Strategy &rarr;</a></div>`;
+    return `<div class="gcta">
+      <div class="gcta-eyebrow">Your next step</div>
+      <h2 class="gcta-title">The AEO Genie will help you <span class="gcta-grad">rank in your space.</span></h2>
+      <div class="gcta-cards">
+        <div class="gcta-card">
+          <div class="gcta-pills"><span class="gcta-pill primary">Step 1 &middot; Free</span><span class="gcta-pill white">Start here</span></div>
+          <h3 class="gcta-h3">How to Win with AEO</h3>
+          <ul class="gcta-bullets">
+            <li>Up to 10 genius moves, ranked by impact</li>
+            <li>An AEO money model on your numbers</li>
+            <li>The fastest path to getting cited by AI</li>
+          </ul>
+          <a class="gcta-btn" href="genie.html" target="_blank" rel="noopener">Run the AEO Genie <span class="gcta-arr">&rarr;</span></a>
+          <p class="gcta-fine">Free &middot; takes about 2 minutes &middot; no card</p>
+        </div>
+        <div class="gcta-card gcta-preview">
+          <img class="gcta-genie-frame" src="genie-frame.png" alt="" aria-hidden="true">
+          <img class="gcta-genie" src="genie-main.png" alt="" aria-hidden="true">
+          <div class="gcta-pv-head"><span class="gcta-pv-label">AEO Genie</span><span class="gcta-pv-url">leanlabs.com/solutions/aeo</span><span class="gcta-pv-gen">Generate</span></div>
+          <div class="gcta-pv-rows">
+            <div class="gcta-pv-row">Add FAQ schema to 12 key pages</div>
+            <div class="gcta-pv-row">Publish a definitive &ldquo;what is&rdquo; guide</div>
+            <div class="gcta-pv-row">Earn 3 third-party citations</div>
+          </div>
+          <div class="gcta-pv-foot">Projected <b>&asymp; 10 customers / yr</b></div>
+        </div>
+      </div>
+    </div>`;
   }
   function nextStepHtml() { return genieCtaHtml(); }
   function ctaHtml() {
@@ -2338,6 +2363,40 @@
     .aeo2 .cta2 p{margin:0 auto 20px;opacity:.94;max-width:520px}
     .aeo2 .btn2{display:inline-block;background:#fff;color:#7612fa;font-weight:800;padding:15px 30px;border-radius:12px;text-decoration:none;transition:transform .15s;cursor:pointer}
     .aeo2 .btn2:hover{transform:translateY(-2px)}
+    /* p2v2 Genie CTA (replicated exact) */
+    .aeo2 .gcta{margin-top:42px;background:#0d0d0d;border:1px solid #1f1f1f;border-radius:26px;padding:52px 40px 46px;text-align:center}
+    .aeo2 .gcta-eyebrow{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,.5);margin-bottom:14px}
+    .aeo2 .gcta-title{font-size:clamp(28px,4vw,44px);font-weight:800;line-height:1.08;letter-spacing:-.02em;color:#fff;margin:0 0 38px}
+    .aeo2 .gcta-grad{background:linear-gradient(180deg,#fff,rgba(255,255,255,.5));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .aeo2 .gcta-cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:980px;margin:0 auto;text-align:left}
+    .aeo2 .gcta-card{background:#141414;border:1px solid #292929;border-radius:20px;padding:26px 28px}
+    .aeo2 .gcta-pills{display:flex;gap:8px;margin-bottom:16px}
+    .aeo2 .gcta-pill{display:inline-flex;align-items:center;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;padding:5px 12px;border-radius:999px}
+    .aeo2 .gcta-pill.primary{border:1px solid rgba(235,235,235,.4);background:rgba(235,235,235,.14);color:#ededed}
+    .aeo2 .gcta-pill.white{background:#fff;color:#000}
+    .aeo2 .gcta-h3{font-size:clamp(22px,2.6vw,30px);font-weight:800;color:#fff;margin:0 0 16px;line-height:1.15;letter-spacing:-.01em}
+    .aeo2 .gcta-bullets{list-style:none;margin:0 0 22px;padding:0;display:flex;flex-direction:column;gap:11px}
+    .aeo2 .gcta-bullets li{position:relative;padding-left:28px;color:rgba(255,255,255,.82);font-size:14.5px;line-height:1.4}
+    .aeo2 .gcta-bullets li::before{content:"";position:absolute;left:0;top:1px;width:18px;height:18px;border-radius:50%;background:rgba(235,235,235,.14);border:1px solid rgba(235,235,235,.4)}
+    .aeo2 .gcta-bullets li::after{content:"\\2713";position:absolute;left:4px;top:1px;font-size:11px;font-weight:800;color:#fff}
+    .aeo2 .gcta-btn{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 30px;background:#fff;color:#000;font-weight:800;border-radius:999px;text-decoration:none;transition:transform .15s,background .15s}
+    .aeo2 .gcta-btn:hover{transform:translateY(-2px);background:rgba(255,255,255,.9)}
+    .aeo2 .gcta-arr{transition:transform .15s}
+    .aeo2 .gcta-btn:hover .gcta-arr{transform:translateX(3px)}
+    .aeo2 .gcta-fine{margin:14px 0 0;font-size:12px;color:rgba(255,255,255,.5)}
+    .aeo2 .gcta-preview{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;min-height:230px}
+    .aeo2 .gcta-genie-frame,.aeo2 .gcta-genie{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:74%;pointer-events:none;mix-blend-mode:screen;object-fit:contain}
+    .aeo2 .gcta-genie-frame{opacity:.4}
+    .aeo2 .gcta-genie{opacity:.7;width:100%}
+    .aeo2 .gcta-pv-head{position:relative;display:flex;align-items:center;gap:8px;margin-bottom:12px}
+    .aeo2 .gcta-pv-label{font-size:11px;font-weight:800;color:rgba(255,255,255,.6)}
+    .aeo2 .gcta-pv-url{font-size:11px;color:rgba(255,255,255,.4);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .aeo2 .gcta-pv-gen{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;background:rgba(255,255,255,.1);color:#fff;padding:4px 10px;border-radius:999px}
+    .aeo2 .gcta-pv-rows{position:relative;display:flex;flex-direction:column;gap:8px}
+    .aeo2 .gcta-pv-row{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 12px;font-size:12px;color:rgba(255,255,255,.85)}
+    .aeo2 .gcta-pv-foot{position:relative;margin-top:14px;font-size:12px;color:rgba(255,255,255,.65)}
+    .aeo2 .gcta-pv-foot b{color:#ededed;font-weight:800;margin-left:4px}
+    @media(max-width:760px){.aeo2 .gcta-cards{grid-template-columns:1fr}.aeo2 .gcta{padding:38px 22px}}
     .aeo2.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;justify-content:center;padding:40px 16px;overflow:auto;max-width:none}
     .aeo2.overlay.show{display:flex}
     .aeo2 .modal{background:var(--card);border:1px solid var(--line);border-radius:18px;max-width:760px;width:100%;padding:24px 28px 28px;height:max-content;box-shadow:0 20px 60px rgba(0,0,0,.6)}

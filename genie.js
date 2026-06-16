@@ -308,9 +308,10 @@
             <li>Discounts with HubSpot, Google and Lean Labs</li>
           </ul>
           <div class="gnext-when">Free to attend live &middot; capped at 5 brands/week</div>
-          <p class="gnext-who"><b>Who is this for:</b> Anyone who wants to learn AEO and run the plays themselves.</p>
+          <p class="gnext-who"><b>Who is this for:</b> Leaders who want to learn AEO and run the plays themselves.</p>
           <a class="gnext-btn" href="#">Save my seat</a>
         </div>
+        <div class="gnext-or"><span>OR</span></div>
         <div class="gnext-card">
           <div class="gnext-eyebrow">AEO Strategy Call</div>
           <div class="gnext-title">Book a 30-minute call to map your path to AEO authority.</div>
@@ -320,7 +321,7 @@
             <li>The fastest path to becoming the authority</li>
           </ul>
           <div class="gnext-when">Free &middot; 30 minutes on Google Meet</div>
-          <p class="gnext-who"><b>Who is this for:</b> Founders and leaders who want a personalized read before they invest.</p>
+          <p class="gnext-who"><b>Who is this for:</b> Leaders who want a personalized read before they invest.</p>
           <a class="gnext-btn alt" href="#">Book an AEO Strategy Call</a>
         </div>
       </div>
@@ -487,8 +488,10 @@
     .gen .gnext{margin-top:44px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:34px;box-shadow:var(--sh)}
     .gen .gnext-done{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ok);background:rgba(52,201,138,.12);border:1px solid rgba(52,201,138,.3);border-radius:999px;padding:7px 14px}
     .gen .gnext-h{font-size:24px;font-weight:800;letter-spacing:-.01em;margin:16px 0 20px}
-    .gen .gnext-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    @media(max-width:680px){.gen .gnext-cards{grid-template-columns:1fr}}
+    .gen .gnext-cards{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch}
+    .gen .gnext-or{display:flex;align-items:center;justify-content:center}
+    .gen .gnext-or span{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--muted);font-weight:800;font-size:14px;letter-spacing:.06em}
+    @media(max-width:680px){.gen .gnext-cards{grid-template-columns:1fr}.gen .gnext-or{padding:4px 0}}
     .gen .gnext-card{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column}
     .gen .gnext-card:first-child{border-color:rgba(118,18,250,.4)}
     .gen .gnext-eyebrow{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--g1)}

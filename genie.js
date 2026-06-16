@@ -495,13 +495,13 @@
     .gen .gnext-card{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column}
     .gen .gnext-card:first-child{border-color:rgba(118,18,250,.4)}
     .gen .gnext-eyebrow{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--g1)}
-    .gen .gnext-title{font-size:18px;font-weight:800;margin:6px 0 8px;letter-spacing:-.01em}
+    .gen .gnext-title{font-size:18px;font-weight:800;margin:6px 0 18px;letter-spacing:-.01em}
     .gen .gnext-card p{font-size:13.5px;color:#cfccd9;line-height:1.5;margin:0 0 14px;flex:1}
-    .gen .gnext-bullets{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:9px;flex:1}
+    .gen .gnext-bullets{list-style:none;margin:0 0 22px;padding:0;display:flex;flex-direction:column;gap:9px;flex:1}
     .gen .gnext-bullets li{position:relative;padding-left:25px;font-size:13.5px;color:#cfccd9;line-height:1.4}
     .gen .gnext-bullets li::before{content:"\\2713";position:absolute;left:0;top:0;width:17px;height:17px;border-radius:50%;background:rgba(118,18,250,.16);color:var(--g1);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
     .gen .gnext-when{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:14px}
-    .gen .gnext-who{font-size:12.5px;color:var(--muted);line-height:1.45;margin:0 0 16px;flex:none}
+    .gen .gnext-who{font-size:12.5px;color:var(--muted);line-height:1.45;margin:0 0 24px;flex:none}
     .gen .gnext-who b{color:#cfccd9;font-weight:800}
     .gen .gnext-btn{display:inline-block;text-align:center;background:var(--grad);color:#fff;font-weight:800;padding:13px 22px;border-radius:11px;text-decoration:none;transition:transform .15s}
     .gen .gnext-btn.alt{background:var(--card);border:1px solid var(--line)}

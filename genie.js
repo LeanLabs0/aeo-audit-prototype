@@ -302,14 +302,14 @@
         <div class="gnext-card">
           <div class="gnext-eyebrow">AEO Accelerator</div>
           <div class="gnext-title">Join a free live session to master the 4 levers of AEO.</div>
-          <p>A one-day live session with Kevin Barber, Lean Labs' Head of AI Growth. Master the 4 AEO levers and leave with a GTM plan you can run.</p>
+          <p>Get an expert grasp of how AI ranks you, leave with a GTM plan you can run, and qualify for stack discounts.</p>
           <div class="gnext-when">Free to attend live &middot; capped at 5 brands/week</div>
           <p class="gnext-who"><b>Who is this for:</b> Marketers who want to learn AEO from the source and build their own plan.</p>
           <a class="gnext-btn" href="#">Save my seat</a>
         </div>
         <div class="gnext-card">
           <div class="gnext-eyebrow">AEO Strategy Call</div>
-          <div class="gnext-title">Book a 30-minute call with our Head of AI Growth.</div>
+          <div class="gnext-title">Book a 30-minute call to map your path to AEO authority.</div>
           <p>Talk one-to-one with Kevin Barber. See where you stand in AI answers, your biggest opportunities, and the fastest path to the authority.</p>
           <div class="gnext-when">Free &middot; 30 minutes on Google Meet</div>
           <p class="gnext-who"><b>Who is this for:</b> Marketers who want a direct, personalized read on their next move.</p>

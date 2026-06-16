@@ -303,9 +303,9 @@
           <div class="gnext-eyebrow">AEO Accelerator</div>
           <div class="gnext-title">Join a free live session to master the 4 levers of AEO.</div>
           <ul class="gnext-bullets">
-            <li>An expert grasp of how AI picks who to recommend</li>
+            <li>How AI picks who to recommend</li>
             <li>A GTM plan you can run</li>
-            <li>Discounts with HubSpot, Google and Lean Labs</li>
+            <li>HubSpot + Google discounts</li>
           </ul>
           <div class="gnext-when">Free to attend live &middot; capped at 5 brands/week</div>
           <p class="gnext-who"><b>Who is this for:</b> Leaders who want to learn AEO and run the plays themselves.</p>
@@ -316,9 +316,9 @@
           <div class="gnext-eyebrow">AEO Strategy Call</div>
           <div class="gnext-title">Book a 30-minute call to map your path to AEO authority.</div>
           <ul class="gnext-bullets">
-            <li>Where your brand stands in AI answers today</li>
+            <li>Where your brand stands in AI answers</li>
             <li>Your biggest AEO opportunities</li>
-            <li>The fastest path to becoming the authority</li>
+            <li>The fastest path to AEO authority</li>
           </ul>
           <div class="gnext-when">Free &middot; 30 minutes on Google Meet</div>
           <p class="gnext-who"><b>Who is this for:</b> Leaders who'd rather have our team run it for them.</p>

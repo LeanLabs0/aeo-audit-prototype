@@ -300,17 +300,19 @@
       <h3 class="gnext-h">Ready to become the AEO Authority in your space?</h3>
       <div class="gnext-cards">
         <div class="gnext-card">
-          <div class="gnext-eyebrow">Do it with us</div>
-          <div class="gnext-title">Accelerate your AI Dominance</div>
-          <p>A live working session with a few seats. Walk the playbook, unlock extra insights, save with HubSpot and Lean Labs.</p>
-          <div class="gnext-when">Next: Tuesday 2pm ET</div>
+          <div class="gnext-eyebrow">AEO Accelerator</div>
+          <div class="gnext-title">Join a free live session to master the 4 levers of AEO.</div>
+          <p>A one-day live session with Kevin Barber, Lean Labs' Head of AI Growth. Master the 4 AEO levers and leave with a GTM plan you can run.</p>
+          <div class="gnext-when">Free to attend live &middot; capped at 5 brands/week</div>
+          <p class="gnext-who"><b>Who is this for:</b> Marketers who want to learn AEO from the source and build their own plan.</p>
           <a class="gnext-btn" href="#">Save my seat</a>
         </div>
         <div class="gnext-card">
-          <div class="gnext-eyebrow">Want it done for you</div>
-          <div class="gnext-title">AEO Blueprint</div>
-          <p>Book a meeting. We turn these 10 moves into your prioritized plan and build them with you.</p>
+          <div class="gnext-eyebrow">AEO Blueprint</div>
+          <div class="gnext-title">Book a call to get your custom AEO Blueprint.</div>
+          <p>Book a call and our team turns these 10 moves into a prioritized roadmap, then builds them for you, end to end.</p>
           <div class="gnext-when">&nbsp;</div>
+          <p class="gnext-who"><b>Who is this for:</b> Teams who'd rather hand it off and have it built for them.</p>
           <a class="gnext-btn alt" href="#">Build my Blueprint</a>
         </div>
       </div>
@@ -485,6 +487,8 @@
     .gen .gnext-title{font-size:18px;font-weight:800;margin:6px 0 8px;letter-spacing:-.01em}
     .gen .gnext-card p{font-size:13.5px;color:#cfccd9;line-height:1.5;margin:0 0 14px;flex:1}
     .gen .gnext-when{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:14px}
+    .gen .gnext-who{font-size:12.5px;color:var(--muted);line-height:1.45;margin:0 0 16px;flex:none}
+    .gen .gnext-who b{color:#cfccd9;font-weight:800}
     .gen .gnext-btn{display:inline-block;text-align:center;background:var(--grad);color:#fff;font-weight:800;padding:13px 22px;border-radius:11px;text-decoration:none;transition:transform .15s}
     .gen .gnext-btn.alt{background:var(--card);border:1px solid var(--line)}
     .gen .gnext-btn:hover{transform:translateY(-2px)}`;

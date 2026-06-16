@@ -2008,8 +2008,10 @@
           <p class="gcta-fine">Free &middot; takes about 2 minutes &middot; no card</p>
         </div>
         <div class="gcta-card gcta-preview">
-          <img class="gcta-genie-frame" src="genie-frame.png" alt="" aria-hidden="true">
-          <img class="gcta-genie" src="genie-main.png" alt="" aria-hidden="true">
+          <div class="gcta-genie-wrap">
+            <img class="gcta-genie-frame" src="genie-frame.png" alt="" aria-hidden="true">
+            <img class="gcta-genie" src="genie-main.png" alt="" aria-hidden="true">
+          </div>
           <div class="gcta-pv-head"><span class="gcta-pv-label">AEO Genie</span><span class="gcta-pv-url">leanlabs.com/solutions/aeo</span><span class="gcta-pv-gen">Generate</span></div>
           <div class="gcta-pv-rows">
             <div class="gcta-pv-row">Add FAQ schema to 12 key pages</div>
@@ -2384,10 +2386,11 @@
     .aeo2 .gcta-arr{transition:transform .15s}
     .aeo2 .gcta-btn:hover .gcta-arr{transform:translateX(3px)}
     .aeo2 .gcta-fine{margin:14px 0 0;font-size:12px;color:rgba(255,255,255,.5)}
-    .aeo2 .gcta-preview{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;min-height:230px}
-    .aeo2 .gcta-genie-frame,.aeo2 .gcta-genie{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:74%;pointer-events:none;mix-blend-mode:screen;object-fit:contain}
-    .aeo2 .gcta-genie-frame{opacity:.4}
-    .aeo2 .gcta-genie{opacity:.7;width:100%}
+    .aeo2 .gcta-preview{position:relative;overflow:hidden;padding-top:94px}
+    .aeo2 .gcta-genie-wrap{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:150px;aspect-ratio:3/2;z-index:2;pointer-events:none}
+    .aeo2 .gcta-genie-frame,.aeo2 .gcta-genie{position:absolute;inset:0;margin:auto;pointer-events:none;mix-blend-mode:screen;object-fit:contain}
+    .aeo2 .gcta-genie-frame{width:74.6%;height:auto;opacity:.4}
+    .aeo2 .gcta-genie{width:100%;height:100%;opacity:.7}
     .aeo2 .gcta-pv-head{position:relative;display:flex;align-items:center;gap:8px;margin-bottom:12px}
     .aeo2 .gcta-pv-label{font-size:11px;font-weight:800;color:rgba(255,255,255,.6)}
     .aeo2 .gcta-pv-url{font-size:11px;color:rgba(255,255,255,.4);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

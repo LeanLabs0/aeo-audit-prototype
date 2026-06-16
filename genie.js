@@ -304,7 +304,7 @@
           <div class="gnext-title">Join a free live session to master the 4 levers of AEO.</div>
           <ul class="gnext-bullets">
             <li>How AI picks who to recommend</li>
-            <li>A GTM plan you can run</li>
+            <li>A real plan you can run</li>
             <li>HubSpot + Google discounts</li>
           </ul>
           <div class="gnext-when">Free to attend live &middot; capped at 5 brands/week</div>

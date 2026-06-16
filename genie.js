@@ -302,7 +302,11 @@
         <div class="gnext-card">
           <div class="gnext-eyebrow">AEO Accelerator</div>
           <div class="gnext-title">Join a free live session to master the 4 levers of AEO.</div>
-          <p>Get an expert grasp of how AI ranks you, leave with a GTM plan you can run, and qualify for stack discounts.</p>
+          <ul class="gnext-bullets">
+            <li>An expert grasp of how AI picks who to recommend</li>
+            <li>A GTM plan you can run</li>
+            <li>Discounts with HubSpot, Google and Lean Labs</li>
+          </ul>
           <div class="gnext-when">Free to attend live &middot; capped at 5 brands/week</div>
           <p class="gnext-who"><b>Who is this for:</b> Marketers who want to learn AEO from the source and build their own plan.</p>
           <a class="gnext-btn" href="#">Save my seat</a>
@@ -310,7 +314,11 @@
         <div class="gnext-card">
           <div class="gnext-eyebrow">AEO Strategy Call</div>
           <div class="gnext-title">Book a 30-minute call to map your path to AEO authority.</div>
-          <p>Talk one-to-one with Kevin Barber. See where you stand in AI answers, your biggest opportunities, and the fastest path to the authority.</p>
+          <ul class="gnext-bullets">
+            <li>Where your brand stands in AI answers today</li>
+            <li>Your biggest AEO opportunities</li>
+            <li>The fastest path to becoming the authority</li>
+          </ul>
           <div class="gnext-when">Free &middot; 30 minutes on Google Meet</div>
           <p class="gnext-who"><b>Who is this for:</b> Marketers who want a direct, personalized read on their next move.</p>
           <a class="gnext-btn alt" href="#">Book an AEO Strategy Call</a>
@@ -486,6 +494,9 @@
     .gen .gnext-eyebrow{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--g1)}
     .gen .gnext-title{font-size:18px;font-weight:800;margin:6px 0 8px;letter-spacing:-.01em}
     .gen .gnext-card p{font-size:13.5px;color:#cfccd9;line-height:1.5;margin:0 0 14px;flex:1}
+    .gen .gnext-bullets{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:9px;flex:1}
+    .gen .gnext-bullets li{position:relative;padding-left:25px;font-size:13.5px;color:#cfccd9;line-height:1.4}
+    .gen .gnext-bullets li::before{content:"\\2713";position:absolute;left:0;top:0;width:17px;height:17px;border-radius:50%;background:rgba(118,18,250,.16);color:var(--g1);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
     .gen .gnext-when{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:14px}
     .gen .gnext-who{font-size:12.5px;color:var(--muted);line-height:1.45;margin:0 0 16px;flex:none}
     .gen .gnext-who b{color:#cfccd9;font-weight:800}
